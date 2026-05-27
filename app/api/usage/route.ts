@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       .from(documents)
       .where(and(
         eq(documents.tenantId, tenantId),
-        gte(documents.createdAt, startOfMonth.toISOString())
+        gte(documents.createdAt, startOfMonth)
       ));
 
     return NextResponse.json({ documentsUsed: result[0]?.count || 0 });

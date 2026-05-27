@@ -2,6 +2,9 @@ import { z } from "zod";
 import { generateDocument as aiGenerate } from "@/lib/ai/client";
 import { getModelForDocType } from "@/lib/ai/models";
 import { buildPrompt } from "@/lib/ai/prompts";
+import { db } from "@/lib/db";
+import { documents } from "@/lib/db/schema";
+import { renderers, PdfRenderInput } from "@/lib/documents/pdf";
 import type { DocType } from "@/lib/ai/models";
 
 /**
@@ -36,16 +39,14 @@ export interface GenerateDocumentResult {
  * 1. Validates input with Zod
  * 2. Builds AI prompt from template
  * 3. Calls OpenRouter AI client
- * 4. Renders PDF via @react-pdf (placeholder)
- * 5. Uploads to blob storage (placeholder)
- * 6. Saves document record (placeholder)
- * 7. Returns download info
+ * 4. Renders PDF via @react-pdf
+ * 5. Saves document record to DB
+ * 6. Returns document info
  */
 export async function generateDocument(
   input: GenerateDocumentInput
 ): Promise<GenerateDocumentResult> {
   const validated = GenerateDocumentInputSchema.parse(input);
-
   const docType = validated.docType as DocType;
   const model = validated.model ?? getModelForDocType(docType);
 
@@ -62,15 +63,47 @@ export async function generateDocument(
     model,
   });
 
-  // TODO: Render PDF via @react-pdf (see lib/documents/pdf.ts)
-  // TODO: Upload PDF to blob storage
-  // TODO: Save document record to database
-  // TODO: Generate Word document (see lib/documents/word.ts)
+  // Render PDF if we have a renderer for this doc type
+  let pdfBuffer: Buffer | null = null;
+  const renderFn = renderers[docType];
+  if (renderFn && aiResult.content) {
+    const pdfInput: PdfRenderInput = {
+      title: validated.title,
+      employeeName: validated.userInputs.employee_name || validated.userInputs.candidate_name || "",
+      jobTitle: validated.userInputs.job_title || "",
+      startDate: validated.userInputs.start_date || "",
+      sections: aiResult.content as Record<string, string>,
+    };
+    try {
+      pdfBuffer = await renderFn(pdfInput);
+    } catch {
+      // PDF render failed — non-fatal, we still have the AI content
+      console.warn("PDF render failed, returning AI content only");
+    }
+  }
+
+  // TODO: Upload PDF buffer to blob storage (Vercel Blob / R2)
+  // For now, store the raw AI content reference
+  const outputUrl = null;
+
+  // Save document record to database
+  const [doc] = await db
+    .insert(documents)
+    .values({
+      tenantId: validated.tenantId,
+      type: docType as any,
+      title: validated.title,
+      status: "generated",
+      inputData: validated.userInputs,
+      aiModel: model,
+      createdBy: null, // TODO: set from Clerk session
+    })
+    .returning({ id: documents.id });
 
   return {
-    documentId: "", // placeholder
+    documentId: doc.id,
     content: aiResult.content,
-    outputUrl: null, // placeholder
+    outputUrl,
     model: aiResult.model,
   };
 }

@@ -1,11 +1,13 @@
-// Team management settings page
+// Team settings page
+import DashboardShell from "@/components/layout/DashboardShell"
+
 export default function TeamPage() {
   return (
-    <div>
+    <DashboardShell>
       <h1 className="text-3xl font-bold">Team</h1>
       <p className="mt-2 text-muted-foreground">
-        Invite and manage team members.
+        Manage your team members and roles.
       </p>
-    </div>
+    </DashboardShell>
   )
 }

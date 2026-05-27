@@ -1,13 +1,17 @@
-// Billing settings page with usage bar and pricing table
-import PricingTable from "@/components/billing/PricingTable"
+// Billing settings page
+import DashboardShell from "@/components/layout/DashboardShell"
 import UsageBar from "@/components/billing/UsageBar"
 
 export default function BillingPage() {
   return (
-    <div className="space-y-8">
+    <DashboardShell>
       <h1 className="text-3xl font-bold">Billing</h1>
-      <UsageBar />
-      <PricingTable />
-    </div>
+      <p className="mt-2 text-muted-foreground">
+        View your current plan and usage.
+      </p>
+      <div className="mt-6">
+        <UsageBar />
+      </div>
+    </DashboardShell>
   )
 }

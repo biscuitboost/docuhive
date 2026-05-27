@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import UsageBar from "@/components/billing/UsageBar";
+import DashboardShell from "@/components/layout/DashboardShell";
 
 interface DashboardStats {
   totalDocuments: number;
@@ -37,7 +38,7 @@ export default function DashboardHome() {
   }, []);
 
   return (
-    <div>
+    <DashboardShell>
       {/* Stats cards */}
       <div className="grid gap-6 sm:grid-cols-3">
         <div className="rounded-xl border border-gray-200 bg-white p-6">
@@ -115,6 +116,6 @@ export default function DashboardHome() {
           </div>
         )}
       </div>
-    </div>
+    </DashboardShell>
   );
 }

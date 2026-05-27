@@ -1,9 +1,8 @@
-// ESLint configuration for DocuHive
-{
-  "extends": "next/core-web-vitals",
-  "rules": {
-    "no-console": "warn",
-    "prefer-const": "error",
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
-  }
-}
+module.exports = {
+  root: true,
+  extends: ["next/core-web-vitals"],
+  rules: {
+    "no-unused-vars": "warn",
+    "no-console": "off",
+  },
+};

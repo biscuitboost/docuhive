@@ -1,10 +1,6 @@
-// Clerk-free root layout — ClerkProvider is inlined in auth pages only
+// Clerk-free dashboard layout — ClerkProvider is inlined in auth pages only
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import Link from "next/link"
-import "./globals.css"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "DocuHive",

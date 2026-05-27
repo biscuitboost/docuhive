@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
     const signature = request.headers.get('stripe-signature') || '';
-    const result = await handleStripeWebhook(body, signature);
+    await handleStripeWebhook(body, signature);
     return NextResponse.json({ received: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Webhook error';

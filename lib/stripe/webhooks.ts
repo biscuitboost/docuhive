@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server";
-import type Stripe from "stripe";
+import Stripe from "stripe";
 import { stripe } from "./client";
+import { db } from "@/lib/db";
+import { tenants, subscriptions } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { getPlanByPriceId } from "./pricing";
 
 /**
  * Webhook handler for Stripe events.
@@ -9,7 +12,7 @@ import { stripe } from "./client";
 export async function handleStripeWebhook(
   body: string,
   signature: string
-): Promise<NextResponse> {
+): Promise<{ received: boolean }> {
   let event: Stripe.Event;
 
   try {
@@ -19,29 +22,82 @@ export async function handleStripeWebhook(
       process.env.STRIPE_WEBHOOK_SECRET ?? ""
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Invalid signature";
-    return NextResponse.json({ error: message }, { status: 400 });
+    throw err;
   }
 
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      // TODO: Upsert tenant, link subscription, update plan
-      console.log("Checkout completed:", session.id, session.customer);
+      const tenantId = session.metadata?.tenantId;
+      if (!tenantId) break;
+
+      // Update tenant with Stripe customer + subscription IDs
+      await db
+        .update(tenants)
+        .set({
+          stripeCustomerId: session.customer as string,
+          stripeSubscriptionId: session.subscription as string,
+          updatedAt: new Date(),
+        })
+        .where(eq(tenants.id, tenantId));
+
+      // Create subscription record
+      const priceId = session.line_items?.data[0]?.price?.id;
+      if (priceId) {
+        const plan = getPlanByPriceId(priceId);
+        const subscription = event.data.object as Stripe.Checkout.Session;
+        await db.insert(subscriptions).values({
+          tenantId,
+          stripeSubscriptionId: subscription.subscription as string,
+          stripePriceId: priceId,
+          status: "active",
+          plan: plan ?? "essentials",
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ),
+          documentsUsed: 0,
+        });
+      }
       break;
     }
 
     case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
-      // TODO: Sync subscription status, period dates, plan changes
-      console.log("Subscription updated:", subscription.id, subscription.status);
+      const sub = event.data.object as Stripe.Subscription;
+      const priceId = sub.items.data[0]?.price?.id;
+      const plan = priceId ? getPlanByPriceId(priceId) : undefined;
+
+      await db
+        .update(subscriptions)
+        .set({
+          status: sub.status as any,
+          stripePriceId: priceId,
+          plan: plan ?? undefined,
+          currentPeriodStart: sub.current_period_start
+            ? new Date(sub.current_period_start * 1000)
+            : undefined,
+          currentPeriodEnd: sub.current_period_end
+            ? new Date(sub.current_period_end * 1000)
+            : undefined,
+          updatedAt: new Date(),
+        })
+        .where(
+          eq(subscriptions.stripeSubscriptionId, sub.id)
+        );
       break;
     }
 
     case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
-      // TODO: Mark subscription as cancelled, degrade plan
-      console.log("Subscription deleted:", subscription.id);
+      const sub = event.data.object as Stripe.Subscription;
+      await db
+        .update(subscriptions)
+        .set({
+          status: "cancelled",
+          updatedAt: new Date(),
+        })
+        .where(
+          eq(subscriptions.stripeSubscriptionId, sub.id)
+        );
       break;
     }
 
@@ -49,5 +105,5 @@ export async function handleStripeWebhook(
       console.log("Unhandled event type:", event.type);
   }
 
-  return NextResponse.json({ received: true });
+  return { received: true };
 }

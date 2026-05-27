@@ -41,6 +41,17 @@ export const PLANS: Record<PlanId, PlanConfig> = {
 };
 
 /**
+ * Resolve a plan ID from a Stripe price ID.
+ * Returns undefined if no match.
+ */
+export function getPlanByPriceId(priceId: string): PlanId | undefined {
+  for (const [id, config] of Object.entries(PLANS)) {
+    if (config.stripePriceId === priceId) return id as PlanId;
+  }
+  return undefined;
+}
+
+/**
  * Returns the plan config for a given plan ID.
  */
 export function getPlan(planId: PlanId): PlanConfig {

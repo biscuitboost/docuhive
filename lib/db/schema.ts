@@ -12,7 +12,7 @@ export const docTypeEnum = pgEnum("doc_type", [
   "p45",
   "custom",
 ]);
-export const docStatusEnum = pgEnum("doc_status", ["draft", "generated", "downloaded"]);
+export const docStatusEnum = pgEnum("doc_status", ["draft", "generated", "downloaded", "archived"]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "active",
   "past_due",

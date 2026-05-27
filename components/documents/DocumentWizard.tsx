@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useUser } from "@clerk/nextjs";
 
 type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45";
 
@@ -111,7 +110,6 @@ const DOC_TYPES: { value: DocType; label: string; description: string; fields: F
 ];
 
 export default function DocumentWizard() {
-  const { user } = useUser();
   const [step, setStep] = useState<"select" | "form" | "result">("select");
   const [selectedType, setSelectedType] = useState<DocType | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});

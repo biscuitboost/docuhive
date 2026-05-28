@@ -55,6 +55,7 @@ export const documents = pgTable("documents", {
   title: text("title").notNull(),
   status: docStatusEnum("status").notNull().default("draft"),
   inputData: jsonb("input_data").$type<Record<string, unknown>>(),
+  outputData: jsonb("output_data").$type<Record<string, unknown>>(),
   outputUrl: text("output_url"),
   aiModel: text("ai_model"),
   version: integer("version").notNull().default(1),

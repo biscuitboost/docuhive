@@ -82,11 +82,8 @@ export async function generateDocument(
     }
   }
 
-  // TODO: Upload PDF buffer to blob storage (Vercel Blob / R2)
-  // For now, store the raw AI content reference
-  const outputUrl = null;
-
-  // Save document record to database
+  // Save document record to database with AI content persisted
+  const content = aiResult.content;
   const [doc] = await db
     .insert(documents)
     .values({
@@ -95,6 +92,7 @@ export async function generateDocument(
       title: validated.title,
       status: "generated",
       inputData: validated.userInputs,
+      outputData: content,
       aiModel: model,
       createdBy: null, // TODO: set from Clerk session
     })
@@ -103,7 +101,7 @@ export async function generateDocument(
   return {
     documentId: doc.id,
     content: aiResult.content,
-    outputUrl,
+    outputUrl: null,
     model: aiResult.model,
   };
 }

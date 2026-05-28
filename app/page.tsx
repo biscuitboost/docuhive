@@ -1,23 +1,17 @@
-// Diagnostic root page — minimal, no deps
-import Link from "next/link";
+import Hero from "@/components/marketing/Hero"
+import Features from "@/components/marketing/Features"
+import Pricing from "@/components/marketing/Pricing"
+import Calculator from "@/components/marketing/Calculator"
+import Footer from "@/components/layout/Footer"
 
 export default function Home() {
   return (
-    <div style={{ padding: "40px", fontFamily: "sans-serif", maxWidth: 640, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 28 }}>DocuHive</h1>
-      <p style={{ color: "#666", marginTop: 8 }}>
-        AI-powered UK employment document generation.
-      </p>
-      <div style={{ marginTop: 24, display: "flex", gap: 12 }}>
-        <Link href="/sign-in"
-          style={{ background: "#2563eb", color: "white", padding: "8px 20px", borderRadius: 8, textDecoration: "none" }}>
-          Sign In
-        </Link>
-        <Link href="/documents"
-          style={{ border: "1px solid #d1d5db", padding: "8px 20px", borderRadius: 8, textDecoration: "none", color: "#111" }}>
-          Documents
-        </Link>
-      </div>
-    </div>
-  );
+    <main className="min-h-screen bg-[#0f172a]">
+      <Hero />
+      <Features />
+      <Pricing />
+      <Calculator />
+      <Footer />
+    </main>
+  )
 }

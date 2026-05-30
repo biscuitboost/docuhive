@@ -44,6 +44,26 @@ export const tenantMembers = pgTable("tenant_members", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// ── Pending Invitations ──────────────────────────────────────
+
+export const invitationStatusEnum = pgEnum("invitation_status", [
+  "pending",
+  "accepted",
+  "revoked",
+]);
+
+export const pendingInvitations = pgTable("pending_invitations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  email: text("email").notNull(),
+  clerkInvitationId: text("clerk_invitation_id"),
+  invitedBy: text("invited_by"),
+  status: invitationStatusEnum("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // ── Documents ────────────────────────────────────────────────────
 
 export const documents = pgTable("documents", {

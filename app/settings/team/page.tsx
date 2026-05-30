@@ -1,5 +1,6 @@
 // Team settings page
 import DashboardShell from "@/components/layout/DashboardShell"
+import TeamManagement from "@/components/team/TeamManagement"
 
 export default function TeamPage() {
   return (
@@ -8,6 +9,9 @@ export default function TeamPage() {
       <p className="mt-2 text-muted-foreground">
         Manage your team members and roles.
       </p>
+      <div className="mt-8 max-w-2xl">
+        <TeamManagement />
+      </div>
     </DashboardShell>
   )
 }

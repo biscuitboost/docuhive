@@ -1,17 +1,16 @@
 // Billing settings page
-import DashboardShell from "@/components/layout/DashboardShell"
-import UsageBar from "@/components/billing/UsageBar"
+import BillingOverview from "@/components/billing/BillingOverview"
 
 export default function BillingPage() {
   return (
-    <DashboardShell>
-      <h1 className="text-3xl font-bold">Billing</h1>
-      <p className="mt-2 text-muted-foreground">
+    <div>
+      <h2 className="text-lg font-semibold text-gray-900">Billing</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
         View your current plan and usage.
       </p>
-      <div className="mt-6">
-        <UsageBar />
+      <div className="mt-6 max-w-2xl">
+        <BillingOverview />
       </div>
-    </DashboardShell>
+    </div>
   )
 }

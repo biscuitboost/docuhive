@@ -1,1 +1,16 @@
-{"projectId":"prj_SGzxEbdQqh4Ov90zK5POhuGdyqYD","orgId":"team_YISD1enaVX9pEiuKiVhiUir1","projectName":"docuhive"}
+{
+  "projectId": "prj_SGzxEbdQqh4Ov90zK5POhuGdyqYD",
+  "orgId": "team_YISD1enaVX9pEiuKiVhiUir1",
+  "projectName": "docuhive",
+  "settings": {
+    "createdAt": 1779896513464,
+    "framework": null,
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

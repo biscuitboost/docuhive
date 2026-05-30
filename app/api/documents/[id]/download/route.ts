@@ -3,17 +3,21 @@ import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { renderers, PdfRenderInput } from "@/lib/documents/pdf";
+import { requireAuth, AuthError } from "@/lib/auth/tenant";
 
 /**
  * GET /api/documents/:id/download
  * Downloads a generated document as PDF.
  * Renders the PDF on-demand from stored AI output data.
+ * Tenant-scoped — only the owning tenant can download.
  */
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { tenantId } = await requireAuth();
+
     const result = await db
       .select()
       .from(documents)
@@ -25,6 +29,12 @@ export async function GET(
     }
 
     const doc = result[0];
+
+    // Tenant isolation — only the owning tenant can access this document
+    if (doc.tenantId !== tenantId) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
     if (!doc.outputData || !doc.inputData) {
       return NextResponse.json(
         { error: "Document has no generated content yet" },
@@ -55,7 +65,12 @@ export async function GET(
     const pdfBuffer = await renderFn(pdfInput);
     const filename = `${doc.title.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
 
-    // Node.js Buffer type doesn't perfectly match Web BodyInit — safe cast
+    // Update document status to 'downloaded'
+    await db
+      .update(documents)
+      .set({ status: "downloaded", updatedAt: new Date() } as any)
+      .where(eq(documents.id, params.id));
+
     return new NextResponse(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
@@ -64,6 +79,9 @@ export async function GET(
       },
     });
   } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
     const message = error instanceof Error ? error.message : "Download failed";
     console.error("Download error:", error);
     return NextResponse.json({ error: message }, { status: 500 });

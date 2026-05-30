@@ -5,6 +5,7 @@ import { buildPrompt } from "@/lib/ai/prompts";
 import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { renderers, PdfRenderInput } from "@/lib/documents/pdf";
+import { generators as wordGenerators, WordRenderInput } from "@/lib/documents/word";
 import type { DocType } from "@/lib/ai/models";
 
 /**
@@ -23,6 +24,7 @@ export const GenerateDocumentInputSchema = z.object({
   title: z.string().min(1).max(255),
   userInputs: z.record(z.string(), z.string()),
   model: z.string().optional(),
+  createdBy: z.string().optional(),
 });
 
 export type GenerateDocumentInput = z.infer<typeof GenerateDocumentInputSchema>;
@@ -82,6 +84,21 @@ export async function generateDocument(
     }
   }
 
+  // Render Word .docx if we have a generator for this doc type
+  let docxBuffer: Buffer | null = null;
+  const wordFn = wordGenerators[docType];
+  if (wordFn && aiResult.content) {
+    const wordInput: WordRenderInput = {
+      title: validated.title,
+      sections: aiResult.content as Record<string, string>,
+    };
+    try {
+      docxBuffer = await wordFn(wordInput);
+    } catch {
+      console.warn("Word docx render failed, non-fatal");
+    }
+  }
+
   // Save document record to database with AI content persisted
   const content = aiResult.content;
   const [doc] = await db
@@ -94,7 +111,7 @@ export async function generateDocument(
       inputData: validated.userInputs,
       outputData: content,
       aiModel: model,
-      createdBy: null, // TODO: set from Clerk session
+      createdBy: validated.createdBy ?? null,
     })
     .returning({ id: documents.id });
 

@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     domains: ["img.clerk.com"],
   },
+  transpilePackages: ["docx"],
 }
 
 module.exports = nextConfig

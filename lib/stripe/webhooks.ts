@@ -3,7 +3,7 @@ import { stripe } from "./client";
 import { db } from "@/lib/db";
 import { tenants, subscriptions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { getPlanByPriceId } from "./pricing";
+import { getPlanByPriceId, PLANS, type PlanId } from "./pricing";
 
 /**
  * Webhook handler for Stripe events.
@@ -31,31 +31,39 @@ export async function handleStripeWebhook(
       const tenantId = session.metadata?.tenantId;
       if (!tenantId) break;
 
+      // Determine price ID: expanded line_items if available, or metadata fallback
+      const priceId =
+        session.line_items?.data[0]?.price?.id ??
+        (session.metadata?.plan
+          ? PLANS[session.metadata.plan as PlanId]?.stripePriceId
+          : undefined);
+
+      // Resolve subscription data — either from the expanded subscription
+      // or from the session-level subscription string (we'll fetch in the
+      // customer.subscription.updated webhook which fires right after).
+      const subId = session.subscription as string | undefined;
+      const customerId = session.customer as string | undefined;
+
       // Update tenant with Stripe customer + subscription IDs
       await db
         .update(tenants)
         .set({
-          stripeCustomerId: session.customer as string,
-          stripeSubscriptionId: session.subscription as string,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subId,
           updatedAt: new Date(),
         })
         .where(eq(tenants.id, tenantId));
 
-      // Create subscription record
-      const priceId = session.line_items?.data[0]?.price?.id;
-      if (priceId) {
-        const plan = getPlanByPriceId(priceId);
-        const subscription = event.data.object as Stripe.Checkout.Session;
+      // Create initial subscription record (the .updated webhook refines
+      // period dates later).
+      if (subId) {
+        const plan = priceId ? getPlanByPriceId(priceId) : undefined;
         await db.insert(subscriptions).values({
           tenantId,
-          stripeSubscriptionId: subscription.subscription as string,
-          stripePriceId: priceId,
+          stripeSubscriptionId: subId,
+          stripePriceId: priceId ?? "",
           status: "active",
           plan: plan ?? "essentials",
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000
-          ),
           documentsUsed: 0,
         });
       }

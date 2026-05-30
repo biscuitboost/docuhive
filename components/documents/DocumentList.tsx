@@ -26,13 +26,38 @@ const STATUS_BADGES: Record<string, string> = {
   downloaded: "bg-blue-100 text-blue-700",
 };
 
+/** Trigger a client-side file download for the given document. */
+async function downloadDocument(doc: Document) {
+  const res = await fetch(`/api/documents/${doc.id}/download`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error ?? "Download failed");
+  }
+
+  const blob = await res.blob();
+  const disposition = res.headers.get("Content-Disposition");
+  const filename = disposition
+    ? disposition.replace(/^.*filename="?(.+?)"?\s*$/i, "$1")
+    : `${doc.title.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function DocumentList() {
   const [docs, setDocs] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/documents?tenantId=placeholder")
+    fetch("/api/documents")
       .then((res) => res.json())
       .then((data) => {
         setDocs(Array.isArray(data) ? data : []);
@@ -117,12 +142,30 @@ export default function DocumentList() {
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500">{doc.aiModel}</td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/documents/${doc.id}`}
-                      className="text-blue-600 hover:text-blue-500 text-xs font-medium"
-                    >
-                      View
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/documents/${doc.id}`}
+                        className="text-blue-600 hover:text-blue-500 text-xs font-medium"
+                      >
+                        View
+                      </Link>
+                      <button
+                        onClick={async () => {
+                          setDownloadingId(doc.id);
+                          try {
+                            await downloadDocument(doc);
+                          } catch (e) {
+                            alert(e instanceof Error ? e.message : "Download failed");
+                          } finally {
+                            setDownloadingId(null);
+                          }
+                        }}
+                        disabled={downloadingId === doc.id}
+                        className="rounded-md bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {downloadingId === doc.id ? "..." : "Download PDF"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

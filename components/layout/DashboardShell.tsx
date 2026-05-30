@@ -21,7 +21,7 @@ const SignedOut = dynamic(
 )
 
 const navItems = [
-  { href: "/", label: "Dashboard" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/documents", label: "Documents" },
   { href: "/documents/new", label: "New Document" },
   { href: "/templates", label: "Templates" },

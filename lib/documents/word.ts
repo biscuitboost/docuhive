@@ -2,9 +2,15 @@
  * Word document generators using the docx library.
  * One generate function per document type.
  */
-
-// TODO: Import docx types once node_modules are installed
-// import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  BorderStyle,
+} from "docx";
 
 export interface WordRenderInput {
   title: string;
@@ -14,23 +20,149 @@ export interface WordRenderInput {
 async function createWordDoc(
   data: WordRenderInput
 ): Promise<Buffer> {
-  // TODO: Implement Word document generation with docx library
-  // const doc = new Document({
-  //   title: data.title,
-  //   sections: [{
-  //     children: Object.entries(data.sections).flatMap(([key, text]) => [
-  //       new Paragraph({
-  //         text: key,
-  //         heading: HeadingLevel.HEADING_1,
-  //       }),
-  //       new Paragraph({
-  //         children: [new TextRun(text)],
-  //       }),
-  //     ]),
-  //   }],
-  // });
-  // return Buffer.from(await Packer.toBuffer(doc));
-  return Buffer.from(`Word doc placeholder: ${data.title}`);
+  const sectionEntries = Object.entries(data.sections);
+  const children: Paragraph[] = [];
+
+  // Title paragraph
+  children.push(
+    new Paragraph({
+      text: data.title,
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+    })
+  );
+
+  // Separator
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "————————————————————",
+          size: 20,
+          color: "999999",
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 300 },
+    })
+  );
+
+  // Body sections
+  for (const [key, text] of sectionEntries) {
+    children.push(
+      new Paragraph({
+        text: key,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 300, after: 100 },
+      })
+    );
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text,
+            size: 22,
+            font: "Calibri",
+          }),
+        ],
+        spacing: { after: 200 },
+        alignment: AlignmentType.BOTH,
+      })
+    );
+  }
+
+  // Signature block
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "\nSignatures",
+          bold: true,
+          size: 28,
+          color: "1e3a5f",
+        }),
+      ],
+      spacing: { before: 600, after: 200 },
+    })
+  );
+  children.push(
+    new Paragraph({
+      text: "This document shall take effect as a legally binding contract upon signature by both parties.",
+      spacing: { after: 400 },
+    })
+  );
+
+  // Signature lines
+  children.push(
+    new Paragraph({
+      spacing: { before: 400 },
+      border: {
+        bottom: {
+          color: "000000",
+          size: 1,
+          space: 1,
+          style: BorderStyle.SINGLE,
+        },
+      },
+    })
+  );
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Employee signature / Date: _______________",
+          size: 20,
+          color: "666666",
+        }),
+      ],
+      spacing: { after: 300 },
+    })
+  );
+  children.push(
+    new Paragraph({
+      border: {
+        bottom: {
+          color: "000000",
+          size: 1,
+          space: 1,
+          style: BorderStyle.SINGLE,
+        },
+      },
+    })
+  );
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Employer signature / Date: _______________",
+          size: 20,
+          color: "666666",
+        }),
+      ],
+      spacing: { after: 400 },
+    })
+  );
+
+  const doc = new Document({
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: {
+              top: 1440,
+              right: 1440,
+              bottom: 1440,
+              left: 1440,
+            },
+          },
+        },
+        children,
+      },
+    ],
+  });
+
+  return Buffer.from(await Packer.toBuffer(doc));
 }
 
 export async function generateEmploymentContractWord(

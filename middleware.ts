@@ -1,18 +1,27 @@
-// Middleware — no-op. Route protection is handled client-side via Clerk's
-// <Protect> component and <SignedIn>/<SignedOut> gates.
-// The Clerk Edge SDK has cold-start import issues on Vercel's edge runtime,
-// so we keep middleware minimal until that's resolved.
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+// Routes that don't require authentication
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/",
+  "/api/webhooks(.*)",
+  "/api/stripe/webhook",
+  "/calculator(.*)",
+  "/ping",
+]);
 
-export default function middleware(_req: NextRequest) {
-  return NextResponse.next();
-}
+export default clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    await auth().protect();
+  }
+});
 
 export const config = {
   matcher: [
+    // Skip Next.js internals and all static files
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };

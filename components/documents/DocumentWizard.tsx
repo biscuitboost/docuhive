@@ -129,7 +129,7 @@ export default function DocumentWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tenantId: "placeholder", // TODO: resolve from Clerk org
+          tenantId: "00000000-0000-0000-0000-000000000000", // Overridden server-side via Clerk auth
           docType: selectedType,
           title: docType.label,
           userInputs: formValues,
@@ -260,6 +260,22 @@ export default function DocumentWizard() {
             Your document has been created successfully.
           </p>
           <div className="mt-6 flex justify-center gap-4">
+            {result.id && (
+              <>
+                <a
+                  href={`/api/documents/${result.id}/download`}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+                >
+                  Download PDF
+                </a>
+                <a
+                  href={`/api/documents/${result.id}/download/word`}
+                  className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-500"
+                >
+                  Download Word
+                </a>
+              </>
+            )}
             <button
               onClick={() => {
                 setSelectedType(null);

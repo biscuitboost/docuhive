@@ -126,3 +126,17 @@ export const legislativeUpdates = pgTable("legislative_updates", {
   isActioned: boolean("is_actioned").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+// ── Tenant Legislative Actions ──────────────────────────────────
+// Tracks which tenants have actioned which legislative updates independently.
+
+export const tenantLegislativeActions = pgTable("tenant_legislative_actions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  updateId: uuid("update_id")
+    .notNull()
+    .references(() => legislativeUpdates.id),
+  actionedAt: timestamp("actioned_at").notNull().defaultNow(),
+});

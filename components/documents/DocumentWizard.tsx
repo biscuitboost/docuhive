@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Loader2, ArrowLeft, ArrowRight, Download, FileDown, Sparkles, FileText } from "lucide-react";
+import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles } from "lucide-react";
 
 type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45";
 

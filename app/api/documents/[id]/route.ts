@@ -83,7 +83,7 @@ export async function DELETE(
 
     await db
       .update(documents)
-      .set({ status: 'archived' } as any)
+      .set({ status: "archived", updatedAt: new Date() })
       .where(eq(documents.id, params.id));
 
     return NextResponse.json({ success: true });

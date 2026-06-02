@@ -191,7 +191,7 @@ describe('Team Management — Members & Invitations', () => {
         // The route may have issues — document the actual behaviour
         expect(res.status).not.toBe(401);
       } else {
-        expect(res.status).toBe(200);
+        expect(res.status).toBe(201);
       }
     });
 

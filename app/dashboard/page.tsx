@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import DashboardShell from "@/components/layout/DashboardShell";
 import UsageBar from "@/components/billing/UsageBar";
-import { FileText, Plus, CreditCard, Clock, ChevronRight, Loader2 } from "lucide-react";
+import { FileText, Plus, CreditCard, Clock, ChevronRight } from "lucide-react";
 
 interface RecentDoc {
   id: string;

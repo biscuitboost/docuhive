@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generators, WordRenderInput } from "@/lib/documents/word";
+import { requireAuth, AuthError } from "@/lib/auth/tenant";
 
 /**
  * GET /api/documents/:id/download/word
@@ -14,6 +15,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { tenantId } = await requireAuth();
+
     const result = await db
       .select()
       .from(documents)
@@ -25,6 +28,11 @@ export async function GET(
     }
 
     const doc = result[0];
+
+    // Tenant isolation — only the owning tenant can access this document
+    if (doc.tenantId !== tenantId) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
     if (!doc.outputData || !doc.inputData) {
       return NextResponse.json(
         { error: "Document has no generated content yet" },
@@ -59,6 +67,9 @@ export async function GET(
       },
     });
   } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
     const message = error instanceof Error ? error.message : "Download failed";
     console.error("Word download error:", error);
     return NextResponse.json({ error: message }, { status: 500 });

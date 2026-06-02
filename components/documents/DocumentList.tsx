@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, FileText, Download, Loader2, Search, MoreHorizontal } from "lucide-react";
+import { Plus, FileText, Download, Loader2, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Document {
@@ -27,6 +27,7 @@ const STATUS_STYLES: Record<string, string> = {
   draft: "bg-muted text-muted-foreground border border-border",
   generated: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
   downloaded: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
+  archived: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
 };
 
 /** Trigger a client-side file download for the given document. */

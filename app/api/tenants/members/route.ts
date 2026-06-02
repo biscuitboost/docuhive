@@ -118,25 +118,6 @@ export async function POST(request: Request) {
 
     const trimmedEmail = email.trim().toLowerCase();
 
-    // Check if already a member
-    const existingMember = await db
-      .select()
-      .from(tenantMembers)
-      .where(
-        and(
-          eq(tenantMembers.tenantId, tenantId),
-          eq(tenantMembers.clerkUserId, trimmedEmail)
-        )
-      )
-      .limit(1);
-
-    if (existingMember.length > 0) {
-      return NextResponse.json(
-        { error: "This user is already a member" },
-        { status: 400 }
-      );
-    }
-
     // Check for existing pending invitation
     const existingInvite = await db
       .select()

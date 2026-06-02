@@ -178,7 +178,6 @@ export default function DocumentWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tenantId: "00000000-0000-0000-0000-000000000000",
           docType: selectedType,
           title: docType.label,
           userInputs: formValues,

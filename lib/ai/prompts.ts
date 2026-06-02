@@ -53,7 +53,7 @@ Include standard clauses for:
 - Termination
 - Entire agreement and governing law (England and Wales)
 
-Output JSON with sections as keys and the clause text as values.`,
+Output JSON with FLAT key-value pairs — each key maps directly to text. Use descriptive keys like "header", "duties_and_responsibilities", "remuneration", etc. Each value must be a plain string, not a nested object.`,
   },
 
   offer_letter: {
@@ -76,7 +76,7 @@ Include:
 - Start date and onboarding details
 - Response instructions
 
-Output JSON with sections as keys and text as values.`,
+Output JSON with FLAT key-value pairs — each key should map directly to a string of text, no nesting. Use descriptive keys like "offer_opening", "key_terms", "conditional_clauses", "start_date_info", "response_instructions", "closing". Each value must be a plain string.`,
   },
 
   staff_handbook: {
@@ -103,7 +103,7 @@ Include sections on:
 
 Ensure compliance with UK employment law and ERA 2025.
 
-Output JSON with section titles as keys and full section content as values.`,
+Output JSON with FLAT key-value pairs — keys like "introduction", "employment_policies", "working_hours", etc. Each value must be a plain string of text.`,
   },
 
   payslip: {
@@ -123,7 +123,7 @@ Employee NI: £{{employee_ni}}
 Pension deduction: £{{pension_deduction}}
 Net pay: £{{net_pay}}
 
-Output JSON with fields: employee_details, pay_details (gross, deductions itemised, net), year_to_date_totals, and message.`,
+Output FLAT JSON with keys like "employee_details", "gross_pay", "income_tax", "employee_ni", "pension_deduction", "net_pay", "year_to_date", "message". No nested objects.`,
   },
 
   p45: {
@@ -147,7 +147,7 @@ Part 1B - Employer details
 Part 2 - Tax code and student loan info for new employer
 Part 3 - Year-to-date earnings and tax details
 
-Output JSON with section: p45_notes, employee: {name, ni_number, tax_code}, leaving: {date, pay_to_date, tax_to_date}, and messages for each part.`,
+Output FLAT JSON with keys like "employee_info", "employer_info", "leaving_details", "year_to_date_earnings", "notes". Each value must be a plain string.`,
   },
 };
 

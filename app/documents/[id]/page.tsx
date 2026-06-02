@@ -46,6 +46,30 @@ function formatSectionKey(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/**
+ * Recursively render content that may be a string, nested object, or array.
+ * AI output often has nested sections (e.g. header → company_letterhead, subject)
+ * that need to be flattened into readable text.
+ */
+function renderContent(value: unknown): string {
+  if (typeof value === "string") {
+    // Clean up any leftover {{placeholder}} tags the AI didn't fill
+    return value.replace(/\{\{[^}]+\}\}/g, "[To be completed]");
+  }
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) return value.map(renderContent).join("\n");
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([k, v]) => {
+        const label = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        const rendered = renderContent(v);
+        return `${label}\n${rendered}`;
+      })
+      .join("\n\n");
+  }
+  return "";
+}
+
 export default function DocumentDetailPage() {
   const params = useParams();
   const [doc, setDoc] = useState<DocumentDetail | null>(null);
@@ -165,7 +189,7 @@ export default function DocumentDetailPage() {
                       {formatSectionKey(key)}
                     </h2>
                     <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-                      {String(value)}
+                      {renderContent(value)}
                     </div>
                   </div>
                 ))}

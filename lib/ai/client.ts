@@ -63,7 +63,11 @@ export async function generateDocument(
   }
 
   const data = await response.json();
-  const rawContent = data.choices?.[0]?.message?.content ?? "";
+  let rawContent = data.choices?.[0]?.message?.content ?? "";
+  
+  // Strip markdown code fences that some AI models wrap responses in
+  rawContent = rawContent.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+
   let content: Record<string, unknown>;
 
   try {

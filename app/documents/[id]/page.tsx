@@ -127,7 +127,16 @@ export default function DocumentDetailPage() {
   }
 
   // -- Document content sections --
-  const sections = doc.content ? Object.entries(doc.content) : [];
+  // Handle case where content is wrapped in { rawDocument: "<string>" }
+  let contentToRender = doc.content;
+  if (contentToRender && typeof contentToRender === "object" && "rawDocument" in contentToRender && typeof contentToRender.rawDocument === "string") {
+    try {
+      contentToRender = JSON.parse(contentToRender.rawDocument);
+    } catch {
+      // Nested parse failed — use original content as-is
+    }
+  }
+  const sections = contentToRender ? Object.entries(contentToRender) : [];
   const inputEntries = Object.entries(doc.inputData || {});
 
   return (

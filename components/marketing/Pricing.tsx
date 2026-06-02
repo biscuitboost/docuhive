@@ -124,7 +124,7 @@ export default function Pricing() {
           </div>
         )}
 
-        <div className="mt-16 grid gap-8 lg:grid-cols-3">
+        <div className="mt-16 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => {
             const isLoading = loadingPlan === plan.id
 
@@ -132,7 +132,7 @@ export default function Pricing() {
               <div
                 key={plan.name}
                 className={cn(
-                  "relative flex flex-col rounded-2xl border p-8",
+                  "relative flex flex-col rounded-2xl border p-6 sm:p-8",
                   plan.popular
                     ? "border-blue-500 bg-blue-500/5 shadow-xl shadow-blue-500/10"
                     : "border-gray-800 bg-[#1a2234]"
@@ -167,10 +167,10 @@ export default function Pricing() {
                   onClick={() => handleSubscribe(plan.id)}
                   disabled={isLoading}
                   className={cn(
-                    "rounded-lg px-6 py-3 text-center text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60",
+                    "rounded-lg px-6 py-3 text-center text-sm font-semibold inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-150 active:scale-[0.97]",
                     plan.popular
-                      ? "bg-blue-600 text-white hover:bg-blue-500"
-                      : "border border-gray-700 text-gray-200 hover:bg-gray-800"
+                      ? "bg-blue-600 text-white hover:bg-blue-500 shadow-sm hover:shadow-md"
+                      : "border border-gray-700 text-gray-200 hover:bg-gray-800 hover:border-gray-600"
                   )}
                 >
                   {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}

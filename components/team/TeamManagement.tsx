@@ -213,7 +213,7 @@ export default function TeamManagement() {
             Send an invitation email to add someone to your organisation.
           </p>
 
-          <form onSubmit={handleInvite} className="flex gap-3">
+          <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
               placeholder="Enter email address"

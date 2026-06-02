@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import UsageBar from "@/components/billing/UsageBar";
+import { Loader2 } from "lucide-react";
 
 type SubscriptionInfo = {
   plan: string;
@@ -63,15 +64,15 @@ export default function BillingOverview() {
   function statusColor(status: string) {
     switch (status) {
       case "active":
-        return "bg-green-500/20 text-green-400";
+        return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20";
       case "trialing":
-        return "bg-blue-500/20 text-blue-400";
+        return "bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20";
       case "past_due":
-        return "bg-amber-500/20 text-amber-400";
+        return "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20";
       case "cancelled":
-        return "bg-red-500/20 text-red-400";
+        return "bg-destructive/15 text-destructive ring-1 ring-destructive/20";
       default:
-        return "bg-gray-500/20 text-gray-400";
+        return "bg-muted text-muted-foreground ring-1 ring-border";
     }
   }
 
@@ -98,8 +99,8 @@ export default function BillingOverview() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="h-6 w-48 animate-pulse rounded bg-gray-200" />
-        <div className="h-4 w-72 animate-pulse rounded bg-gray-200" />
+        <div className="h-6 w-48 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-72 animate-pulse rounded bg-muted" />
         <UsageBar />
       </div>
     );
@@ -107,7 +108,7 @@ export default function BillingOverview() {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
         {error}
       </div>
     );
@@ -120,7 +121,7 @@ export default function BillingOverview() {
     <div className="space-y-6">
       {/* Success banner */}
       {showSuccess && (
-        <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400">
           <p className="font-medium">Payment successful!</p>
           <p className="mt-1">Your subscription is now active. You can start generating documents.</p>
         </div>
@@ -128,19 +129,19 @@ export default function BillingOverview() {
 
       {/* Canceled banner */}
       {showCanceled && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
           Checkout was cancelled. No charges were made. Choose a plan below when you&apos;re ready.
         </div>
       )}
 
       {/* Plan overview card */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-card-foreground">
               {data?.planName ?? "Essentials"} Plan
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               £{data?.planPrice ?? 49}/mo
             </p>
           </div>
@@ -152,7 +153,7 @@ export default function BillingOverview() {
         </div>
 
         {(sub?.currentPeriodStart || sub?.currentPeriodEnd) && (
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-muted-foreground">
             Billing period: {formatDate(sub?.currentPeriodStart ?? null)} –{" "}
             {formatDate(sub?.currentPeriodEnd ?? null)}
           </p>
@@ -160,31 +161,32 @@ export default function BillingOverview() {
       </div>
 
       {/* Usage */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-medium text-gray-900">
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+        <h3 className="mb-4 text-sm font-medium text-card-foreground">
           Document Usage
         </h3>
         <UsageBar />
       </div>
 
       {/* Manage subscription */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h3 className="mb-2 text-sm font-medium text-gray-900">
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+        <h3 className="mb-2 text-sm font-medium text-card-foreground">
           Subscription
         </h3>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 text-sm text-muted-foreground">
           Update your payment method, view invoices, or change your plan.
         </p>
         {data?.stripeCustomerId ? (
           <button
             onClick={handleManageSubscription}
             disabled={portalLoading}
-            className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-all hover:shadow-md active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
           >
+            {portalLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {portalLoading ? "Opening..." : "Manage Subscription"}
           </button>
         ) : (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted-foreground">
             No active subscription found. Contact support to set up billing.
           </p>
         )}

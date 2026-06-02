@@ -28,8 +28,8 @@ export default function UsageBar() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
-        <p className="text-sm text-gray-500">Loading usage...</p>
+      <div className="rounded-xl border border-border bg-card p-4 animate-pulse">
+        <div className="h-4 w-48 rounded bg-muted" />
       </div>
     );
   }
@@ -43,12 +43,12 @@ export default function UsageBar() {
   const isOverLimit = !isUnlimited && documentsUsed >= docsLimit;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-900">
+        <span className="text-sm font-medium text-card-foreground">
           {plan} Plan — Document Usage
         </span>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
           {isUnlimited
             ? `${documentsUsed} used (unlimited)`
             : `${documentsUsed} / ${docsLimit} documents`}
@@ -56,14 +56,14 @@ export default function UsageBar() {
       </div>
 
       {!isUnlimited && (
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${
+            className={`h-full rounded-full transition-all duration-500 ease-out ${
               isOverLimit
-                ? "bg-red-500"
+                ? "bg-destructive"
                 : isNearLimit
                   ? "bg-amber-500"
-                  : "bg-blue-600"
+                  : "bg-primary"
             }`}
             style={{ width: `${Math.min(pct, 100)}%` }}
           />
@@ -71,11 +71,11 @@ export default function UsageBar() {
       )}
 
       {isOverLimit && (
-        <p className="mt-2 text-xs text-red-600">
+        <p className="mt-2 text-xs text-destructive">
           You&apos;ve reached your document limit.{" "}
           <a
             href="/settings/billing"
-            className="font-medium underline hover:text-red-500"
+            className="font-medium underline underline-offset-2 hover:text-destructive/80 transition-colors"
           >
             Upgrade your plan
           </a>{" "}
@@ -84,11 +84,11 @@ export default function UsageBar() {
       )}
 
       {isNearLimit && !isOverLimit && (
-        <p className="mt-2 text-xs text-amber-600">
+        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
           You&apos;re nearing your document limit.{" "}
           <a
             href="/settings/billing"
-            className="font-medium underline hover:text-amber-500"
+            className="font-medium underline underline-offset-2 hover:text-amber-500 transition-colors"
           >
             Upgrade your plan
           </a>{" "}

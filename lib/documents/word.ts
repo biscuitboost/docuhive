@@ -200,7 +200,7 @@ export async function generateP45Word(
  */
 export const generators: Record<
   string,
-  (data: WordRenderInput) => Promise<Buffer>
+  (_input: WordRenderInput) => Promise<Buffer>
 > = {
   employment_contract: generateEmploymentContractWord,
   offer_letter: generateOfferLetterWord,

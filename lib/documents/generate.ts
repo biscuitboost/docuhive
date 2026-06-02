@@ -61,12 +61,12 @@ export async function generateDocument(
   // Call the AI
   const aiResult = await aiGenerate({
     templatePrompt: promptResult.prompt,
+    systemPrompt: promptResult.system,
     userInputs: validated.userInputs,
     model,
   });
 
   // Render PDF if we have a renderer for this doc type
-  let pdfBuffer: Buffer | null = null;
   const renderFn = renderers[docType];
   if (renderFn && aiResult.content) {
     const pdfInput: PdfRenderInput = {
@@ -77,7 +77,7 @@ export async function generateDocument(
       sections: aiResult.content as Record<string, string>,
     };
     try {
-      pdfBuffer = await renderFn(pdfInput);
+      await renderFn(pdfInput);
     } catch {
       // PDF render failed — non-fatal, we still have the AI content
       console.warn("PDF render failed, returning AI content only");
@@ -85,7 +85,6 @@ export async function generateDocument(
   }
 
   // Render Word .docx if we have a generator for this doc type
-  let docxBuffer: Buffer | null = null;
   const wordFn = wordGenerators[docType];
   if (wordFn && aiResult.content) {
     const wordInput: WordRenderInput = {
@@ -93,7 +92,7 @@ export async function generateDocument(
       sections: aiResult.content as Record<string, string>,
     };
     try {
-      docxBuffer = await wordFn(wordInput);
+      await wordFn(wordInput);
     } catch {
       console.warn("Word docx render failed, non-fatal");
     }

@@ -7,6 +7,7 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 export interface GenerateDocumentParams {
   templatePrompt: string;
+  systemPrompt: string;
   userInputs: Record<string, string>;
   model: string;
 }
@@ -24,7 +25,7 @@ export interface GenerateDocumentResult {
 export async function generateDocument(
   params: GenerateDocumentParams
 ): Promise<GenerateDocumentResult> {
-  const { templatePrompt, userInputs, model } = params;
+  const { templatePrompt, systemPrompt, userInputs, model } = params;
 
   // Interpolate user inputs into the prompt
   let filledPrompt = templatePrompt;
@@ -45,7 +46,7 @@ export async function generateDocument(
       messages: [
         {
           role: "system",
-          content: "You are a legal document generation assistant. Output valid JSON only, matching the requested document structure exactly. Do not include markdown code fences or any explanatory text.",
+          content: systemPrompt,
         },
         {
           role: "user",

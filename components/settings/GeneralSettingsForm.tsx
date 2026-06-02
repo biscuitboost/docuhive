@@ -74,7 +74,7 @@ export default function GeneralSettingsPage() {
           <p className="mt-1 text-xs text-gray-500">
             This is displayed on documents and invoices.
           </p>
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <input
               type="text"
               value={orgName}

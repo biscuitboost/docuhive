@@ -13,13 +13,8 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 
-// Register a UK-appropriate font
-Font.register({
-  family: "Helvetica",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/helveticaneue/v71/1Ptsg8zYS_SKggPNyCg4TYFv.ttf", fontStyle: "normal", fontWeight: 400 },
-  ],
-});
+// Helvetica is a standard PDF base font supported natively by @react-pdf.
+// No custom font registration needed — the built-in Helvetica works in all environments.
 
 const COLORS = {
   primary: "#1e3a5f",

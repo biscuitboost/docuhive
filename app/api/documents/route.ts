@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { documents } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -8,7 +8,7 @@ import { requireAuth, AuthError } from '@/lib/auth/tenant';
  * GET /api/documents
  * List tenant documents for the authenticated user's tenant.
  */
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const { tenantId } = await requireAuth();
     const docs = await db

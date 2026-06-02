@@ -6,6 +6,23 @@ import { eq } from "drizzle-orm";
 import { getPlanByPriceId, PLANS, type PlanId } from "./pricing";
 
 /**
+ * Maps Stripe subscription statuses to our enum.
+ * Stripe sends: incomplete, incomplete_expired, trialing, active,
+ *   past_due, canceled, unpaid, paused.
+ * We normalize to our subset: active, past_due, cancelled, trialing.
+ */
+const STATUS_MAP: Record<string, "active" | "past_due" | "cancelled" | "trialing"> = {
+  active: "active",
+  past_due: "past_due",
+  canceled: "cancelled",
+  trialing: "trialing",
+  incomplete: "past_due",
+  incomplete_expired: "cancelled",
+  unpaid: "past_due",
+  paused: "active",
+};
+
+/**
  * Webhook handler for Stripe events.
  * Processes checkout.session.completed, customer.subscription.updated/deleted.
  */
@@ -78,7 +95,7 @@ export async function handleStripeWebhook(
       await db
         .update(subscriptions)
         .set({
-          status: sub.status as any,
+          status: STATUS_MAP[sub.status] ?? "past_due",
           stripePriceId: priceId,
           plan: plan ?? undefined,
           currentPeriodStart: sub.current_period_start

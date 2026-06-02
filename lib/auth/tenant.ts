@@ -129,7 +129,7 @@ export class AuthError extends Error {
  * Returns 401 immediately if no valid session.
  */
 export function withAuth<T>(
-  handler: (auth: AuthResult, req: Request) => Promise<NextResponse<T>>
+  handler: (_auth: AuthResult, _req: Request) => Promise<NextResponse<T>>
 ) {
   return async (req: Request) => {
     try {

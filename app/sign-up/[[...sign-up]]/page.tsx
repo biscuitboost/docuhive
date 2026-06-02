@@ -6,7 +6,7 @@ const ClerkSignUp = dynamic(() => import("@clerk/nextjs").then((m) => ({ default
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <ClerkSignUp />
     </div>
   )

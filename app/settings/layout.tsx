@@ -16,14 +16,14 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <DashboardShell>
       <div className="max-w-3xl">
-        <h1 className="text-3xl font-bold">Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
         <p className="mt-1 text-muted-foreground">
           Manage your account settings and preferences.
         </p>
 
         {/* Sub-navigation tabs */}
-        <div className="mt-6 border-b border-gray-200">
-          <nav className="-mb-px flex gap-6">
+        <div className="mt-6 border-b border-border">
+          <nav className="-mb-px flex flex-wrap gap-x-6 gap-y-2">
             {settingsTabs.map((tab) => {
               const isActive = tab.exact
                 ? pathname === tab.href
@@ -32,10 +32,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className={`pb-3 text-sm font-medium transition-colors ${
+                  className={`pb-3 text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? "border-b-2 border-blue-600 text-blue-600"
-                      : "border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      ? "border-b-2 border-primary text-primary"
+                      : "border-b-2 border-transparent text-muted-foreground hover:border-muted-foreground/30 hover:text-foreground"
                   }`}
                 >
                   {tab.label}

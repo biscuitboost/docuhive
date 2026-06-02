@@ -15,6 +15,13 @@
       "when": 1780095810043,
       "tag": "0001_parallel_dark_phoenix",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780412569466,
+      "tag": "0002_remarkable_tattoo",
+      "breakpoints": true
     }
   ]
 }

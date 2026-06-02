@@ -9,7 +9,7 @@ import { requireAuth, AuthError } from '@/lib/auth/tenant';
  * Current period document count for metered billing.
  * Resolves tenant from auth session — no query param needed.
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { tenantId } = await requireAuth();
 

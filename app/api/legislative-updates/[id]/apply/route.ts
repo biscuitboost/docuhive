@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { legislativeUpdates, tenantLegislativeActions } from '@/lib/db/schema';
+import { tenantLegislativeActions } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { requireAuth, AuthError } from '@/lib/auth/tenant';
 

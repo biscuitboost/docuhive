@@ -65,16 +65,34 @@ export async function generateDocument(
   const data = await response.json();
   let rawContent = data.choices?.[0]?.message?.content ?? "";
   
-  // Strip markdown code fences that some AI models wrap responses in
-  rawContent = rawContent.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+  // Step 1: Trim the whole thing so whitespace/newlines at start don't defeat ^ anchors
+  rawContent = rawContent.trim();
+  
+  // Step 2: Strip markdown code fences that some AI models wrap responses in.
+  // Use \s* to handle whitespace/newlines around fences and the multiline (?s) flag
+  // isn't available in JS regex replace strings, so we account for \n in \s.
+  rawContent = rawContent
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
 
   let content: Record<string, unknown>;
 
   try {
     content = JSON.parse(rawContent);
   } catch {
-    // If the AI didn't return valid JSON, wrap the raw text
-    content = { rawDocument: rawContent };
+    // If JSON.parse still fails, try recovering the content by looking for
+    // a {…} block within the text (some models wrap JSON in commentary)
+    const braceMatch = rawContent.match(/\{[\s\S]*\}/);
+    if (braceMatch) {
+      try {
+        content = JSON.parse(braceMatch[0]);
+      } catch {
+        content = { rawDocument: rawContent };
+      }
+    } else {
+      content = { rawDocument: rawContent };
+    }
   }
 
   return {

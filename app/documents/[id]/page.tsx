@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import DashboardShell from "@/components/layout/DashboardShell";
+import DocumentEditor from "@/components/documents/DocumentEditor";
 
 interface DocumentDetail {
   id: string;
@@ -47,12 +48,35 @@ function formatSectionKey(key: string): string {
 }
 
 /**
+ * Attempt to parse a string as JSON. If successful, render the parsed value recursively.
+ * This catches cases where AI output has embedded JSON strings.
+ */
+function tryParseJsonAndRender(value: string): string | null {
+  // Quick check: only try parsing if it looks like JSON
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null;
+  try {
+    const parsed = JSON.parse(trimmed);
+    // Only use parsed result if it's an object or array (not a primitive)
+    if (typeof parsed === "object" && parsed !== null) {
+      return renderContent(parsed);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Recursively render content that may be a string, nested object, or array.
  * AI output often has nested sections (e.g. header → company_letterhead, subject)
  * that need to be flattened into readable text.
  */
 function renderContent(value: unknown): string {
   if (typeof value === "string") {
+    // Try parsing as embedded JSON (AI sometimes nests json inside a value)
+    const parsed = tryParseJsonAndRender(value);
+    if (parsed !== null) return parsed;
     // Clean up any leftover {{placeholder}} tags the AI didn't fill
     return value.replace(/\{\{[^}]+\}\}/g, "[To be completed]");
   }
@@ -76,7 +100,7 @@ export default function DocumentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const refreshDocument = useCallback(() => {
     if (!params.id) return;
     setLoading(true);
     setError(null);
@@ -94,6 +118,20 @@ export default function DocumentDetailPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [params.id]);
+
+  // Silence-refresh: updates state without showing the full-page spinner.
+  // Used by DocumentEditor after an AI edit completes.
+  const silentRefresh = useCallback(() => {
+    if (!params.id) return;
+    fetch(`/api/documents/${params.id}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data) setDoc(data); })
+      .catch(() => {});
+  }, [params.id]);
+
+  useEffect(() => {
+    refreshDocument();
+  }, [refreshDocument]);
 
   // -- Loading state --
   if (loading) {
@@ -130,10 +168,22 @@ export default function DocumentDetailPage() {
   // Handle case where content is wrapped in { rawDocument: "<string>" }
   let contentToRender = doc.content;
   if (contentToRender && typeof contentToRender === "object" && "rawDocument" in contentToRender && typeof contentToRender.rawDocument === "string") {
+    let raw = contentToRender.rawDocument.trim();
+    // Strip markdown code fences before parsing (some AI models include them)
+    raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    // Try to parse as JSON, possibly with brace recovery
     try {
-      contentToRender = JSON.parse(contentToRender.rawDocument);
+      contentToRender = JSON.parse(raw);
     } catch {
-      // Nested parse failed — use original content as-is
+      // If parsing fails, try extracting the first {…} block from the text
+      const braceMatch = raw.match(/\{[\s\S]*\}/);
+      if (braceMatch) {
+        try {
+          contentToRender = JSON.parse(braceMatch[0]);
+        } catch {
+          // Give up — keep original { rawDocument: "..." }
+        }
+      }
     }
   }
   const sections = contentToRender ? Object.entries(contentToRender) : [];
@@ -215,6 +265,15 @@ export default function DocumentDetailPage() {
               </div>
             </div>
           )}
+
+          {/* AI Document Editor */}
+          <div className="border-t border-gray-100 p-4 sm:p-6">
+            <DocumentEditor
+              documentId={doc.id}
+              status={doc.status}
+              onDocumentUpdated={silentRefresh}
+            />
+          </div>
 
           {/* Download buttons */}
           <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 px-6 py-4">

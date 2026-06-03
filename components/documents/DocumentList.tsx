@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, FileText, Download, Loader2, Search, Trash2, Archive, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, FileText, Download, Loader2, Search, Trash2, Archive, RotateCcw, ChevronLeft, ChevronRight, Sparkles, Flag } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Document {
@@ -195,23 +195,48 @@ export default function DocumentList() {
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="rounded-xl border border-dashed border-muted-foreground/25 bg-card p-6 sm:p-16 text-center"
         >
-          <FileText className="mx-auto h-10 w-10 text-muted-foreground/40" />
-          <p className="mt-4 text-sm font-medium text-card-foreground">
-            {docs.length === 0 ? "No documents yet" : "No matching documents"}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {docs.length === 0
-              ? "Create your first document to get started."
-              : "Try adjusting your search or filter."}
-          </p>
-          {docs.length === 0 && (
-            <Link
-              href="/documents/new"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.97] transition-all duration-150"
-            >
-              <Plus size={16} />
-              Create your first document
-            </Link>
+          {docs.length === 0 ? (
+            <>
+              <motion.div
+                className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/5"
+                animate={{ scale: [1, 1.06, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Sparkles className="h-8 w-8 text-primary/60" />
+              </motion.div>
+              <p className="mt-4 text-base font-semibold text-card-foreground">
+                Welcome! Let's create your first document
+              </p>
+              <p className="mt-1.5 text-sm text-muted-foreground max-w-sm mx-auto">
+                Generate UK employment contracts, offer letters, staff handbooks, payslips and P45s in seconds.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/onboarding"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.97] transition-all duration-150"
+                >
+                  <Flag size={16} />
+                  Start Onboarding
+                </Link>
+                <Link
+                  href="/documents/new"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-semibold text-card-foreground shadow-sm hover:bg-accent active:scale-[0.97] transition-all duration-150"
+                >
+                  <Plus size={16} />
+                  Create document
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <FileText className="mx-auto h-10 w-10 text-muted-foreground/40" />
+              <p className="mt-4 text-sm font-medium text-card-foreground">
+                No matching documents
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Try a different search term or clear your filters.
+              </p>
+            </>
           )}
         </motion.div>
       ) : (

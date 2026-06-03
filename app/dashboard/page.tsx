@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import DashboardShell from "@/components/layout/DashboardShell";
 import UsageBar from "@/components/billing/UsageBar";
-import { FileText, Plus, CreditCard, Clock, ChevronRight } from "lucide-react";
+import { FileText, Plus, CreditCard, Clock, ChevronRight, Sparkles, Flag } from "lucide-react";
 
 interface RecentDoc {
   id: string;
@@ -114,21 +114,36 @@ export default function DashboardPage() {
               </div>
 
               {!data || data.recentDocuments.length === 0 ? (
-                <div className="px-5 py-12 text-center">
-                  <FileText size={36} className="mx-auto text-muted-foreground/30" />
-                  <p className="mt-3 text-sm font-medium text-card-foreground">
-                    No documents yet
+                <div className="px-5 py-10 text-center">
+                  <motion.div
+                    className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5"
+                    animate={{ scale: [1, 1.06, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Sparkles size={28} className="text-primary/60" />
+                  </motion.div>
+                  <p className="mt-3 text-sm font-semibold text-card-foreground">
+                    Create your first document
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Create your first document to get started
+                    Generate UK employment documents in seconds
                   </p>
-                  <Link
-                    href="/documents/new"
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all hover:shadow-md active:scale-[0.97]"
-                  >
-                    <Plus size={16} />
-                    Create your first document
-                  </Link>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <Link
+                      href="/onboarding"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.97] transition-all duration-150"
+                    >
+                      <Flag size={14} />
+                      Start Onboarding
+                    </Link>
+                    <Link
+                      href="/documents/new"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 text-xs font-semibold text-card-foreground shadow-sm hover:bg-accent active:scale-[0.97] transition-all duration-150"
+                    >
+                      <Plus size={14} />
+                      Quick create
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="divide-y divide-border">

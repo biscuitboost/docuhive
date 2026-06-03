@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Archive, RefreshCw, Share2, X, Check, Copy } from "lucide-react";
+import { Archive, RefreshCw, Share2, X, Check, Copy, Sparkles, FileText } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
 import VersionTimeline from "@/components/documents/VersionTimeline";
@@ -428,12 +428,28 @@ export default function DocumentDetailPage() {
                 </div>
               ) : (
                 <div className="p-6">
-                  <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
-                    <p className="text-sm text-gray-500">
+                  <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 px-6 py-12 text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/5">
+                      <FileText size={24} className="text-muted-foreground/40" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-card-foreground">
                       {doc.status === "draft"
                         ? "This document has not been generated yet."
                         : "No content available for this document."}
                     </p>
+                    <p className="mt-1 text-xs text-muted-foreground max-w-xs mx-auto">
+                      {doc.status === "draft"
+                        ? "Click the generate button below or use the AI editor to create your document content."
+                        : "The document may need to be regenerated."}
+                    </p>
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      {!hasContent && doc.status === "draft" && (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm cursor-default">
+                          <Sparkles size={12} />
+                          Generate to get started
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

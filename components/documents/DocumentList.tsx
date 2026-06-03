@@ -205,7 +205,7 @@ export default function DocumentList() {
                 <Sparkles className="h-8 w-8 text-primary/60" />
               </motion.div>
               <p className="mt-4 text-base font-semibold text-card-foreground">
-                Welcome! Let's create your first document
+                {`Welcome! Let's create your first document`}
               </p>
               <p className="mt-1.5 text-sm text-muted-foreground max-w-sm mx-auto">
                 Generate UK employment contracts, offer letters, staff handbooks, payslips and P45s in seconds.

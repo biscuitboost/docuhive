@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { documents, docStatusEnum } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireAuth, AuthError } from '@/lib/auth/tenant';
+import { createNotification } from '@/lib/documents/notifications';
 
 /**
  * GET /api/documents/:id
@@ -70,7 +71,7 @@ export async function DELETE(
     const { tenantId } = await requireAuth();
 
     const result = await db
-      .select({ tenantId: documents.tenantId })
+      .select({ tenantId: documents.tenantId, title: documents.title })
       .from(documents)
       .where(eq(documents.id, params.id))
       .limit(1);
@@ -87,6 +88,15 @@ export async function DELETE(
       .update(documents)
       .set({ status: "archived", updatedAt: new Date() })
       .where(eq(documents.id, params.id));
+
+    // Create notification
+    await createNotification(
+      tenantId,
+      "document_archived",
+      "Document Archived",
+      `"${result[0].title}" has been archived.`,
+      `/documents/${params.id}`,
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -113,7 +123,7 @@ export async function PATCH(
 
     // Verify ownership
     const result = await db
-      .select({ tenantId: documents.tenantId, status: documents.status })
+      .select({ tenantId: documents.tenantId, status: documents.status, title: documents.title })
       .from(documents)
       .where(eq(documents.id, params.id))
       .limit(1);
@@ -133,10 +143,22 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
+    const oldStatus = result[0].status;
     await db
       .update(documents)
       .set({ status: newStatus as any, updatedAt: new Date() })
       .where(eq(documents.id, params.id));
+
+    // Create notification for restore
+    if (oldStatus === "archived" && newStatus === "generated") {
+      await createNotification(
+        tenantId,
+        "document_restored",
+        "Document Restored",
+        `"${result[0].title}" has been restored from archive.`,
+        `/documents/${params.id}`,
+      );
+    }
 
     return NextResponse.json({ success: true, status: newStatus });
   } catch (error) {

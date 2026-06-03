@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
 import { SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { createVersionSnapshot } from "@/lib/documents/versions";
+import { createNotification } from "@/lib/documents/notifications";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -150,6 +151,15 @@ export async function POST(
         updatedAt: new Date(),
       })
       .where(eq(documents.id, params.id));
+
+    // Create notification
+    await createNotification(
+      tenantId,
+      "document_edited",
+      "Document Edited",
+      `"${doc.title}" has been edited (v${newVersion}).`,
+      `/documents/${doc.id}`,
+    );
 
     return NextResponse.json({
       documentId: doc.id,

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { documentVersions, documents } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
+import { createNotification } from "@/lib/documents/notifications";
 
 /**
  * POST /api/documents/:id/versions/:version/issue
@@ -61,6 +62,15 @@ export async function POST(
         updatedAt: new Date(),
       })
       .where(eq(documents.id, params.id));
+
+    // Create notification
+    await createNotification(
+      tenantId,
+      "version_issued",
+      "Version Issued",
+      `"${doc.title}" — version ${versionNum} has been issued.`,
+      `/documents/${doc.id}`,
+    );
 
     return NextResponse.json({
       documentId: doc.id,

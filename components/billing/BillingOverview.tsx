@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import UsageBar from "@/components/billing/UsageBar";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileText, ExternalLink } from "lucide-react";
 
 type SubscriptionInfo = {
   plan: string;
@@ -21,11 +21,25 @@ type SubscriptionInfo = {
   } | null;
 };
 
+type Invoice = {
+  id: string;
+  number: string | null;
+  amountPaid: number;
+  currency: string;
+  status: string;
+  pdfUrl: string | null;
+  hostedUrl: string | null;
+  createdAt: string;
+  periodStart: string;
+  periodEnd: string;
+};
+
 /**
- * Billing overview — plan info, usage bar, manage subscription link.
+ * Billing overview — plan info, usage bar, manage subscription link, recent invoices.
  */
 export default function BillingOverview() {
   const [data, setData] = useState<SubscriptionInfo | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -39,14 +53,14 @@ export default function BillingOverview() {
   const showCanceled = params.get('canceled') === 'true';
 
   useEffect(() => {
-    fetch("/api/billing/subscription")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to load billing info");
-        return r.json();
-      })
-      .then((json) => {
-        if (json.error) throw new Error(json.error);
-        setData(json);
+    Promise.all([
+      fetch("/api/billing/subscription").then((r) => r.json()),
+      fetch("/api/billing/invoices").then((r) => r.json()),
+    ])
+      .then(([subData, invData]) => {
+        if (subData.error) throw new Error(subData.error);
+        setData(subData);
+        if (invData.invoices) setInvoices(invData.invoices);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -74,6 +88,27 @@ export default function BillingOverview() {
       default:
         return "bg-muted text-muted-foreground ring-1 ring-border";
     }
+  }
+
+  function invoiceStatusBadge(status: string) {
+    switch (status) {
+      case "paid":
+        return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20";
+      case "open":
+        return "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20";
+      case "uncollectible":
+      case "void":
+        return "bg-destructive/15 text-destructive ring-1 ring-destructive/20";
+      default:
+        return "bg-muted text-muted-foreground ring-1 ring-border";
+    }
+  }
+
+  function formatCurrency(amount: number, currency: string) {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
   }
 
   async function handleManageSubscription() {
@@ -189,6 +224,57 @@ export default function BillingOverview() {
           </p>
         )}
       </div>
+
+      {/* Recent Invoices */}
+      {invoices.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+          <h3 className="mb-4 text-sm font-medium text-card-foreground">
+            Recent Invoices
+          </h3>
+          <div className="space-y-2">
+            {invoices.map((inv) => (
+              <div
+                key={inv.id}
+                className="flex items-center justify-between rounded-lg border border-border/50 px-4 py-3 text-sm"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText size={16} className="shrink-0 text-muted-foreground" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-card-foreground truncate">
+                      {inv.number ?? inv.id.slice(0, 12)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(inv.createdAt)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-sm font-medium tabular-nums">
+                    {formatCurrency(inv.amountPaid, inv.currency)}
+                  </span>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${invoiceStatusBadge(inv.status)}`}
+                  >
+                    {inv.status}
+                  </span>
+                  {inv.pdfUrl && (
+                    <a
+                      href={inv.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label="View invoice PDF"
+                      title="View PDF"
+                    >
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

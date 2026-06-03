@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { usePathname } from "next/navigation"
@@ -14,6 +14,8 @@ import {
   X,
   Sparkles,
   LogOut,
+  Bell,
+  CheckCheck,
 } from "lucide-react"
 
 // Clerk UserButton deferred to browser — safe from SSR crash
@@ -31,6 +33,16 @@ const SignedOut = dynamic(
   () => import("@clerk/nextjs").then((mod) => ({ default: mod.SignedOut })),
   { ssr: false }
 )
+
+type Notification = {
+  id: string;
+  type: string;
+  title: string;
+  message: string | null;
+  link: string | null;
+  read: boolean;
+  createdAt: string;
+}
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -98,6 +110,160 @@ function SidebarContent({ pathname, onNav }: { pathname: string; onNav?: () => v
   )
 }
 
+function NotificationsBell() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unread, setUnread] = useState(0);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Fetch notifications
+  const fetchNotifications = () => {
+    fetch("/api/notifications")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.items) {
+          setNotifications(data.items.slice(0, 10));
+          setUnread(data.unread ?? 0);
+        }
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const handleMarkAllRead = async () => {
+    await fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ all: true }),
+    });
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnread(0);
+  };
+
+  const handleMarkRead = async (id: string) => {
+    await fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [id] }),
+    });
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+    setUnread((prev) => Math.max(0, prev - 1));
+  };
+
+  function timeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative rounded-lg p-2 text-muted-foreground hover:bg-accent transition-colors"
+        aria-label="Notifications"
+      >
+        <Bell size={20} />
+        {unread > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+            {unread > 9 ? "9+" : unread}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-card shadow-xl z-50 max-h-[70vh] flex flex-col">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <h3 className="text-sm font-semibold text-card-foreground">Notifications</h3>
+            {unread > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <CheckCheck size={14} />
+                Mark all read
+              </button>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No notifications yet
+              </div>
+            ) : (
+              notifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`px-4 py-3 border-b border-border/50 last:border-b-0 transition-colors ${
+                    n.read ? "opacity-70" : "bg-primary/5"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      {n.link ? (
+                        <Link
+                          href={n.link}
+                          onClick={() => {
+                            if (!n.read) handleMarkRead(n.id);
+                            setOpen(false);
+                          }}
+                          className="text-sm font-medium text-card-foreground hover:text-primary transition-colors line-clamp-1"
+                        >
+                          {n.title}
+                        </Link>
+                      ) : (
+                        <p className="text-sm font-medium text-card-foreground line-clamp-1">{n.title}</p>
+                      )}
+                      {n.message && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                      )}
+                      <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(n.createdAt)}</p>
+                    </div>
+                    {!n.read && (
+                      <button
+                        onClick={() => handleMarkRead(n.id)}
+                        className="shrink-0 rounded p-1 text-muted-foreground/40 hover:text-foreground transition-colors"
+                        aria-label="Mark as read"
+                        title="Mark as read"
+                      >
+                        <CheckCheck size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -147,6 +313,11 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           </button>
 
           <div className="flex-1" />
+
+          {/* Notifications bell */}
+          <SignedIn>
+            <NotificationsBell />
+          </SignedIn>
 
           <SignedIn>
             <UserButton afterSignOutUrl="/" />

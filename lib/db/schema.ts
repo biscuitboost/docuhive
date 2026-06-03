@@ -171,3 +171,31 @@ export const tenantLegislativeActions = pgTable("tenant_legislative_actions", {
     .references(() => legislativeUpdates.id),
   actionedAt: timestamp("actioned_at").notNull().defaultNow(),
 });
+
+// ── Notifications ────────────────────────────────────────────────
+
+export const notificationTypeEnum = pgEnum("notification_type", [
+  "document_generated",
+  "document_edited",
+  "document_regenerated",
+  "document_archived",
+  "document_restored",
+  "version_issued",
+  "payment_success",
+  "payment_failed",
+  "plan_changed",
+  "team_invite",
+]);
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  type: notificationTypeEnum("type").notNull(),
+  title: text("title").notNull(),
+  message: text("message"),
+  link: text("link"),
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

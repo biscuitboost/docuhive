@@ -36,6 +36,13 @@
       "when": 1780488233426,
       "tag": "0004_curious_shape",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780492962181,
+      "tag": "0005_fearless_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

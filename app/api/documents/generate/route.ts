@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { documents, subscriptions } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { getPlan } from "@/lib/stripe/pricing";
+import { createNotification } from "@/lib/documents/notifications";
 
 /**
  * POST /api/documents/generate
@@ -78,6 +79,15 @@ export async function POST(request: NextRequest) {
         .set({ documentsUsed: sql`${subscriptions.documentsUsed} + 1` })
         .where(eq(subscriptions.tenantId, tenantId));
     }
+
+    // Create notification
+    await createNotification(
+      tenantId,
+      "document_generated",
+      "Document Generated",
+      `"${body.title ?? result.documentId}" has been generated.`,
+      `/documents/${result.documentId}`,
+    );
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

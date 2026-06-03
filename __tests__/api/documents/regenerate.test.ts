@@ -58,6 +58,11 @@ jest.mock('@/lib/documents/versions', () => ({
   createVersionSnapshot: jest.fn(),
 }));
 
+jest.mock('@/lib/documents/notifications', () => ({
+  __esModule: true,
+  createNotification: jest.fn(),
+}));
+
 jest.mock('@clerk/nextjs/server', () => ({
   __esModule: true,
   clerkClient: jest.fn(),

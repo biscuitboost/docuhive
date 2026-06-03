@@ -7,6 +7,7 @@ import { getModelForDocType } from "@/lib/ai/models";
 import { generateDocument as aiGenerate } from "@/lib/ai/client";
 import { buildPrompt } from "@/lib/ai/prompts";
 import { createVersionSnapshot } from "@/lib/documents/versions";
+import { createNotification } from "@/lib/documents/notifications";
 
 /**
  * POST /api/documents/:id/regenerate
@@ -101,6 +102,15 @@ export async function POST(
         updatedAt: new Date(),
       })
       .where(eq(documents.id, doc.id));
+
+    // Create notification
+    await createNotification(
+      tenantId,
+      "document_regenerated",
+      "Document Regenerated",
+      `"${doc.title}" has been regenerated (v${newVersion}).`,
+      `/documents/${doc.id}`,
+    );
 
     return NextResponse.json({
       documentId: doc.id,

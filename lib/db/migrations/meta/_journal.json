@@ -22,6 +22,13 @@
       "when": 1780412569466,
       "tag": "0002_remarkable_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780474871933,
+      "tag": "0003_empty_stardust",
+      "breakpoints": true
     }
   ]
 }

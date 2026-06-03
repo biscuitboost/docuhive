@@ -40,6 +40,7 @@ export async function GET(
       inputData: doc.inputData ?? null,
       aiModel: doc.aiModel ?? null,
       version: doc.version,
+      currentIssuedVersion: doc.currentIssuedVersion ?? null,
       downloadUrl: `/api/documents/${doc.id}/download`,
       wordDownloadUrl: `/api/documents/${doc.id}/download/word`,
       status: doc.status,

@@ -12,7 +12,7 @@ export const docTypeEnum = pgEnum("doc_type", [
   "p45",
   "custom",
 ]);
-export const docStatusEnum = pgEnum("doc_status", ["draft", "generated", "downloaded", "archived"]);
+export const docStatusEnum = pgEnum("doc_status", ["draft", "generated", "downloaded", "archived", "issued"]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "active",
   "past_due",
@@ -80,8 +80,34 @@ export const documents = pgTable("documents", {
   aiModel: text("ai_model"),
   version: integer("version").notNull().default(1),
   createdBy: text("created_by"),
+  currentIssuedVersion: integer("current_issued_version"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ── Change Types for Version History ──────────────────────────────
+export const changeTypeEnum = pgEnum("change_type", [
+  "initial",
+  "ai_edit",
+  "manual_edit",
+  "regenerate",
+  "restore",
+]);
+
+// ── Document Versions (Audit Trail) ──────────────────────────────
+// Every change to a document creates a snapshot row here.
+export const documentVersions = pgTable("document_versions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  documentId: uuid("document_id")
+    .notNull()
+    .references(() => documents.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  outputData: jsonb("output_data").$type<Record<string, unknown>>().notNull(),
+  inputData: jsonb("input_data").$type<Record<string, unknown>>(),
+  changeType: changeTypeEnum("change_type").notNull(),
+  changeDescription: text("change_description"),
+  changedBy: text("changed_by"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // ── Document Templates ───────────────────────────────────────────

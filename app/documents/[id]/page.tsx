@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
+import VersionTimeline from "@/components/documents/VersionTimeline";
+import InlineSectionEditor from "@/components/documents/InlineSectionEditor";
 
 interface DocumentDetail {
   id: string;
@@ -13,12 +15,13 @@ interface DocumentDetail {
   status: string;
   createdAt: string;
   updatedAt: string;
-  content: Record<string, string> | null;
+  content: Record<string, unknown> | null;
   downloadUrl: string;
   wordDownloadUrl: string;
-  inputData: Record<string, string>;
+  inputData: Record<string, unknown>;
   aiModel: string;
   version: number;
+  currentIssuedVersion: number | null;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -34,6 +37,7 @@ const STATUS_STYLES: Record<string, string> = {
   generated: "bg-green-100 text-green-700",
   downloaded: "bg-blue-100 text-blue-700",
   archived: "bg-red-100 text-red-700",
+  issued: "bg-emerald-100 text-emerald-700",
 };
 
 /**
@@ -49,15 +53,12 @@ function formatSectionKey(key: string): string {
 
 /**
  * Attempt to parse a string as JSON. If successful, render the parsed value recursively.
- * This catches cases where AI output has embedded JSON strings.
  */
 function tryParseJsonAndRender(value: string): string | null {
-  // Quick check: only try parsing if it looks like JSON
   const trimmed = value.trim();
   if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null;
   try {
     const parsed = JSON.parse(trimmed);
-    // Only use parsed result if it's an object or array (not a primitive)
     if (typeof parsed === "object" && parsed !== null) {
       return renderContent(parsed);
     }
@@ -69,15 +70,11 @@ function tryParseJsonAndRender(value: string): string | null {
 
 /**
  * Recursively render content that may be a string, nested object, or array.
- * AI output often has nested sections (e.g. header → company_letterhead, subject)
- * that need to be flattened into readable text.
  */
 function renderContent(value: unknown): string {
   if (typeof value === "string") {
-    // Try parsing as embedded JSON (AI sometimes nests json inside a value)
     const parsed = tryParseJsonAndRender(value);
     if (parsed !== null) return parsed;
-    // Clean up any leftover {{placeholder}} tags the AI didn't fill
     return value.replace(/\{\{[^}]+\}\}/g, "[To be completed]");
   }
   if (typeof value === "number" || typeof value === "boolean") return String(value);
@@ -94,11 +91,32 @@ function renderContent(value: unknown): string {
   return "";
 }
 
+/**
+ * Recursively find string values in document content for inline editing.
+ * Returns a flat map of "section.subsection" paths to string values.
+ */
+function extractSections(
+  data: Record<string, unknown>,
+  prefix = ""
+): { key: string; value: string }[] {
+  const sections: { key: string; value: string }[] = [];
+  for (const [k, v] of Object.entries(data)) {
+    const path = prefix ? `${prefix}.${k}` : k;
+    if (typeof v === "string") {
+      sections.push({ key: path, value: v });
+    } else if (v && typeof v === "object" && !Array.isArray(v)) {
+      sections.push(...extractSections(v as Record<string, unknown>, path));
+    }
+  }
+  return sections;
+}
+
 export default function DocumentDetailPage() {
   const params = useParams();
   const [doc, setDoc] = useState<DocumentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showVersionPanel, setShowVersionPanel] = useState(false);
 
   const refreshDocument = useCallback(() => {
     if (!params.id) return;
@@ -119,8 +137,6 @@ export default function DocumentDetailPage() {
       .finally(() => setLoading(false));
   }, [params.id]);
 
-  // Silence-refresh: updates state without showing the full-page spinner.
-  // Used by DocumentEditor after an AI edit completes.
   const silentRefresh = useCallback(() => {
     if (!params.id) return;
     fetch(`/api/documents/${params.id}`)
@@ -132,6 +148,16 @@ export default function DocumentDetailPage() {
   useEffect(() => {
     refreshDocument();
   }, [refreshDocument]);
+
+  // Handle section save from inline editor
+  function handleSectionSaved(sectionKey: string, _newContent: string) {
+    silentRefresh();
+  }
+
+  // Handle version restore/issue from version timeline
+  function handleVersionChange() {
+    silentRefresh();
+  }
 
   // -- Loading state --
   if (loading) {
@@ -165,33 +191,30 @@ export default function DocumentDetailPage() {
   }
 
   // -- Document content sections --
-  // Handle case where content is wrapped in { rawDocument: "<string>" }
-  let contentToRender = doc.content;
-  if (contentToRender && typeof contentToRender === "object" && "rawDocument" in contentToRender && typeof contentToRender.rawDocument === "string") {
-    let raw = contentToRender.rawDocument.trim();
-    // Strip markdown code fences before parsing (some AI models include them)
+  let contentToRender: Record<string, unknown> | null = (doc.content ?? null) as Record<string, unknown> | null;
+  if (contentToRender && typeof contentToRender === "object" && "rawDocument" in contentToRender && typeof (contentToRender as any).rawDocument === "string") {
+    let raw = (contentToRender as any).rawDocument.trim();
     raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
-    // Try to parse as JSON, possibly with brace recovery
     try {
       contentToRender = JSON.parse(raw);
     } catch {
-      // If parsing fails, try extracting the first {…} block from the text
       const braceMatch = raw.match(/\{[\s\S]*\}/);
       if (braceMatch) {
-        try {
-          contentToRender = JSON.parse(braceMatch[0]);
-        } catch {
-          // Give up — keep original { rawDocument: "..." }
-        }
+        try { contentToRender = JSON.parse(braceMatch[0]); } catch { /* keep original */ }
       }
     }
   }
+
   const sections = contentToRender ? Object.entries(contentToRender) : [];
   const inputEntries = Object.entries(doc.inputData || {});
+  const hasContent = sections.length > 0 && doc.status !== "draft";
+
+  // Extract flat sections for inline editing
+  const inlineSections = contentToRender ? extractSections(contentToRender) : [];
 
   return (
     <DashboardShell>
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         {/* Breadcrumb */}
         <Link
           href="/documents"
@@ -228,100 +251,162 @@ export default function DocumentDetailPage() {
                   })}
                 </p>
               </div>
-              <span
-                className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
-                  STATUS_STYLES[doc.status] || "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {doc.status}
-              </span>
+              <div className="flex shrink-0 items-center gap-2">
+                {/* Issued badge */}
+                {doc.currentIssuedVersion && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    v{doc.currentIssuedVersion} Issued
+                  </span>
+                )}
+                <span
+                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                    STATUS_STYLES[doc.status] || "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {doc.status}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Document content */}
-          {sections.length > 0 ? (
-            <div className="p-6">
-              <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed">
-                {sections.map(([key, value]) => (
-                  <div key={key} className="mb-6 last:mb-0">
-                    <h2 className="mb-3 text-base font-semibold text-gray-900">
-                      {formatSectionKey(key)}
-                    </h2>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-                      {renderContent(value)}
-                    </div>
+          <div className="flex">
+            {/* Main content area */}
+            <div className="flex-1">
+              {/* Document content with inline editing */}
+              {hasContent ? (
+                <div className="p-6">
+                  <div className="space-y-6">
+                    {sections.map(([key, value]) => {
+                      const rendered = renderContent(value);
+                      const flatKey = key; // Use the section key directly
+
+                      return (
+                        <div key={key} className="last:mb-0">
+                          <h2 className="mb-3 text-base font-semibold text-gray-900">
+                            {formatSectionKey(key)}
+                          </h2>
+                          <InlineSectionEditor
+                            sectionKey={key}
+                            content={rendered}
+                            documentId={doc.id}
+                            status={doc.status}
+                            onSaved={handleSectionSaved}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
+              ) : (
+                <div className="p-6">
+                  <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
+                    <p className="text-sm text-gray-500">
+                      {doc.status === "draft"
+                        ? "This document has not been generated yet."
+                        : "No content available for this document."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* AI Document Editor */}
+              <div className="border-t border-gray-100 p-4 sm:p-6">
+                <DocumentEditor
+                  documentId={doc.id}
+                  status={doc.status}
+                  onDocumentUpdated={silentRefresh}
+                />
+              </div>
+
+              {/* Download buttons */}
+              <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 px-6 py-4">
+                {hasContent ? (
+                  <>
+                    <a
+                      href={doc.downloadUrl}
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Download PDF
+                    </a>
+                    <a
+                      href={doc.wordDownloadUrl}
+                      className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Download Word
+                    </a>
+                    {/* Version history toggle */}
+                    <button
+                      onClick={() => setShowVersionPanel(!showVersionPanel)}
+                      className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm ${
+                        showVersionPanel
+                          ? "border-blue-300 bg-blue-50 text-blue-700"
+                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Version History
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-400">
+                    Downloads will be available once the document is generated.
+                  </p>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="p-6">
-              <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
-                <p className="text-sm text-gray-500">
-                  {doc.status === "draft"
-                    ? "This document has not been generated yet."
-                    : "No content available for this document."}
-                </p>
+
+            {/* Version history sidebar panel */}
+            {showVersionPanel && (
+              <div className="w-80 shrink-0 border-l border-gray-200 p-4">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-900">Version History</h3>
+                  <button
+                    onClick={() => setShowVersionPanel(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <VersionTimeline
+                  documentId={doc.id}
+                  currentVersion={doc.version}
+                  onRestore={handleVersionChange}
+                  onIssue={handleVersionChange}
+                />
               </div>
-            </div>
-          )}
-
-          {/* AI Document Editor */}
-          <div className="border-t border-gray-100 p-4 sm:p-6">
-            <DocumentEditor
-              documentId={doc.id}
-              status={doc.status}
-              onDocumentUpdated={silentRefresh}
-            />
-          </div>
-
-          {/* Download buttons */}
-          <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 px-6 py-4">
-            {sections.length > 0 || doc.status !== "draft" ? (
-              <>
-                <a
-                  href={doc.downloadUrl}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  Download PDF
-                </a>
-                <a
-                  href={doc.wordDownloadUrl}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  Download Word
-                </a>
-              </>
-            ) : (
-              <p className="text-sm text-gray-400">
-                Downloads will be available once the document is generated.
-              </p>
             )}
           </div>
         </div>

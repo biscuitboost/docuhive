@@ -4,6 +4,7 @@ import { documents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
 import { SYSTEM_PROMPT } from "@/lib/ai/prompts";
+import { createVersionSnapshot } from "@/lib/documents/versions";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -19,7 +20,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { tenantId } = await requireAuth();
+    const { tenantId, clerkUserId } = await requireAuth();
 
     const body = await request.json().catch(() => ({}));
     const instruction: string | undefined = body.instruction;
@@ -127,6 +128,17 @@ export async function POST(
         throw new Error("AI returned invalid JSON — please try again");
       }
     }
+
+    // Snapshot current version before overwriting
+    await createVersionSnapshot({
+      documentId: doc.id,
+      version: doc.version,
+      outputData: doc.outputData as Record<string, unknown>,
+      inputData: doc.inputData as Record<string, unknown> | undefined,
+      changeType: "ai_edit",
+      changeDescription: instruction.trim(),
+      changedBy: clerkUserId,
+    });
 
     // Update the document in the DB
     const newVersion = doc.version + 1;

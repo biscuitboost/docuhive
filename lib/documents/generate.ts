@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { renderers, PdfRenderInput } from "@/lib/documents/pdf";
 import { generators as wordGenerators, WordRenderInput } from "@/lib/documents/word";
+import { createVersionSnapshot } from "@/lib/documents/versions";
 import type { DocType } from "@/lib/ai/models";
 
 /**
@@ -113,6 +114,17 @@ export async function generateDocument(
       createdBy: validated.createdBy ?? null,
     })
     .returning({ id: documents.id });
+
+  // Create initial version snapshot
+  await createVersionSnapshot({
+    documentId: doc.id,
+    version: 1,
+    outputData: content,
+    inputData: validated.userInputs,
+    changeType: "initial",
+    changeDescription: "Document generated",
+    changedBy: validated.createdBy ?? null,
+  });
 
   return {
     documentId: doc.id,

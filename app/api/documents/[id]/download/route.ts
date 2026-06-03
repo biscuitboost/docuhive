@@ -60,9 +60,17 @@ export async function GET(
     const pdfInput: PdfRenderInput = {
       title: doc.title,
       employeeName:
-        inputData.employee_name || inputData.candidate_name || "",
-      jobTitle: inputData.job_title || "",
-      startDate: inputData.start_date || "",
+        inputData.employee_name || inputData.candidate_name || inputData.disclosing_party || inputData.tenant_name || inputData.client_name || "",
+      jobTitle: inputData.job_title || inputData.employee_role || inputData.director_title || "",
+      startDate: inputData.start_date || inputData.effective_date || inputData.settlement_date || "",
+      partyOne:
+        inputData.employee_name || inputData.disclosing_party ||
+        inputData.client_name || inputData.company_name || inputData.landlord_name || inputData.controller_name ||
+        inputData.business_name || inputData.organisation_name || "",
+      partyTwo:
+        inputData.receiving_party || inputData.provider_name || inputData.consultant_name ||
+        inputData.freelancer_name || inputData.tenant_name || inputData.processor_name || inputData.director_name || "",
+      effectiveDate: inputData.start_date || inputData.effective_date || inputData.settlement_date || inputData.lease_date || "",
       sections: doc.outputData as Record<string, string>,
       branding,
     };

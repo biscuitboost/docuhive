@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles } from "lucide-react";
 import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
@@ -464,9 +464,18 @@ function GeneratingSkeleton() {
   );
 }
 
-export default function DocumentWizard() {
+export default function DocumentWizard({ initialType }: { initialType?: string }) {
   const [step, setStep] = useState<"select" | "form" | "generating" | "result">("select");
   const [selectedType, setSelectedType] = useState<DocType | null>(null);
+
+  // If initialType provided, skip straight to the form
+  useEffect(() => {
+    if (initialType && DOC_TYPES.some((d) => d.value === initialType)) {
+      setSelectedType(initialType as DocType);
+      setSelectedModel(getRecommendedModel(initialType as DocType));
+      setStep("form");
+    }
+  }, [initialType]);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<{ id: string; url?: string } | null>(null);

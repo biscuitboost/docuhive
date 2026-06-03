@@ -254,6 +254,96 @@ export async function generateP45Word(
   return createWordDoc(data);
 }
 
+export async function generateJobDescriptionWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateNdaWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateServiceAgreementWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateConsultantAgreementWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateFreelancerContractWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateSettlementAgreementWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateDisciplinaryGrievanceLettersWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateFlexibleWorkingRequestWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateGdprPrivacyNoticeWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateDataProcessingAgreementWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generatePrivacyPolicyWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateTermsAndConditionsWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateCommercialLeaseWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateDirectorServiceAgreementWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateShareholderAgreementWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
 /**
  * Map of doc type to Word generator function.
  */
@@ -266,4 +356,19 @@ export const generators: Record<
   staff_handbook: generateStaffHandbookWord,
   payslip: generatePayslipWord,
   p45: generateP45Word,
+  job_description: generateJobDescriptionWord,
+  nda: generateNdaWord,
+  service_agreement: generateServiceAgreementWord,
+  consultant_agreement: generateConsultantAgreementWord,
+  freelancer_contract: generateFreelancerContractWord,
+  settlement_agreement: generateSettlementAgreementWord,
+  disciplinary_grievance_letters: generateDisciplinaryGrievanceLettersWord,
+  flexible_working_request: generateFlexibleWorkingRequestWord,
+  gdpr_privacy_notice: generateGdprPrivacyNoticeWord,
+  data_processing_agreement: generateDataProcessingAgreementWord,
+  privacy_policy: generatePrivacyPolicyWord,
+  terms_and_conditions: generateTermsAndConditionsWord,
+  commercial_lease: generateCommercialLeaseWord,
+  director_service_agreement: generateDirectorServiceAgreementWord,
+  shareholder_agreement: generateShareholderAgreementWord,
 };

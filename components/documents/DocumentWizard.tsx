@@ -468,6 +468,11 @@ function GeneratingSkeleton() {
 export default function DocumentWizard({ initialType }: { initialType?: string }) {
   const [step, setStep] = useState<"select" | "form" | "generating" | "result">("select");
   const [selectedType, setSelectedType] = useState<DocType | null>(null);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [generating, setGenerating] = useState(false);
+  const [result, setResult] = useState<{ id: string; url?: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>("");
 
   // If initialType provided, skip straight to the form
   useEffect(() => {
@@ -477,11 +482,6 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
       setStep("form");
     }
   }, [initialType]);
-  const [formValues, setFormValues] = useState<Record<string, string>>({});
-  const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState<{ id: string; url?: string } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<string>("");
 
   const docType = selectedType ? DOC_TYPES.find((d) => d.value === selectedType) : null;
 

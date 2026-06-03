@@ -3,7 +3,7 @@ import { generateDocument } from "@/lib/documents/generate";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
 import { db } from "@/lib/db";
 import { documents, subscriptions } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { getPlan } from "@/lib/stripe/pricing";
 
 /**
@@ -43,11 +43,41 @@ export async function POST(request: NextRequest) {
 
     const result = await generateDocument(body);
 
-    // Atomically increment documents_used on subscription
-    await db
-      .update(subscriptions)
-      .set({ documentsUsed: sql`${subscriptions.documentsUsed} + 1` })
-      .where(eq(subscriptions.tenantId, tenantId));
+    // Atomically increment documents_used on subscription.
+    // Uses an atomic UPDATE with a guard: only increments if the result
+    // hasn't exceeded the limit. This prevents race conditions where
+    // two concurrent requests both pass the count check.
+    if (planLimit !== null) {
+      const updated = await db
+        .update(subscriptions)
+        .set({ documentsUsed: sql`${subscriptions.documentsUsed} + 1` })
+        .where(
+          and(
+            eq(subscriptions.tenantId, tenantId),
+            sql`${subscriptions.documentsUsed} < ${planLimit}`
+          )
+        )
+        .returning({ documentsUsed: subscriptions.documentsUsed });
+
+      // If the guard caught a race condition — we've exceeded the limit
+      if (updated.length === 0) {
+        // Roll back: archive the document that shouldn't have been created
+        await db
+          .update(documents)
+          .set({ status: "archived", updatedAt: new Date() })
+          .where(eq(documents.id, result.documentId));
+
+        return NextResponse.json(
+          { error: "Monthly document limit reached. Upgrade your plan." },
+          { status: 403 }
+        );
+      }
+    } else {
+      await db
+        .update(subscriptions)
+        .set({ documentsUsed: sql`${subscriptions.documentsUsed} + 1` })
+        .where(eq(subscriptions.tenantId, tenantId));
+    }
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

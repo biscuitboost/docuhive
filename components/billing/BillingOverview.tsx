@@ -80,9 +80,7 @@ export default function BillingOverview() {
     if (!data?.stripeCustomerId) return;
     setPortalLoading(true);
     try {
-      const res = await fetch(
-        `/api/stripe/portal?customerId=${encodeURIComponent(data.stripeCustomerId)}`
-      );
+      const res = await fetch("/api/stripe/portal");
       const json = await res.json();
       if (json.url) {
         window.open(json.url, "_blank");

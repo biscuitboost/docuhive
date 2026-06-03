@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles } from "lucide-react";
@@ -599,20 +600,15 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {DOC_TYPES.filter((d) => d.category === cat).map((dt) => (
-                      <button
+                      <Link
                         key={dt.value}
-                        onClick={() => {
-                          setSelectedType(dt.value);
-                          setSelectedModel(getRecommendedModel(dt.value));
-                          setFormValues({});
-                          setStep("form");
-                        }}
+                        href={`/documents/new/${dt.value}`}
                         className="group rounded-xl border bg-card p-5 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
                       >
                         <span className="text-xl mb-1.5 block">{dt.icon}</span>
                         <h4 className="text-sm font-semibold text-card-foreground group-hover:text-primary transition-colors duration-200">{dt.label}</h4>
                         <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{dt.description}</p>
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 </div>

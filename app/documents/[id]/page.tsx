@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Archive } from "lucide-react";
+import { Archive, RefreshCw } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
 import VersionTimeline from "@/components/documents/VersionTimeline";
@@ -118,6 +118,8 @@ export default function DocumentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showVersionPanel, setShowVersionPanel] = useState(false);
+  const [showRegenerate, setShowRegenerate] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
 
   const refreshDocument = useCallback(() => {
     if (!params.id) return;
@@ -399,6 +401,18 @@ export default function DocumentDetailPage() {
                       </svg>
                       Version History
                     </button>
+                    {/* Regenerate button */}
+                    <button
+                      onClick={() => setShowRegenerate(!showRegenerate)}
+                      className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm ${
+                        showRegenerate
+                          ? "border-purple-300 bg-purple-50 text-purple-700"
+                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <RefreshCw size={14} />
+                      Regenerate
+                    </button>
                   </>
                 ) : (
                   <p className="text-sm text-gray-400">
@@ -406,6 +420,83 @@ export default function DocumentDetailPage() {
                   </p>
                 )}
               </div>
+
+              {/* Regenerate form */}
+              {showRegenerate && hasContent && (
+                <div className="border-t border-gray-100 p-4 sm:p-6">
+                  <h3 className="text-sm font-semibold text-gray-900">Regenerate with updated inputs</h3>
+                  <p className="mb-4 mt-1 text-xs text-gray-500">
+                    Modify any input fields below and regenerate the full document.
+                  </p>
+                  <div id="regenerate-form" className="grid gap-4 sm:grid-cols-2">
+                    {inputEntries.map(([key, value]) => (
+                        <div key={key}>
+                          <label className="mb-1 block text-xs font-medium text-gray-600">
+                            {key.replace(/_/g, " ")}
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue={String(value)}
+                            onChange={(e) => {
+                              // value captured via DOM read on submit
+                            }}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setRegenerating(true);
+                      try {
+                        // Collect current values from DOM
+                        const inputs: Record<string, string> = {};
+                        const container = document.querySelector("#regenerate-form");
+                        if (container) {
+                          const fields = container.querySelectorAll("input");
+                          fields.forEach((field) => {
+                            const label = field.closest("div")?.querySelector("label")?.textContent?.trim() || "";
+                            const key = inputEntries[Array.from(fields).indexOf(field)]?.[0];
+                            if (key) inputs[key] = field.value;
+                          });
+                        }
+                        const res = await fetch(`/api/documents/${doc.id}/regenerate`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ userInputs: Object.keys(inputs).length > 0 ? inputs : Object.fromEntries(inputEntries.map(([k, v]) => [k, String(v)])) }),
+                        });
+                        if (!res.ok) {
+                          const err = await res.json();
+                          throw new Error(err.error || "Regeneration failed");
+                        }
+                        setShowRegenerate(false);
+                        silentRefresh();
+                      } catch (e) {
+                        alert(e instanceof Error ? e.message : "Regeneration failed");
+                      } finally {
+                        setRegenerating(false);
+                      }
+                    }}
+                    disabled={regenerating}
+                    className="mt-4 inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 disabled:opacity-50"
+                  >
+                    {regenerating ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Regenerating...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw size={14} />
+                        Regenerate Document
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Version history sidebar panel */}

@@ -20,12 +20,14 @@ interface FieldDef {
   required?: boolean;
 }
 
-const DOC_TYPES: { value: DocType; label: string; description: string; icon: string; fields: FieldDef[] }[] = [
+const DOC_TYPES: { value: DocType; label: string; description: string; icon: string; category: string; fields: FieldDef[] }[] = [
+  // ── PAYROLL ──
   {
     value: "employment_contract",
     label: "Employment Contract",
     description: "Full UK employment contract with ERA 2025 compliance",
     icon: "📋",
+    category: "Employment",
     fields: [
       { key: "employee_name", label: "Employee full name", type: "text", required: true },
       { key: "job_title", label: "Job title", type: "text", required: true },
@@ -55,6 +57,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Offer Letter",
     description: "Formal job offer letter with key terms",
     icon: "✉️",
+    category: "Employment",
     fields: [
       { key: "candidate_name", label: "Candidate name", type: "text", required: true },
       { key: "job_title", label: "Job title", type: "text", required: true },
@@ -75,6 +78,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Staff Handbook",
     description: "Comprehensive employee handbook",
     icon: "📘",
+    category: "Employment",
     fields: [
       { key: "company_name", label: "Company name", type: "text", required: true },
       { key: "company_address", label: "Company address", type: "text", required: true },
@@ -88,6 +92,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Payslip",
     description: "Employee payslip with tax and NI breakdown",
     icon: "💰",
+    category: "Payroll",
     fields: [
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "paye_reference", label: "PAYE reference", type: "text", required: true },
@@ -107,6 +112,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "P45",
     description: "Leaving details for HMRC",
     icon: "📄",
+    category: "Payroll",
     fields: [
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "ni_number", label: "NI number", type: "text", required: true },
@@ -127,6 +133,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Job Description",
     description: "Professional job description with essential/desirable criteria",
     icon: "📋",
+    category: "Employment",
     fields: [
       { key: "job_title", label: "Job title", type: "text", required: true },
       { key: "department", label: "Department", type: "text" },
@@ -152,6 +159,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Non-Disclosure Agreement",
     description: "Mutual NDA with UK compliant confidentiality clauses",
     icon: "🔒",
+    category: "Contracts",
     fields: [
       { key: "disclosing_party", label: "Disclosing party name", type: "text", required: true },
       { key: "receiving_party", label: "Receiving party name", type: "text", required: true },
@@ -165,6 +173,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Service Agreement",
     description: "Independent contractor / service provider agreement",
     icon: "🤝",
+    category: "Contracts",
     fields: [
       { key: "client_name", label: "Client name", type: "text", required: true },
       { key: "provider_name", label: "Service provider name", type: "text", required: true },
@@ -190,6 +199,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Consultant Agreement",
     description: "Short-form consultancy agreement with IR35 clause",
     icon: "💼",
+    category: "Contracts",
     fields: [
       { key: "company_name", label: "Company name", type: "text", required: true },
       { key: "consultant_name", label: "Consultant name", type: "text", required: true },
@@ -215,6 +225,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Freelancer Contract",
     description: "Short-form contract for freelance engagements (outside IR35)",
     icon: "✏️",
+    category: "Contracts",
     fields: [
       { key: "client_name", label: "Client name", type: "text", required: true },
       { key: "freelancer_name", label: "Freelancer name", type: "text", required: true },
@@ -231,6 +242,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Settlement Agreement",
     description: "Formal exit agreement (formerly compromise agreement)",
     icon: "🤝",
+    category: "Employment",
     fields: [
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "employer_name", label: "Employer name", type: "text", required: true },
@@ -246,6 +258,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Disciplinary & Grievance Letters",
     description: "ACAS-compliant letter templates for HR procedures",
     icon: "⚖️",
+    category: "HR & Compliance",
     fields: [
       { key: "letter_type", label: "Letter type", type: "select", required: true, options: [
         { value: "disciplinary", label: "Disciplinary" },
@@ -264,6 +277,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Flexible Working Request",
     description: "Day-one right request form & employer decision (Flexible Working Act 2023)",
     icon: "🕐",
+    category: "HR & Compliance",
     fields: [
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "employee_role", label: "Role", type: "text", required: true },
@@ -281,6 +295,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "GDPR Privacy Notice",
     description: "Employee/worker privacy notice (UK GDPR compliant)",
     icon: "🛡️",
+    category: "Data Protection",
     fields: [
       { key: "organisation_name", label: "Organisation name", type: "text", required: true },
       { key: "ico_number", label: "ICO registration number", type: "text", required: true },
@@ -294,6 +309,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Data Processing Agreement",
     description: "Controller-processor DPA (Article 28 UK GDPR)",
     icon: "📝",
+    category: "Data Protection",
     fields: [
       { key: "controller_name", label: "Controller name", type: "text", required: true },
       { key: "processor_name", label: "Processor name", type: "text", required: true },
@@ -309,6 +325,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Privacy Policy (Business)",
     description: "Full business privacy policy (UK GDPR + PECR)",
     icon: "📜",
+    category: "Data Protection",
     fields: [
       { key: "business_name", label: "Business name", type: "text", required: true },
       { key: "business_address", label: "Business address", type: "text", required: true },
@@ -325,6 +342,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Terms & Conditions",
     description: "Business terms compliant with Consumer Rights Act 2015",
     icon: "📑",
+    category: "Commercial",
     fields: [
       { key: "business_name", label: "Business name", type: "text", required: true },
       { key: "business_address", label: "Business address", type: "text", required: true },
@@ -345,6 +363,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Commercial Lease",
     description: "Simplified FRI commercial lease template",
     icon: "🏢",
+    category: "Commercial",
     fields: [
       { key: "landlord_name", label: "Landlord name", type: "text", required: true },
       { key: "tenant_name", label: "Tenant name", type: "text", required: true },
@@ -367,6 +386,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Director Service Agreement",
     description: "Service contract for company directors (Companies Act 2006)",
     icon: "👔",
+    category: "Commercial",
     fields: [
       { key: "company_name", label: "Company name", type: "text", required: true },
       { key: "company_number", label: "Company number", type: "text" },
@@ -391,6 +411,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     label: "Shareholder Agreement",
     description: "Private limited company shareholder agreement",
     icon: "📊",
+    category: "Commercial",
     fields: [
       { key: "company_name", label: "Company name", type: "text", required: true },
       { key: "company_number", label: "Company number", type: "text" },
@@ -558,24 +579,36 @@ export default function DocumentWizard() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="grid gap-4 sm:grid-cols-2"
+            className="space-y-8"
           >
-            {DOC_TYPES.map((dt) => (
-              <button
-                key={dt.value}
-                onClick={() => {
-                  setSelectedType(dt.value);
-                  setSelectedModel(getRecommendedModel(dt.value));
-                  setFormValues({});
-                  setStep("form");
-                }}
-                className="group rounded-xl border bg-card p-6 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
-              >
-                <span className="text-2xl mb-2 block">{dt.icon}</span>
-                <h3 className="font-semibold text-card-foreground group-hover:text-primary transition-colors duration-200">{dt.label}</h3>
-                <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{dt.description}</p>
-              </button>
-            ))}
+            {(() => {
+              const categories = [...new Set(DOC_TYPES.map((d) => d.category))];
+              return categories.map((cat) => (
+                <div key={cat}>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {cat}
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {DOC_TYPES.filter((d) => d.category === cat).map((dt) => (
+                      <button
+                        key={dt.value}
+                        onClick={() => {
+                          setSelectedType(dt.value);
+                          setSelectedModel(getRecommendedModel(dt.value));
+                          setFormValues({});
+                          setStep("form");
+                        }}
+                        className="group rounded-xl border bg-card p-5 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                      >
+                        <span className="text-xl mb-1.5 block">{dt.icon}</span>
+                        <h4 className="text-sm font-semibold text-card-foreground group-hover:text-primary transition-colors duration-200">{dt.label}</h4>
+                        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{dt.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ));
+            })()}
           </motion.div>
         )}
 

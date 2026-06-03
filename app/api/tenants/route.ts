@@ -58,7 +58,7 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { name, branding } = body;
 
-    const updateFields: Record<string, string | undefined> = {};
+    const updateFields: Record<string, unknown> = {};
     if (name && typeof name === "string" && name.trim().length > 0) {
       updateFields.name = name.trim();
     }
@@ -73,7 +73,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
-    updateFields.updatedAt = new Date().toISOString();
+    updateFields.updatedAt = new Date();
 
     const [updated] = await db
       .update(tenants)

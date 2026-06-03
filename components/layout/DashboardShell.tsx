@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation"
 import { useTheme } from "@/lib/utils/theme-context"
 import {
   LayoutDashboard,
-  FileText,
   PlusCircle,
   Settings,
   Scale,
@@ -49,7 +48,6 @@ type Notification = {
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/documents", label: "Documents", icon: FileText },
   { href: "/documents/new", label: "New Document", icon: PlusCircle },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/legislative", label: "Legislative Updates", icon: Scale },

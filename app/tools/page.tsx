@@ -14,12 +14,12 @@ const tools = [
     comingSoon: false,
   },
   {
-    href: "#",
+    href: "/tools/paye",
     label: "PAYE Calculator",
     description: "Calculate income tax, NI, and net pay for employees and directors",
     icon: PoundSterling,
     color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-400",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     href: "#",

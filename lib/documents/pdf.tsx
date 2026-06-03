@@ -213,7 +213,8 @@ function buildDocument(data: PdfRenderInput, docTypeLabel: string) {
         <View style={brandedStyles.header}>
           <View style={brandedStyles.logoRow}>
             {logoUrl && (
-              <Image style={brandedStyles.logo} src={logoUrl} />
+              /* eslint-disable-next-line jsx-a11y/alt-text */
+            <Image style={brandedStyles.logo} src={logoUrl} />
             )}
             <View style={{ flex: 1 }}>
               <Text style={brandedStyles.title}>{data.title}</Text>
@@ -323,6 +324,7 @@ async function renderPdf(data: PdfRenderInput, docTypeLabel: string): Promise<Bu
  * Parse a currency value from a section string.
  * Tries to extract a £X,XXX.XX pattern, falls back to the raw string.
  */
+// eslint-disable-next-line no-unused-vars
 function parseCurrency(val: string): string {
   if (!val) return "";
   const match = val.match(/[££]?\s*[\d,]+\.?\d*/);
@@ -649,7 +651,8 @@ function buildPayslipDocument(data: PdfRenderInput) {
         <View style={styles.headerSection}>
           <View style={styles.logoRow}>
             {logoUrl && (
-              <Image style={styles.logo} src={logoUrl} />
+              /* eslint-disable-next-line jsx-a11y/alt-text */
+            <Image style={styles.logo} src={logoUrl} />
             )}
             <View style={{ flex: 1 }}>
               <Text style={styles.payslipTitle}>PAYSLIP</Text>

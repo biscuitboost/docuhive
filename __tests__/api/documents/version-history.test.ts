@@ -49,10 +49,20 @@ jest.mock('@clerk/nextjs/server', () => ({ __esModule: true, clerkClient: jest.f
 
 // Mock DB with a shift-based approach so sequential calls get different results
 const mockSelect = jest.fn();
+
+// Chainable insert returning mock for createNotification
+function makeInsertChain() {
+  const chain: any = {
+    values: jest.fn().mockReturnThis(),
+    returning: jest.fn().mockResolvedValue([{ id: 'notif_1' }]),
+  };
+  return chain;
+}
+
 const mockDb = {
   select: mockSelect,
   update: jest.fn(),
-  insert: jest.fn(),
+  insert: jest.fn(() => makeInsertChain()),
 };
 jest.mock('@/lib/db', () => ({ __esModule: true, db: mockDb }));
 

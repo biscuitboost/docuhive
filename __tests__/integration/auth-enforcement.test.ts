@@ -189,18 +189,18 @@ describe('Auth Enforcement Across All API Routes', () => {
       expect(res.status).not.toBe(401);
     });
 
-    it('GET /api/usage does NOT enforce auth — KNOWN GAP (code-audit verified)', () => {
+    it('GET /api/usage does enforce auth — was previously a gap, now fixed', () => {
       const fs = require('fs');
       const code = fs.readFileSync('/home/hermes/projects/docuhive/app/api/usage/route.ts', 'utf8');
-      expect(code).not.toContain('requireAuth');
-      expect(code).toContain("searchParams.get('tenantId'");
+      expect(code).toContain('requireAuth');
     });
 
-    it('GET /api/stripe/portal does NOT enforce auth — KNOWN GAP', async () => {
+    it('GET /api/stripe/portal does enforce auth — was previously a gap, now fixed', async () => {
+      mockRequireAuth.mockRejectedValue(new AuthError('Unauthorized'));
       const { GET } = require('@/app/api/stripe/portal/route');
-      const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal?customerId=test');
+      const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal');
       const res = await GET(req);
-      expect(res.status).not.toBe(401);
+      expect(res.status).toBe(401);
     });
   });
 

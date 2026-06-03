@@ -1,5 +1,6 @@
 // ── Stripe Billing Portal API Route Tests ──────────────────────────
 // Tests for GET /api/stripe/portal
+// Route uses requireAuth() + DB lookup for the tenant's stripeCustomerId.
 
 jest.mock('next/server', () => {
   const createResponse = (body: any, init: ResponseInit = {}) => {
@@ -32,6 +33,13 @@ jest.mock('next/server', () => {
   };
 });
 
+jest.mock('@/lib/auth/tenant', () => {
+  const AuthError = class AuthError extends Error {
+    constructor(m: string) { super(m); this.name = 'AuthError'; }
+  };
+  return { __esModule: true, requireAuth: jest.fn(), AuthError };
+});
+
 jest.mock('@/lib/stripe/client', () => ({
   __esModule: true,
   default: {
@@ -43,75 +51,118 @@ jest.mock('@/lib/stripe/client', () => ({
   },
 }));
 
+jest.mock('@clerk/nextjs/server', () => ({ __esModule: true, clerkClient: jest.fn() }));
+
 import { NextRequest } from 'next/server';
 import stripeClient from '@/lib/stripe/client';
+import { requireAuth } from '@/lib/auth/tenant';
+
+const mockRequireAuth = requireAuth as jest.Mock;
+const mockPortalCreate = stripeClient.billingPortal.sessions.create as jest.Mock;
+
+// Mock DB
+jest.mock('@/lib/db', () => ({
+  __esModule: true,
+  db: {
+    select: jest.fn(),
+  },
+}));
+
+const { db } = require('@/lib/db');
 
 const { GET } = require('@/app/api/stripe/portal/route') as {
   GET: (req: NextRequest) => Promise<any>;
 };
 
-const mockPortalCreate = stripeClient.billingPortal.sessions.create as jest.Mock;
-
-function makeGetRequest(
-  searchParams: Record<string, string> = {},
-  origin?: string
-): NextRequest {
+function makeGetRequest(): NextRequest {
   const url = new URL('http://localhost:3000/api/stripe/portal');
-  Object.entries(searchParams).forEach(([k, v]) => url.searchParams.set(k, v));
+  return new (NextRequest as any)(url.toString(), { method: 'GET' });
+}
 
-  const headers: Record<string, string> = {};
-  if (origin !== undefined) {
-    headers['origin'] = origin;
-  }
-
-  return new (NextRequest as any)(url.toString(), { method: 'GET', headers });
+function makeThenableSelect(result: any[]) {
+  const q: any = {
+    from: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    then: jest.fn((resolve: any) => Promise.resolve(resolve(result))),
+  };
+  q[Symbol.toStringTag] = 'Promise';
+  Object.defineProperty(q, 'then', {
+    value: jest.fn((resolve: (v: any) => any) => Promise.resolve(result).then(resolve)),
+  });
+  return q;
 }
 
 describe('GET /api/stripe/portal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRequireAuth.mockResolvedValue({ clerkUserId: 'user_abc', tenantId: 'tenant_xyz' });
     mockPortalCreate.mockResolvedValue({
       url: 'https://billing.stripe.com/p/session/test_portal_123',
     });
   });
 
-  it('creates a billing portal session and returns the URL', async () => {
-    const req = makeGetRequest({ customerId: 'cus_abc123' }, 'https://docuhive.app');
+  it('creates a billing portal session for the authenticated tenant', async () => {
+    db.select.mockReturnValue(makeThenableSelect([
+      { stripeCustomerId: 'cus_abc123' },
+    ]));
+
+    const req = makeGetRequest();
     const res = await GET(req);
     const json = await res.json();
 
     expect(res.status).toBe(200);
-    expect(json.url).toBe(
-      'https://billing.stripe.com/p/session/test_portal_123'
-    );
+    expect(json.url).toBe('https://billing.stripe.com/p/session/test_portal_123');
   });
 
   it('passes customer ID and return URL correctly to Stripe', async () => {
-    const req = makeGetRequest({ customerId: 'cus_test_456' }, 'https://example.com');
+    db.select.mockReturnValue(makeThenableSelect([
+      { stripeCustomerId: 'cus_test_456' },
+    ]));
+
+    process.env.NEXT_PUBLIC_APP_URL = 'https://docuhive.app';
+
+    const req = makeGetRequest();
     await GET(req);
 
     expect(mockPortalCreate).toHaveBeenCalledWith({
       customer: 'cus_test_456',
-      return_url: 'https://example.com/settings/billing',
+      return_url: 'https://docuhive.app/settings/billing',
     });
   });
 
-  it('returns 400 when customerId is missing', async () => {
-    const req = makeGetRequest({}); // no customerId
+  it('returns 400 when tenant has no stripe customer ID (not subscribed)', async () => {
+    db.select.mockReturnValue(makeThenableSelect([
+      { stripeCustomerId: null },
+    ]));
+
+    const req = makeGetRequest();
     const res = await GET(req);
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe('customerId required');
+    expect(json.error).toContain('No subscription found');
     expect(mockPortalCreate).not.toHaveBeenCalled();
   });
 
-  it('returns 500 when Stripe API call fails', async () => {
-    mockPortalCreate.mockRejectedValue(
-      new Error('No such customer: cus_fake')
-    );
+  it('returns 400 when no tenant record exists', async () => {
+    db.select.mockReturnValue(makeThenableSelect([]));
 
-    const req = makeGetRequest({ customerId: 'cus_fake' }, 'http://localhost:3000');
+    const req = makeGetRequest();
+    const res = await GET(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.error).toContain('No subscription found');
+  });
+
+  it('returns 500 when Stripe API call fails', async () => {
+    db.select.mockReturnValue(makeThenableSelect([
+      { stripeCustomerId: 'cus_fake' },
+    ]));
+    mockPortalCreate.mockRejectedValue(new Error('No such customer: cus_fake'));
+
+    const req = makeGetRequest();
     const res = await GET(req);
     const json = await res.json();
 
@@ -119,14 +170,15 @@ describe('GET /api/stripe/portal', () => {
     expect(json.error).toContain('No such customer');
   });
 
-  it('uses origin header for return_url', async () => {
-    const req = makeGetRequest({ customerId: 'cus_xyz' }, 'https://myapp.com');
-    await GET(req);
-
-    expect(mockPortalCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        return_url: 'https://myapp.com/settings/billing',
-      })
+  it('returns 401 when unauthenticated', async () => {
+    mockRequireAuth.mockRejectedValue(
+      new (require('@/lib/auth/tenant').AuthError)('Unauthorized')
     );
+
+    const req = makeGetRequest();
+    const res = await GET(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(401);
   });
 });

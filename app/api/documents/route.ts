@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { documents } from '@/lib/db/schema';
-import { eq, desc, sql, count } from 'drizzle-orm';
+import { eq, desc, count } from 'drizzle-orm';
 import { requireAuth, AuthError } from '@/lib/auth/tenant';
 
 /**

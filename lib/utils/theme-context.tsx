@@ -7,7 +7,7 @@ type Theme = "light" | "dark"
 interface ThemeContextValue {
   theme: Theme
   toggle: () => void
-  setTheme: (t: Theme) => void
+  setTheme: (_t: Theme) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -29,14 +29,12 @@ function getInitialTheme(): Theme {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light")
-  const [mounted, setMounted] = useState(false)
 
   // On mount, read localStorage and apply class immediately
   useEffect(() => {
     const t = getInitialTheme()
     setThemeState(t)
     document.documentElement.classList.toggle("dark", t === "dark")
-    setMounted(true)
   }, [])
 
   const setTheme = (t: Theme) => {

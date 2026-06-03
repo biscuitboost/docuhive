@@ -97,6 +97,7 @@ function renderContent(value: unknown): string {
  * Recursively find string values in document content for inline editing.
  * Returns a flat map of "section.subsection" paths to string values.
  */
+// eslint-disable-next-line no-unused-vars
 function extractSections(
   data: Record<string, unknown>,
   prefix = ""
@@ -555,7 +556,7 @@ export default function DocumentDetailPage() {
                           <input
                             type="text"
                             defaultValue={String(value)}
-                            onChange={(e) => {
+                            onChange={(_e) => {
                               // value captured via DOM read on submit
                             }}
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
@@ -590,7 +591,6 @@ export default function DocumentDetailPage() {
                         if (container) {
                           const fields = container.querySelectorAll("input");
                           fields.forEach((field) => {
-                            const label = field.closest("div")?.querySelector("label")?.textContent?.trim() || "";
                             const key = inputEntries[Array.from(fields).indexOf(field)]?.[0];
                             if (key) inputs[key] = field.value;
                           });

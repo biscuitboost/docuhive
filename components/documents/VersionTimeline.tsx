@@ -14,8 +14,8 @@ interface VersionEntry {
 interface VersionTimelineProps {
   documentId: string;
   currentVersion: number;
-  onRestore: (version: number) => void;
-  onIssue: (version: number) => void;
+  onRestore: (_version: number) => void;
+  onIssue: (_version: number) => void;
 }
 
 const CHANGE_TYPE_LABELS: Record<string, string> = {

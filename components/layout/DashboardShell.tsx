@@ -18,6 +18,7 @@ import {
   CheckCheck,
   Sun,
   Moon,
+  Calculator,
 } from "lucide-react"
 
 // Clerk UserButton deferred to browser — safe from SSR crash
@@ -49,6 +50,7 @@ type Notification = {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/documents/new", label: "New Document", icon: PlusCircle },
+  { href: "/tools", label: "Tools", icon: Calculator },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/legislative", label: "Legislative Updates", icon: Scale },
 ]

@@ -141,6 +141,7 @@ export default function BrandingSettingsForm() {
           />
           {branding.logoUrl && (
             <div className="mt-3 flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element -- external URL, unknown dims, onError handler */}
               <img
                 src={branding.logoUrl}
                 alt="Logo preview"

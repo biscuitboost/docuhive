@@ -50,9 +50,18 @@ jest.mock('drizzle-orm', () => ({
   desc: jest.fn((a) => ({ type: 'desc', expr: a })),
 }));
 
+function makeInsertChain() {
+  const chain: any = {
+    values: jest.fn().mockReturnThis(),
+    returning: jest.fn().mockResolvedValue([{ id: 'notif_1' }]),
+  };
+  return chain;
+}
+
 const mockDb = {
   select: jest.fn(),
   update: jest.fn(),
+  insert: jest.fn(() => makeInsertChain()),
 };
 jest.mock('@/lib/db', () => ({
   __esModule: true,
@@ -101,10 +110,11 @@ function makeThenableSelect(result: any[]) {
   return q;
 }
 
-function makeUpdateChain() {
+function makeUpdateChain(returningResult?: any[]) {
   return {
     set: jest.fn().mockReturnThis(),
-    where: jest.fn().mockResolvedValue({ rowCount: 1 }),
+    where: jest.fn().mockReturnThis(),
+    returning: jest.fn().mockResolvedValue(returningResult ?? [{ documentsUsed: 1 }]),
   };
 }
 

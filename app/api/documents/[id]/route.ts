@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 // Import the document status enum type
-import { documents, docStatusEnum } from '@/lib/db/schema';
+import { documents } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireAuth, AuthError } from '@/lib/auth/tenant';
 import { createNotification } from '@/lib/documents/notifications';

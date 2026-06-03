@@ -7,7 +7,7 @@ interface InlineSectionEditorProps {
   content: string;
   documentId: string;
   status: string;
-  onSaved: (sectionKey: string, newContent: string) => void;
+  onSaved: (_sectionKey: string, _newContent: string) => void;
 }
 
 export default function InlineSectionEditor({

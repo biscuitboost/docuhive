@@ -218,20 +218,29 @@ describe('Billing Integration — Pricing ↔ Checkout ↔ Portal', () => {
   // ── Portal API (GET) ────────────────────────────────────────
 
   describe('GET /api/stripe/portal — billing redirect', () => {
-    it('creates a portal session with customer ID', async () => {
+    it('creates a portal session using the authenticated tenant', async () => {
+      // Tenant lookup will find stripeCustomerId
+      mockDb.select.mockReturnValue(makeThenableSelect([
+        { stripeCustomerId: 'cus_test_123' },
+      ]));
+
       const { GET } = require('@/app/api/stripe/portal/route');
-      const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal', undefined, { customerId: 'cus_test_123' });
+      const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal');
       await GET(req);
 
       expect(mockStripePortal).toHaveBeenCalledWith({
         customer: 'cus_test_123',
-        return_url: 'https://docuhive.app/settings/billing',
+        return_url: 'https://docuhive.vercel.app/settings/billing',
       });
     });
 
     it('returns the portal URL', async () => {
+      mockDb.select.mockReturnValue(makeThenableSelect([
+        { stripeCustomerId: 'cus_test_123' },
+      ]));
+
       const { GET } = require('@/app/api/stripe/portal/route');
-      const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal', undefined, { customerId: 'cus_test_123' });
+      const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal');
       const res = await GET(req);
       const json = await res.json();
 
@@ -239,14 +248,16 @@ describe('Billing Integration — Pricing ↔ Checkout ↔ Portal', () => {
       expect(json.url).toBe('https://billing.stripe.com/p/session/portal_123');
     });
 
-    it('requires customerId parameter', async () => {
+    it('requires a subscription (returns 400 when no customer ID)', async () => {
+      mockDb.select.mockReturnValue(makeThenableSelect([]));
+
       const { GET } = require('@/app/api/stripe/portal/route');
       const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal');
       const res = await GET(req);
       const json = await res.json();
 
       expect(res.status).toBe(400);
-      expect(json.error).toBe('customerId required');
+      expect(json.error).toContain('No subscription found');
     });
   });
 
@@ -363,11 +374,11 @@ describe('Billing Integration — Pricing ↔ Checkout ↔ Portal', () => {
 });
 
 describe('Usage API (GET /api/usage)', () => {
-  it('returns document count for a given tenantId', async () => {
+  it('returns document count for the authenticated tenant', async () => {
     mockDb.select.mockReturnValue(makeThenableSelect([{ count: 7 }]));
 
     const { GET } = require('@/app/api/usage/route');
-    const req = makeRequest('GET', 'http://localhost:3000/api/usage', undefined, { tenantId: 'tenant_xyz' });
+    const req = makeRequest('GET', 'http://localhost:3000/api/usage');
     const res = await GET(req);
     const json = await res.json();
 
@@ -379,7 +390,7 @@ describe('Usage API (GET /api/usage)', () => {
     mockDb.select.mockReturnValue(makeThenableSelect([{ count: 0 }]));
 
     const { GET } = require('@/app/api/usage/route');
-    const req = makeRequest('GET', 'http://localhost:3000/api/usage', undefined, { tenantId: 'tenant_xyz' });
+    const req = makeRequest('GET', 'http://localhost:3000/api/usage');
     const res = await GET(req);
     const json = await res.json();
 
@@ -387,13 +398,16 @@ describe('Usage API (GET /api/usage)', () => {
     expect(json.documentsUsed).toBe(0);
   });
 
-  it('requires tenantId parameter', async () => {
+  it('returns 401 when unauthenticated', async () => {
+    mockRequireAuth.mockRejectedValue(
+      new (require('@/lib/auth/tenant').AuthError)('Unauthorized')
+    );
+
     const { GET } = require('@/app/api/usage/route');
     const req = makeRequest('GET', 'http://localhost:3000/api/usage');
     const res = await GET(req);
     const json = await res.json();
 
-    expect(res.status).toBe(400);
-    expect(json.error).toBe('tenantId required');
+    expect(res.status).toBe(401);
   });
 });

@@ -3,7 +3,7 @@
  * Insert and query notifications for tenants.
  */
 import { db } from "@/lib/db";
-import { notifications, notificationTypeEnum } from "@/lib/db/schema";
+import { notifications } from "@/lib/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 
 export type NotificationType =

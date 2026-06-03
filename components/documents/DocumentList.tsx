@@ -28,6 +28,21 @@ const TYPE_LABELS: Record<string, string> = {
   staff_handbook: "Staff Handbook",
   payslip: "Payslip",
   p45: "P45",
+  job_description: "Job Description",
+  nda: "Non-Disclosure Agreement",
+  service_agreement: "Service Agreement",
+  consultant_agreement: "Consultant Agreement",
+  freelancer_contract: "Freelancer Contract",
+  settlement_agreement: "Settlement Agreement",
+  disciplinary_grievance_letters: "Disciplinary & Grievance",
+  flexible_working_request: "Flexible Working Request",
+  gdpr_privacy_notice: "GDPR Privacy Notice",
+  data_processing_agreement: "Data Processing Agreement",
+  privacy_policy: "Privacy Policy",
+  terms_and_conditions: "Terms & Conditions",
+  commercial_lease: "Commercial Lease",
+  director_service_agreement: "Director Agreement",
+  shareholder_agreement: "Shareholder Agreement",
 };
 
 const STATUS_STYLES: Record<string, string> = {
@@ -61,7 +76,11 @@ async function downloadDocument(doc: Document) {
   URL.revokeObjectURL(url);
 }
 
-const FILTER_TYPES = ["all", "employment_contract", "offer_letter", "staff_handbook", "payslip", "p45"];
+const FILTER_TYPES = ["all", "employment_contract", "offer_letter", "staff_handbook", "payslip", "p45",
+  "job_description", "nda", "service_agreement", "consultant_agreement", "freelancer_contract",
+  "settlement_agreement", "disciplinary_grievance_letters", "flexible_working_request",
+  "gdpr_privacy_notice", "data_processing_agreement", "privacy_policy",
+  "terms_and_conditions", "commercial_lease", "director_service_agreement", "shareholder_agreement"];
 
 const rowVariants = {
   hidden: { opacity: 0, y: 8 },

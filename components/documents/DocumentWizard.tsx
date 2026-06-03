@@ -5,7 +5,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles } from "lucide-react";
 import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
 
-type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45";
+type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45"
+  | "job_description" | "nda" | "service_agreement" | "consultant_agreement"
+  | "freelancer_contract" | "settlement_agreement" | "disciplinary_grievance_letters"
+  | "flexible_working_request" | "gdpr_privacy_notice" | "data_processing_agreement"
+  | "privacy_policy" | "terms_and_conditions" | "commercial_lease"
+  | "director_service_agreement" | "shareholder_agreement";
 
 interface FieldDef {
   key: string;
@@ -113,6 +118,286 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "tax_to_date", label: "Tax to date (£)", type: "text", required: true },
       { key: "student_loan", label: "Student loan deductions? (yes/no)", type: "text" },
       { key: "postgraduate_loan", label: "Postgraduate loan deductions? (yes/no)", type: "text" },
+    ],
+  },
+
+  // ── Employment / HR Templates ──
+  {
+    value: "job_description",
+    label: "Job Description",
+    description: "Professional job description with essential/desirable criteria",
+    icon: "📋",
+    fields: [
+      { key: "job_title", label: "Job title", type: "text", required: true },
+      { key: "department", label: "Department", type: "text" },
+      { key: "reports_to", label: "Reports to", type: "text" },
+      { key: "location", label: "Location", type: "text", required: true },
+      { key: "employment_type", label: "Employment type", type: "select", options: [
+        { value: "permanent", label: "Permanent" },
+        { value: "fixed_term", label: "Fixed term" },
+        { value: "contract", label: "Contract" },
+        { value: "part_time", label: "Part time" },
+      ], required: true },
+      { key: "salary_min", label: "Salary min (£)", type: "text", required: true },
+      { key: "salary_max", label: "Salary max (£)", type: "text", required: true },
+      { key: "salary_period", label: "Salary period", type: "select", options: [
+        { value: "year", label: "Per year" },
+        { value: "month", label: "Per month" },
+      ]},
+      { key: "closing_date", label: "Closing date", type: "text" },
+    ],
+  },
+  {
+    value: "nda",
+    label: "Non-Disclosure Agreement",
+    description: "Mutual NDA with UK compliant confidentiality clauses",
+    icon: "🔒",
+    fields: [
+      { key: "disclosing_party", label: "Disclosing party name", type: "text", required: true },
+      { key: "receiving_party", label: "Receiving party name", type: "text", required: true },
+      { key: "purpose", label: "Purpose of disclosure", type: "text", required: true },
+      { key: "effective_date", label: "Effective date", type: "text", required: true },
+      { key: "confidentiality_period", label: "Confidentiality period (years)", type: "text", required: true },
+    ],
+  },
+  {
+    value: "service_agreement",
+    label: "Service Agreement",
+    description: "Independent contractor / service provider agreement",
+    icon: "🤝",
+    fields: [
+      { key: "client_name", label: "Client name", type: "text", required: true },
+      { key: "provider_name", label: "Service provider name", type: "text", required: true },
+      { key: "provider_type", label: "Provider type", type: "select", options: [
+        { value: "limited_company", label: "Limited company" },
+        { value: "sole_trader", label: "Sole trader" },
+      ], required: true },
+      { key: "services_description", label: "Description of services", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "term", label: "Term (months)", type: "text" },
+      { key: "fee", label: "Fee (£)", type: "text", required: true },
+      { key: "fee_period", label: "Fee period", type: "select", options: [
+        { value: "hour", label: "Per hour" },
+        { value: "day", label: "Per day" },
+        { value: "month", label: "Per month" },
+        { value: "project", label: "Per project" },
+      ]},
+      { key: "payment_terms", label: "Payment terms", type: "text" },
+    ],
+  },
+  {
+    value: "consultant_agreement",
+    label: "Consultant Agreement",
+    description: "Short-form consultancy agreement with IR35 clause",
+    icon: "💼",
+    fields: [
+      { key: "company_name", label: "Company name", type: "text", required: true },
+      { key: "consultant_name", label: "Consultant name", type: "text", required: true },
+      { key: "consultant_type", label: "Consultant type", type: "select", options: [
+        { value: "individual", label: "Individual" },
+        { value: "limited_company", label: "Limited company" },
+      ], required: true },
+      { key: "scope_of_work", label: "Scope of work", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "end_date", label: "End date", type: "text" },
+      { key: "fee", label: "Fee (£)", type: "text", required: true },
+      { key: "fee_period", label: "Fee period", type: "select", options: [
+        { value: "day", label: "Per day" },
+        { value: "hour", label: "Per hour" },
+        { value: "project", label: "Per project" },
+      ]},
+      { key: "expenses", label: "Expenses arrangement", type: "text" },
+      { key: "notice_period", label: "Notice period", type: "text" },
+    ],
+  },
+  {
+    value: "freelancer_contract",
+    label: "Freelancer Contract",
+    description: "Short-form contract for freelance engagements (outside IR35)",
+    icon: "✏️",
+    fields: [
+      { key: "client_name", label: "Client name", type: "text", required: true },
+      { key: "freelancer_name", label: "Freelancer name", type: "text", required: true },
+      { key: "project_description", label: "Project description", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "delivery_date", label: "Delivery date", type: "text" },
+      { key: "fee", label: "Fee (£)", type: "text", required: true },
+      { key: "payment_schedule", label: "Payment schedule", type: "text" },
+      { key: "expenses", label: "Expenses covered", type: "text" },
+    ],
+  },
+  {
+    value: "settlement_agreement",
+    label: "Settlement Agreement",
+    description: "Formal exit agreement (formerly compromise agreement)",
+    icon: "🤝",
+    fields: [
+      { key: "employee_name", label: "Employee name", type: "text", required: true },
+      { key: "employer_name", label: "Employer name", type: "text", required: true },
+      { key: "termination_date", label: "Termination date", type: "text", required: true },
+      { key: "employment_length", label: "Employment length (years)", type: "text", required: true },
+      { key: "notice_pay", label: "Notice pay (£)", type: "text", required: true },
+      { key: "compensation_payment", label: "Compensation payment (£)", type: "text", required: true },
+      { key: "settlement_date", label: "Settlement date", type: "text" },
+    ],
+  },
+  {
+    value: "disciplinary_grievance_letters",
+    label: "Disciplinary & Grievance Letters",
+    description: "ACAS-compliant letter templates for HR procedures",
+    icon: "⚖️",
+    fields: [
+      { key: "letter_type", label: "Letter type", type: "select", required: true, options: [
+        { value: "disciplinary", label: "Disciplinary" },
+        { value: "grievance", label: "Grievance" },
+        { value: "appeal", label: "Appeal" },
+      ]},
+      { key: "employee_name", label: "Employee name", type: "text", required: true },
+      { key: "employee_role", label: "Employee role", type: "text", required: true },
+      { key: "meeting_date", label: "Meeting date", type: "text" },
+      { key: "issue_details", label: "Issue details", type: "text", required: true },
+      { key: "outcome", label: "Outcome (if known)", type: "text" },
+    ],
+  },
+  {
+    value: "flexible_working_request",
+    label: "Flexible Working Request",
+    description: "Day-one right request form & employer decision (Flexible Working Act 2023)",
+    icon: "🕐",
+    fields: [
+      { key: "employee_name", label: "Employee name", type: "text", required: true },
+      { key: "employee_role", label: "Role", type: "text", required: true },
+      { key: "requested_change", label: "Requested change (what do you want to change?)", type: "text", required: true },
+      { key: "current_pattern", label: "Current working pattern", type: "text", required: true },
+      { key: "proposed_pattern", label: "Proposed working pattern", type: "text", required: true },
+      { key: "effective_date", label: "Proposed effective date", type: "text", required: true },
+      { key: "reasons", label: "Reasons for request", type: "text" },
+    ],
+  },
+
+  // ── Data Protection / Privacy ──
+  {
+    value: "gdpr_privacy_notice",
+    label: "GDPR Privacy Notice",
+    description: "Employee/worker privacy notice (UK GDPR compliant)",
+    icon: "🛡️",
+    fields: [
+      { key: "organisation_name", label: "Organisation name", type: "text", required: true },
+      { key: "ico_number", label: "ICO registration number", type: "text", required: true },
+      { key: "dpo_name", label: "Data Protection Officer name", type: "text" },
+      { key: "dpo_email", label: "DPO email", type: "text" },
+      { key: "effective_date", label: "Effective date", type: "text", required: true },
+    ],
+  },
+  {
+    value: "data_processing_agreement",
+    label: "Data Processing Agreement",
+    description: "Controller-processor DPA (Article 28 UK GDPR)",
+    icon: "📝",
+    fields: [
+      { key: "controller_name", label: "Controller name", type: "text", required: true },
+      { key: "processor_name", label: "Processor name", type: "text", required: true },
+      { key: "processing_purposes", label: "Processing purposes", type: "text", required: true },
+      { key: "data_categories", label: "Data categories", type: "text", required: true },
+      { key: "data_subject_types", label: "Data subject types", type: "text", required: true },
+      { key: "processing_duration", label: "Duration of processing", type: "text", required: true },
+      { key: "effective_date", label: "Effective date", type: "text" },
+    ],
+  },
+  {
+    value: "privacy_policy",
+    label: "Privacy Policy (Business)",
+    description: "Full business privacy policy (UK GDPR + PECR)",
+    icon: "📜",
+    fields: [
+      { key: "business_name", label: "Business name", type: "text", required: true },
+      { key: "business_address", label: "Business address", type: "text", required: true },
+      { key: "ico_number", label: "ICO registration number", type: "text" },
+      { key: "website_url", label: "Website URL", type: "text", required: true },
+      { key: "dpo_name", label: "Data Protection Officer name", type: "text" },
+      { key: "dpo_email", label: "DPO email", type: "text" },
+    ],
+  },
+
+  // ── Commercial / Business ──
+  {
+    value: "terms_and_conditions",
+    label: "Terms & Conditions",
+    description: "Business terms compliant with Consumer Rights Act 2015",
+    icon: "📑",
+    fields: [
+      { key: "business_name", label: "Business name", type: "text", required: true },
+      { key: "business_address", label: "Business address", type: "text", required: true },
+      { key: "trading_name", label: "Trading name (if different)", type: "text" },
+      { key: "company_number", label: "Company registration number", type: "text" },
+      { key: "vat_number", label: "VAT number", type: "text" },
+      { key: "website_url", label: "Website URL", type: "text", required: true },
+      { key: "business_type", label: "Business type", type: "select", options: [
+        { value: "products", label: "Products" },
+        { value: "services", label: "Services" },
+        { value: "both", label: "Both" },
+      ]},
+      { key: "contact_email", label: "Contact email", type: "text", required: true },
+    ],
+  },
+  {
+    value: "commercial_lease",
+    label: "Commercial Lease",
+    description: "Simplified FRI commercial lease template",
+    icon: "🏢",
+    fields: [
+      { key: "landlord_name", label: "Landlord name", type: "text", required: true },
+      { key: "tenant_name", label: "Tenant name", type: "text", required: true },
+      { key: "premises_address", label: "Premises address", type: "text", required: true },
+      { key: "property_description", label: "Property description", type: "text" },
+      { key: "lease_term", label: "Lease term (years)", type: "text", required: true },
+      { key: "annual_rent", label: "Annual rent (£)", type: "text", required: true },
+      { key: "rent_review_frequency", label: "Rent review frequency (years)", type: "text" },
+      { key: "rent_review_type", label: "Rent review type", type: "select", options: [
+        { value: "open_market", label: "Open market" },
+        { value: "rpi", label: "RPI-linked" },
+      ]},
+      { key: "deposit", label: "Deposit (£)", type: "text" },
+      { key: "permitted_use", label: "Permitted use", type: "text", required: true },
+      { key: "service_charge", label: "Service charge (£ per annum)", type: "text" },
+    ],
+  },
+  {
+    value: "director_service_agreement",
+    label: "Director Service Agreement",
+    description: "Service contract for company directors (Companies Act 2006)",
+    icon: "👔",
+    fields: [
+      { key: "company_name", label: "Company name", type: "text", required: true },
+      { key: "company_number", label: "Company number", type: "text" },
+      { key: "director_name", label: "Director name", type: "text", required: true },
+      { key: "director_title", label: "Director title", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "salary", label: "Salary (£)", type: "text", required: true },
+      { key: "salary_period", label: "Salary period", type: "select", options: [
+        { value: "year", label: "Per year" },
+        { value: "month", label: "Per month" },
+      ]},
+      { key: "benefits", label: "Benefits (e.g. car, health insurance)", type: "text" },
+      { key: "pension_contribution", label: "Pension contribution (%)", type: "text" },
+      { key: "notice_period_months", label: "Notice period (months)", type: "text", required: true },
+      { key: "holiday_entitlement", label: "Holiday entitlement (days)", type: "text", required: true },
+      { key: "bonus_arrangement", label: "Bonus arrangement", type: "text" },
+      { key: "restrictive_covenant_months", label: "Restrictive covenant period (months)", type: "text" },
+    ],
+  },
+  {
+    value: "shareholder_agreement",
+    label: "Shareholder Agreement",
+    description: "Private limited company shareholder agreement",
+    icon: "📊",
+    fields: [
+      { key: "company_name", label: "Company name", type: "text", required: true },
+      { key: "company_number", label: "Company number", type: "text" },
+      { key: "shareholders", label: "Shareholders (names, comma-separated)", type: "text", required: true },
+      { key: "share_structure", label: "Share structure (e.g. 100 ordinary shares)", type: "text", required: true },
+      { key: "directors", label: "Directors (names, comma-separated)", type: "text" },
+      { key: "effective_date", label: "Effective date", type: "text", required: true },
     ],
   },
 ];

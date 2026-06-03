@@ -6,7 +6,12 @@ import { Check, ArrowRight, Download, FileDown, Sparkles, ArrowLeft, FileText, L
 import { useRouter } from "next/navigation";
 import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
 
-type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45";
+type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45"
+  | "job_description" | "nda" | "service_agreement" | "consultant_agreement"
+  | "freelancer_contract" | "settlement_agreement" | "disciplinary_grievance_letters"
+  | "flexible_working_request" | "gdpr_privacy_notice" | "data_processing_agreement"
+  | "privacy_policy" | "terms_and_conditions" | "commercial_lease"
+  | "director_service_agreement" | "shareholder_agreement";
 
 interface FieldDef {
   key: string;

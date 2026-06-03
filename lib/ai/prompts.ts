@@ -149,6 +149,488 @@ Part 3 - Year-to-date earnings and tax details
 
 Output FLAT JSON with keys like "employee_info", "employer_info", "leaving_details", "year_to_date_earnings", "notes". Each value must be a plain string.`,
   },
+
+  // ── Employment / HR Templates ──
+
+  job_description: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a professional UK job description with the following details:
+
+Job title: {{job_title}}
+Department: {{department}}
+Reports to: {{reports_to}}
+Location: {{location}}
+Employment type: {{employment_type}}
+Salary range: £{{salary_min}} - £{{salary_max}} per {{salary_period}}
+Closing date: {{closing_date}}
+
+Include sections:
+1. About the company
+2. Role overview
+3. Key responsibilities
+4. Person specification (essential and desirable criteria)
+5. Benefits and perks
+6. How to apply
+
+Ensure compliance with the Equality Act 2010 — avoid any discriminatory language.
+
+Output FLAT JSON with keys like "company_intro", "role_overview", "key_responsibilities", "person_spec", "benefits", "how_to_apply". Each value must be a plain string.`,
+  },
+
+  nda: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a mutual non-disclosure agreement (NDA) with the following details:
+
+Disclosing party name: {{disclosing_party}}
+Receiving party name: {{receiving_party}}
+Purpose of disclosure: {{purpose}}
+Effective date: {{effective_date}}
+Confidentiality period (years): {{confidentiality_period}}
+
+Include standard clauses:
+1. Definition of confidential information
+2. Obligations of receiving party
+3. Permitted disclosures
+4. Exclusions from confidential information
+5. Term and termination
+6. Return of materials
+7. Remedies
+8. Governing law (England and Wales)
+
+Output FLAT JSON. Keys: "parties", "definitions", "obligations", "permitted_disclosures", "exclusions", "term", "return_of_materials", "remedies", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
+
+  service_agreement: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK service agreement (independent contractor) with the following details:
+
+Client name: {{client_name}}
+Service provider name: {{provider_name}}
+Service provider type: {{provider_type}} (limited company / sole trader)
+Services description: {{services_description}}
+Start date: {{start_date}}
+Term: {{term}} months
+Fee: £{{fee}} {{fee_period}}
+Payment terms: {{payment_terms}}
+
+Include standard clauses:
+1. Definitions and interpretation
+2. Appointment and scope of services
+3. Service provider's obligations
+4. Client's obligations
+5. Fees and payment
+6. Intellectual property
+7. Confidentiality
+8. Liability and indemnity
+9. Term and termination
+10. IR35 status clause (outside IR35 where appropriate)
+11. Dispute resolution
+12. Governing law
+
+Output FLAT JSON. Keys: "parties", "definitions", "appointment", "provider_obligations", "client_obligations", "fees_and_payment", "intellectual_property", "confidentiality", "liability", "term_and_termination", "ir35_status", "dispute_resolution", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
+
+  consultant_agreement: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK consultant agreement with the following details:
+
+Company name: {{company_name}}
+Consultant name: {{consultant_name}}
+Consultant type: {{consultant_type}} (individual / limited company)
+Scope of work: {{scope_of_work}}
+Start date: {{start_date}}
+End date: {{end_date}}
+Fee: £{{fee}} {{fee_period}}
+Expenses: {{expenses}}
+Notice period: {{notice_period}}
+
+Include standard clauses:
+1. Services and deliverables
+2. Payment terms and expenses
+3. Consultant status and IR35
+4. Confidentiality
+5. Intellectual property
+6. Warranties
+7. Limitation of liability
+8. Termination
+9. Dispute resolution
+10. Governing law
+
+Output FLAT JSON. Keys: "parties", "services", "payment", "consultant_status", "confidentiality", "intellectual_property", "warranties", "liability", "termination", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
+
+  freelancer_contract: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK freelancer contract (short-form) with the following details:
+
+Client: {{client_name}}
+Freelancer: {{freelancer_name}}
+Project description: {{project_description}}
+Start date: {{start_date}}
+Delivery date: {{delivery_date}}
+Fee: £{{fee}}
+Payment schedule: {{payment_schedule}}
+Expenses covered: {{expenses}}
+
+Include:
+1. Project scope and deliverables
+2. Payment terms
+3. Freelancer status (outside IR35)
+4. Confidentiality
+5. Intellectual property
+6. Termination
+7. Governing law
+
+Output FLAT JSON. Keys: "project_scope", "payment_terms", "freelancer_status", "confidentiality", "intellectual_property", "termination", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
+
+  settlement_agreement: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK settlement agreement (formerly compromise agreement) with the following details:
+
+Employee name: {{employee_name}}
+Employer name: {{employer_name}}
+Termination date: {{termination_date}}
+Employment length: {{employment_length}} years
+Notice pay: £{{notice_pay}}
+Compensation payment: £{{compensation_payment}}
+Settlement date: {{settlement_date}}
+
+Include:
+1. Recitals (background to termination)
+2. Termination of employment
+3. Payments (notice pay, compensation, any outstanding sums)
+4. Legal costs contribution
+5. Agreed reference wording
+6. Waiver of claims (specifying statutory claims)
+7. Confidentiality clause
+8. Non-disparagement
+9. Independent legal advice acknowledgment
+10. Counterparts
+
+IMPORTANT: Include the mandatory statement that the employee has received independent legal advice.
+
+Output FLAT JSON. Keys: "parties", "recitals", "termination", "payments", "legal_costs", "agreed_reference", "waiver_of_claims", "confidentiality", "non_disparagement", "legal_advice", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
+
+  disciplinary_grievance_letters: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a set of disciplinary and grievance letter templates following the ACAS Code of Practice. Provide templates for:
+
+Template type: {{letter_type}} (disciplinary / grievance / appeal)
+Employee name: {{employee_name}}
+Employee role: {{employee_role}}
+Meeting date: {{meeting_date}}
+Issue details: {{issue_details}}
+Outcome: {{outcome}} (for outcome letters)
+
+For DISCIPLINARY letters include:
+1. Invitation to disciplinary meeting (with right to be accompanied)
+2. Disciplinary outcome letter (warning level, improvement required)
+3. Invitation to appeal meeting
+4. Appeal outcome letter
+
+For GRIEVANCE letters include:
+1. Grievance acknowledgement
+2. Invitation to grievance meeting
+3. Grievance outcome
+4. Appeal rights notification
+
+For APPEAL letters include:
+1. Appeal acknowledgement
+2. Appeal hearing invitation
+3. Appeal outcome
+
+Ensure ACAS compliance, right to be accompanied, and equality act awareness.
+
+Output FLAT JSON. Keys: "invitation_to_meeting", "right_to_be_accompanied", "meeting_details", "outcome_decision", "appeal_rights", "next_steps". Each value must be a plain string.`,
+  },
+
+  flexible_working_request: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a Flexible Working Request form and response letter compliant with the Flexible Working Act 2023 (day-one right).
+
+Employee name: {{employee_name}}
+Role: {{employee_role}}
+Requested change: {{requested_change}}
+Current pattern: {{current_pattern}}
+Proposed pattern: {{proposed_pattern}}
+Effective date: {{effective_date}}
+Reasons for request: {{reasons}}
+
+Include:
+Part A — Employee request form:
+1. Employee details
+2. Current working pattern
+3. Proposed working pattern
+4. Effective date
+5. Explanation of how the change would affect the business and how it could be managed
+
+Part B — Employer decision letter:
+1. Statutory decision date (2 months from receipt)
+2. Outcome (approved / refused with statutory ground)
+3. If refused, the specific statutory ground from s.80G(1)(b) ERA 1996
+4. Appeal rights
+
+The eight statutory grounds for refusal:
+(a) Burden of additional costs
+(b) Detrimental effect on ability to meet customer demand
+(c) Inability to reorganise work among existing staff
+(d) Inability to recruit additional staff
+(e) Detrimental impact on quality
+(f) Detrimental impact on performance
+(g) Insufficiency of work during periods the employee proposes to work
+(h) Planned structural changes
+
+Output FLAT JSON. Keys: "employee_details", "current_pattern", "proposed_pattern", "employee_statement", "employer_decision", "statutory_grounds", "appeal_rights". Each value must be a plain string.`,
+  },
+
+  // ── Data Protection / Privacy ──
+
+  gdpr_privacy_notice: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK GDPR-compliant employee/worker privacy notice with the following details:
+
+Organisation name: {{organisation_name}}
+ICO registration number: {{ico_number}}
+DPO name: {{dpo_name}}
+DPO email: {{dpo_email}}
+Effective date: {{effective_date}}
+
+Include sections:
+1. Introduction — who we are
+2. Data controller identity and contact details
+3. Categories of personal data we collect
+4. Sources of personal data
+5. Purposes and lawful bases for processing
+6. Special category data processing
+7. Criminal records data
+8. Automated decision-making
+9. Data retention periods
+10. Data sharing and recipients
+11. International transfers
+12. Data subject rights (full list: access, rectification, erasure, restriction, portability, objection, automated decisions)
+13. How to make a complaint (ICO)
+14. Changes to this notice
+
+Compliance: UK GDPR, Data Protection Act 2018.
+
+Output FLAT JSON. Keys: "introduction", "controller_identity", "data_categories", "data_sources", "purposes_and_bases", "special_category_data", "criminal_records", "automated_decisions", "retention", "data_sharing", "international_transfers", "data_subject_rights", "complaints", "changes". Each value must be a plain string.`,
+  },
+
+  data_processing_agreement: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK GDPR-compliant Data Processing Agreement (DPA) with the following details:
+
+Controller name: {{controller_name}}
+Processor name: {{processor_name}}
+Processing purposes: {{processing_purposes}}
+Data categories: {{data_categories}}
+Data subject types: {{data_subject_types}}
+Duration of processing: {{processing_duration}}
+Effective date: {{effective_date}}
+
+Include standard clauses:
+1. Definitions and interpretation
+2. Term and termination
+3. Controller obligations
+4. Processor obligations
+5. Data processing details (schedule)
+6. Sub-processing
+7. Data subject rights
+8. Personal data breach
+9. Data protection impact assessment
+10. International transfers
+11. Audit rights
+12. Deletion and return of data
+13. Liability
+14. Governing law
+
+Schedule: description of processing (categories of data subjects, categories of personal data, nature and purpose of processing, retention periods).
+
+Compliance: Article 28 UK GDPR, Data Protection Act 2018.
+
+Output FLAT JSON. Keys: "parties", "definitions", "term", "controller_obligations", "processor_obligations", "processing_details", "sub_processing", "data_subject_rights", "breach_notification", "dpia", "international_transfers", "audit", "deletion", "liability", "governing_law", "schedule". Each value must be a plain string.`,
+  },
+
+  privacy_policy: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a comprehensive UK GDPR-compliant Privacy Policy for a business with the following details:
+
+Business name: {{business_name}}
+Business address: {{business_address}}
+ICO registration number: {{ico_number}}
+Website URL: {{website_url}}
+Data Protection Officer: {{dpo_name}}
+DPO email: {{dpo_email}}
+
+Include sections:
+1. Who we are
+2. What data we collect (from customers, website visitors, prospects)
+3. How we collect data (direct collection, cookies, third parties)
+4. How we use your data — purposes and lawful bases
+5. Lawful bases for processing (consent, contract, legitimate interests, legal obligation)
+6. Cookies and similar technologies
+7. Who we share your data with
+8. International transfers
+9. How long we keep your data
+10. Your rights (full list: access, rectification, erasure, restriction, portability, objection, automated decision-making)
+11. How to exercise your rights
+12. Complaints to the ICO
+13. Changes to this policy
+
+Compliance: UK GDPR, Data Protection Act 2018, Privacy and Electronic Communications Regulations (PECR).
+
+Output FLAT JSON. Keys: "who_we_are", "data_collected", "collection_methods", "use_of_data", "lawful_bases", "cookies", "data_sharing", "international_transfers", "retention", "your_rights", "exercising_rights", "complaints", "changes". Each value must be a plain string.`,
+  },
+
+  // ── Commercial / Business ──
+
+  terms_and_conditions: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate comprehensive Terms & Conditions for a UK business with the following details:
+
+Business name: {{business_name}}
+Business address: {{business_address}}
+Trading name (if different): {{trading_name}}
+Company registration number: {{company_number}}
+VAT number: {{vat_number}}
+Website URL: {{website_url}}
+Business type: {{business_type}} (products / services / both)
+Contact email: {{contact_email}}
+
+Include standard clauses:
+1. Definitions and interpretation
+2. About us and contact information
+3. Our contract with you
+4. Your status
+5. The goods/services
+6. Price and payment
+7. Delivery
+8. Cancellation and returns (including distance selling regulations)
+9. Warranties
+10. Liability and indemnity
+11. Intellectual property
+12. Confidentiality
+13. Data protection
+14. Complaints
+15. Events outside our control
+16. Governing law and jurisdiction
+17. Entire agreement
+
+Compliance: Consumer Rights Act 2015, Consumer Contracts Regulations 2013, UK GDPR.
+
+Output FLAT JSON. Keys: "definitions", "about_us", "contract", "status", "goods_and_services", "price_and_payment", "delivery", "cancellation", "warranties", "liability", "intellectual_property", "confidentiality", "data_protection", "complaints", "force_majeure", "governing_law", "entire_agreement". Each value must be a plain string.`,
+  },
+
+  commercial_lease: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a simplified UK commercial lease (FRI — Full Repairing and Insuring) with the following details:
+
+Landlord name: {{landlord_name}}
+Tenant name: {{tenant_name}}
+Premises address: {{premises_address}}
+Property description: {{property_description}}
+Term: {{lease_term}} years
+Rent: £{{annual_rent}} per annum
+Rent review frequency: {{rent_review_frequency}} years
+Rent review type: {{rent_review_type}} (open market / RPI-linked)
+Deposit: £{{deposit}}
+Break clause: {{break_clause}} (yes/no — {{break_date}})
+Permitted use: {{permitted_use}}
+Service charge: £{{service_charge}} per annum
+Insurance rent: {{insurance_rent}}
+
+Include simplified clauses:
+1. Definitions
+2. Demise of premises
+3. Term
+4. Rent and rent review
+5. Service charge
+6. Insurance
+7. Repair and decoration (FRI basis)
+8. Alterations
+9. Alienation (assignment/subletting)
+10. Permitted use
+11. Break clause
+12. Forfeiture
+13. Service of notices
+14. Governing law
+
+This is a simplified template for informational use — both parties should seek legal advice.
+
+Output FLAT JSON. Keys: "parties", "premises", "term", "rent", "rent_review", "service_charge", "insurance", "repair", "alterations", "alienation", "permitted_use", "break_clause", "forfeiture", "notices", "governing_law". Each value must be a plain string.`,
+  },
+
+  director_service_agreement: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK Director's Service Agreement with the following details:
+
+Company name: {{company_name}}
+Company number: {{company_number}}
+Director name: {{director_name}}
+Director title: {{director_title}}
+Start date: {{start_date}}
+Salary: £{{salary}} per {{salary_period}}
+Benefits: {{benefits}}
+Pension: {{pension_contribution}}%
+Notice period: {{notice_period_months}} months
+Holiday entitlement: {{holiday_entitlement}} days
+Bonus: {{bonus_arrangement}}
+Restrictive covenant period: {{restrictive_covenant_months}} months
+
+Include clauses:
+1. Appointment and duties
+2. Directors' powers and authority (Companies Act 2006)
+3. Remuneration and benefits
+4. Pension
+5. Bonus/incentive arrangements
+6. Holiday
+7. Sick pay
+8. Expenses
+9. Termination
+10. (If applicable) Compensation for loss of office
+11. Restrictive covenants
+12. Confidentiality
+13. Intellectual property
+14. Outside interests and conflicts of interest
+15. Governing law
+
+Output FLAT JSON. Keys: "parties", "appointment", "duties", "remuneration", "pension", "bonus", "holiday", "sick_pay", "expenses", "termination", "compensation", "restrictive_covenants", "confidentiality", "intellectual_property", "conflicts", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
+
+  shareholder_agreement: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK Shareholder Agreement suitable for a private limited company with the following details:
+
+Company name: {{company_name}}
+Company number: {{company_number}}
+Shareholders: {{shareholders}}
+Share structure: {{share_structure}}
+Directors: {{directors}}
+Effective date: {{effective_date}}
+
+Include clauses:
+1. Definitions and interpretation
+2. Business and purpose
+3. Board composition and meetings
+4. Reserved matters (decisions requiring shareholder approval)
+5. Share transfers (pre-emption rights, tag-along, drag-along)
+6. Minority protection
+7. Dividend policy
+8. Funding
+9. Non-compete and confidentiality
+10. Good leaver / bad leaver provisions
+11. Valuation mechanism for share transfers
+12. Dispute resolution (including mediation, expert determination)
+13. Deadlock
+14. Termination
+15. Governing law
+
+Compliance: Companies Act 2006.
+
+Output FLAT JSON. Keys: "parties", "definitions", "business_purpose", "board", "reserved_matters", "share_transfers", "minority_protection", "dividends", "funding", "non_compete", "leaver_provisions", "valuation", "dispute_resolution", "deadlock", "termination", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
 };
 
 /**

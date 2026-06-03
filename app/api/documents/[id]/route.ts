@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { documents } from '@/lib/db/schema';
+// Import the document status enum type
+import { documents, docStatusEnum } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireAuth, AuthError } from '@/lib/auth/tenant';
 
@@ -93,6 +94,56 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
     const message = error instanceof Error ? error.message : 'Failed to delete document';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH /api/documents/:id
+ * Update document properties (status for archive/restore).
+ * Body: { status: "archived" | "generated" }
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { tenantId } = await requireAuth();
+    const body = await request.json();
+
+    // Verify ownership
+    const result = await db
+      .select({ tenantId: documents.tenantId, status: documents.status })
+      .from(documents)
+      .where(eq(documents.id, params.id))
+      .limit(1);
+
+    if (!result.length) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+    }
+
+    if (result[0].tenantId !== tenantId) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+    }
+
+    const validStatuses = ["archived", "generated", "downloaded", "draft"];
+    const newStatus = body.status as string;
+
+    if (!newStatus || !validStatuses.includes(newStatus)) {
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    }
+
+    await db
+      .update(documents)
+      .set({ status: newStatus as any, updatedAt: new Date() })
+      .where(eq(documents.id, params.id));
+
+    return NextResponse.json({ success: true, status: newStatus });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    const message = error instanceof Error ? error.message : 'Failed to update document';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

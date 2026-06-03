@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, FileText, Download, Loader2, Search } from "lucide-react";
+import { Plus, FileText, Download, Loader2, Search, Trash2, Archive, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Document {
@@ -12,6 +12,13 @@ interface Document {
   status: string;
   createdAt: string;
   aiModel: string;
+}
+
+interface PaginatedResponse {
+  data: Document[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -41,7 +48,7 @@ async function downloadDocument(doc: Document) {
   const blob = await res.blob();
   const disposition = res.headers.get("Content-Disposition");
   const filename = disposition
-    ? disposition.replace(/^.*filename=\"?(.+?)\"?\s*$/i, "$1")
+    ? disposition.replace(/^.*filename=\\"?(.+?)\\"?\\s*$/i, "$1")
     : `${doc.title.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
 
   const url = URL.createObjectURL(blob);
@@ -66,21 +73,34 @@ const rowVariants = {
 };
 
 export default function DocumentList() {
-  const [docs, setDocs] = useState<Document[]>([]);
+  const [paginated, setPaginated] = useState<PaginatedResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const limit = 20;
 
-  useEffect(() => {
-    fetch("/api/documents")
+  function fetchDocs(p: number) {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(p), limit: String(limit) });
+    fetch(`/api/documents?${params}`)
       .then((res) => res.json())
       .then((data) => {
-        setDocs(Array.isArray(data) ? data : []);
+        setPaginated(data as PaginatedResponse);
       })
-      .catch(() => setDocs([]))
+      .catch(() => setPaginated(null))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => {
+    fetchDocs(page);
+  }, [page]);
+
+  const docs = paginated?.data ?? [];
+  const total = paginated?.total ?? 0;
+  const totalPages = paginated?.totalPages ?? 0;
 
   const filtered = docs.filter((d) => {
     const typeMatch = filter === "all" || d.type === filter;
@@ -90,11 +110,36 @@ export default function DocumentList() {
     return typeMatch && searchMatch;
   });
 
+  async function handleDelete(docId: string) {
+    try {
+      const res = await fetch(`/api/documents/${docId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      setDeleteConfirmId(null);
+      fetchDocs(page);
+    } catch {
+      alert("Failed to delete document");
+    }
+  }
+
+  async function handleArchiveToggle(doc: Document) {
+    const newStatus = doc.status === "archived" ? "generated" : "archived";
+    try {
+      const res = await fetch(`/api/documents/${doc.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      fetchDocs(page);
+    } catch {
+      alert(`Failed to ${newStatus === "archived" ? "archive" : "restore"} document`);
+    }
+  }
+
   return (
     <div>
       {/* Search + Filters */}
       <div className="mb-6 space-y-4">
-        {/* Search bar */}
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -171,7 +216,7 @@ export default function DocumentList() {
         </motion.div>
       ) : (
         <>
-          {/* Desktop table — hidden on small screens */}
+          {/* Desktop table */}
           <div className="hidden sm:block overflow-x-auto rounded-xl border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
@@ -180,7 +225,6 @@ export default function DocumentList() {
                   <th className="px-4 py-3.5 font-medium text-muted-foreground">Type</th>
                   <th className="px-4 py-3.5 font-medium text-muted-foreground">Status</th>
                   <th className="px-4 py-3.5 font-medium text-muted-foreground">Created</th>
-                  <th className="px-4 py-3.5 font-medium text-muted-foreground hidden lg:table-cell">Model</th>
                   <th className="px-4 py-3.5 font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
@@ -212,15 +256,15 @@ export default function DocumentList() {
                       <td className="px-4 py-3.5 text-muted-foreground whitespace-nowrap">
                         {new Date(doc.createdAt).toLocaleDateString("en-GB")}
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-muted-foreground/60 hidden lg:table-cell">{doc.aiModel}</td>
                       <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <Link
                             href={`/documents/${doc.id}`}
                             className="text-xs font-medium text-primary hover:text-primary/80 transition-colors duration-150"
                           >
                             View
                           </Link>
+                          {/* Download */}
                           <button
                             onClick={async () => {
                               setDownloadingId(doc.id);
@@ -232,16 +276,48 @@ export default function DocumentList() {
                                 setDownloadingId(null);
                               }
                             }}
-                            disabled={downloadingId === doc.id}
-                            className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.95] disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-150"
+                            disabled={downloadingId === doc.id || doc.status === "draft"}
+                            className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.95] disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-150"
                           >
                             {downloadingId === doc.id ? (
                               <Loader2 className="h-3 w-3 animate-spin" />
                             ) : (
                               <Download size={12} />
                             )}
-                            {downloadingId === doc.id ? "Downloading..." : "PDF"}
                           </button>
+                          {/* Archive / Restore */}
+                          <button
+                            onClick={() => handleArchiveToggle(doc)}
+                            className="inline-flex items-center rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-accent active:scale-[0.95] transition-all duration-150"
+                            title={doc.status === "archived" ? "Restore" : "Archive"}
+                          >
+                            {doc.status === "archived" ? <RotateCcw size={12} /> : <Archive size={12} />}
+                          </button>
+                          {/* Delete */}
+                          {deleteConfirmId === doc.id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleDelete(doc.id)}
+                                className="rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-500"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteConfirmId(doc.id)}
+                              className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium text-red-500 hover:bg-red-50 active:scale-[0.95] transition-all duration-150"
+                              title="Delete"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </motion.tr>
@@ -251,7 +327,7 @@ export default function DocumentList() {
             </table>
           </div>
 
-          {/* Mobile card list — visible only on small screens */}
+          {/* Mobile card list */}
           <div className="sm:hidden space-y-3">
             <AnimatePresence mode="popLayout">
               {filtered.map((doc, i) => (
@@ -284,38 +360,111 @@ export default function DocumentList() {
                       >
                         {doc.status}
                       </span>
-                      <button
-                        onClick={async () => {
-                          setDownloadingId(doc.id);
-                          try {
-                            await downloadDocument(doc);
-                          } catch (e) {
-                            alert(e instanceof Error ? e.message : "Download failed");
-                          } finally {
-                            setDownloadingId(null);
-                          }
-                        }}
-                        disabled={downloadingId === doc.id}
-                        className="inline-flex items-center justify-center rounded-lg bg-primary p-2 text-primary-foreground hover:bg-primary/90 active:scale-[0.93] disabled:opacity-50 transition-all duration-150"
-                        aria-label="Download PDF"
-                      >
-                        {downloadingId === doc.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Download size={14} />
-                        )}
-                      </button>
                     </div>
                   </div>
-                  {doc.aiModel && (
-                    <p className="mt-2 text-xs text-muted-foreground/50 truncate">
-                      {doc.aiModel}
-                    </p>
-                  )}
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      onClick={async () => {
+                        setDownloadingId(doc.id);
+                        try {
+                          await downloadDocument(doc);
+                        } catch (e) {
+                          alert(e instanceof Error ? e.message : "Download failed");
+                        } finally {
+                          setDownloadingId(null);
+                        }
+                      }}
+                      disabled={downloadingId === doc.id || doc.status === "draft"}
+                      className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {downloadingId === doc.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Download size={12} />
+                      )}
+                      PDF
+                    </button>
+                    <button
+                      onClick={() => handleArchiveToggle(doc)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent"
+                    >
+                      {doc.status === "archived" ? <RotateCcw size={12} /> : <Archive size={12} />}
+                      {doc.status === "archived" ? "Restore" : "Archive"}
+                    </button>
+                    {deleteConfirmId === doc.id ? (
+                      <div className="flex items-center gap-1 ml-auto">
+                        <button
+                          onClick={() => handleDelete(doc.id)}
+                          className="rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white"
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="rounded-md border px-2 py-1 text-xs text-muted-foreground"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirmId(doc.id)}
+                        className="ml-auto rounded-lg p-1.5 text-red-500 hover:bg-red-50"
+                        title="Delete"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent disabled:opacity-40 transition-all duration-150"
+                >
+                  <ChevronLeft size={14} />
+                  Previous
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const start = Math.max(1, page - 2);
+                  const p = start + i;
+                  if (p > totalPages) return null;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
+                        p === page
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "border border-border bg-card text-muted-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent disabled:opacity-40 transition-all duration-150"
+                >
+                  Next
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

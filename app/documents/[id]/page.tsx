@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Archive } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
 import VersionTimeline from "@/components/documents/VersionTimeline";
@@ -268,6 +269,28 @@ export default function DocumentDetailPage() {
                 >
                   {doc.status}
                 </span>
+                {/* Archive / Restore */}
+                <button
+                  onClick={async () => {
+                    const newStatus = doc.status === "archived" ? "generated" : "archived";
+                    try {
+                      await fetch(`/api/documents/${doc.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: newStatus }),
+                      });
+                      silentRefresh();
+                    } catch {}
+                  }}
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                    doc.status === "archived"
+                      ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
+                      : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                  }`}
+                >
+                  <Archive size={12} />
+                  {doc.status === "archived" ? "Restore" : "Archive"}
+                </button>
               </div>
             </div>
           </div>

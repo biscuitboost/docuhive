@@ -4,6 +4,7 @@ import { documents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { renderers, PdfRenderInput } from "@/lib/documents/pdf";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
+import { loadBranding } from "@/lib/documents/branding";
 
 /**
  * GET /api/documents/:id/download
@@ -51,6 +52,9 @@ export async function GET(
       );
     }
 
+    // Load branding settings
+    const branding = await loadBranding(tenantId);
+
     // Build render input from stored data
     const inputData = doc.inputData as Record<string, string>;
     const pdfInput: PdfRenderInput = {
@@ -60,6 +64,7 @@ export async function GET(
       jobTitle: inputData.job_title || "",
       startDate: inputData.start_date || "",
       sections: doc.outputData as Record<string, string>,
+      branding,
     };
 
     const pdfBuffer = await renderFn(pdfInput);

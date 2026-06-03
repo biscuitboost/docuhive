@@ -1,6 +1,7 @@
 /**
  * PDF document templates using @react-pdf/renderer.
  * Produces A4 PDF documents for UK employment documents.
+ * Supports custom branding (logo, colours, header/footer text).
  */
 import React from "react";
 import {
@@ -8,6 +9,7 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
   pdf,
 } from "@react-pdf/renderer";
@@ -15,144 +17,174 @@ import {
 // Helvetica is a standard PDF base font supported natively by @react-pdf.
 // No custom font registration needed — the built-in Helvetica works in all environments.
 
-const COLORS = {
-  primary: "#1e3a5f",
-  accent: "#3b82f6",
-  border: "#cbd5e1",
-  text: "#1e293b",
-  muted: "#64748b",
-};
-
-const styles = StyleSheet.create({
-  page: {
-    padding: 50,
-    paddingTop: 40,
-    fontFamily: "Helvetica",
-    fontSize: 11,
-    color: COLORS.text,
-    lineHeight: 1.5,
-  },
-  header: {
-    marginBottom: 30,
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.accent,
-    paddingBottom: 15,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 10,
-    color: COLORS.muted,
-  },
-  sectionHeading: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginTop: 16,
-    marginBottom: 8,
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  body: {
-    fontSize: 10,
-    marginBottom: 6,
-    textAlign: "justify",
-  },
-  clause: {
-    marginBottom: 8,
-    paddingLeft: 0,
-  },
-  signatureSection: {
-    marginTop: 40,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 20,
-  },
-  signatureLine: {
-    marginTop: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    width: "60%",
-    marginBottom: 4,
-  },
-  signatureLabel: {
-    fontSize: 9,
-    color: COLORS.muted,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 30,
-    left: 50,
-    right: 50,
-    fontSize: 8,
-    color: COLORS.muted,
-    textAlign: "center",
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 8,
-  },
-});
-
 export interface PdfRenderInput {
   title: string;
   employeeName: string;
   jobTitle: string;
   startDate: string;
   sections: Record<string, string>;
+  branding?: {
+    logoUrl?: string | null;
+    primaryColor?: string;
+    documentFooter?: string | null;
+    documentHeader?: string | null;
+  };
 }
 
 /**
- * Builds a React-PDF Document from structured content.
+ * Builds a React-PDF Document from structured content with optional branding.
  */
 function buildDocument(data: PdfRenderInput, docTypeLabel: string) {
   const sectionEntries = Object.entries(data.sections);
+  const b = data.branding;
+  const primary = b?.primaryColor || "#1e3a5f";
+  const accent = b?.primaryColor ? b.primaryColor + "99" : "#3b82f6";
+  const logoUrl = b?.logoUrl || null;
+
+  const brandedStyles = StyleSheet.create({
+    page: {
+      padding: 50,
+      paddingTop: 40,
+      fontFamily: "Helvetica",
+      fontSize: 11,
+      color: "#1e293b",
+      lineHeight: 1.5,
+    },
+    header: {
+      marginBottom: 30,
+      borderBottomWidth: 2,
+      borderBottomColor: accent,
+      paddingBottom: 15,
+    },
+    logoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+    },
+    logo: {
+      width: 80,
+      height: 40,
+      marginRight: 12,
+      objectFit: "contain",
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: primary,
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 10,
+      color: "#64748b",
+    },
+    customHeader: {
+      fontSize: 9,
+      color: "#64748b",
+      marginBottom: 10,
+    },
+    sectionHeading: {
+      fontSize: 13,
+      fontWeight: "bold",
+      color: primary,
+      marginTop: 16,
+      marginBottom: 8,
+      paddingBottom: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: "#cbd5e1",
+    },
+    body: {
+      fontSize: 10,
+      marginBottom: 6,
+      textAlign: "justify",
+    },
+    clause: {
+      marginBottom: 8,
+      paddingLeft: 0,
+    },
+    signatureSection: {
+      marginTop: 40,
+      borderTopWidth: 1,
+      borderTopColor: "#cbd5e1",
+      paddingTop: 20,
+    },
+    signatureLine: {
+      marginTop: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: "#cbd5e1",
+      width: "60%",
+      marginBottom: 4,
+    },
+    signatureLabel: {
+      fontSize: 9,
+      color: "#64748b",
+    },
+    footer: {
+      position: "absolute",
+      bottom: 30,
+      left: 50,
+      right: 50,
+      fontSize: 8,
+      color: "#64748b",
+      textAlign: "center",
+      borderTopWidth: 1,
+      borderTopColor: "#cbd5e1",
+      paddingTop: 8,
+    },
+  });
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{data.title}</Text>
-          <Text style={styles.subtitle}>
-            Prepared for {data.employeeName} — {data.jobTitle}
-          </Text>
-          <Text style={styles.subtitle}>
-            Effective date: {data.startDate} | Document type: {docTypeLabel}
-          </Text>
+      <Page size="A4" style={brandedStyles.page}>
+        {/* Document header from branding */}
+        {b?.documentHeader && (
+          <Text style={brandedStyles.customHeader}>{b.documentHeader}</Text>
+        )}
+
+        {/* Logo + Title */}
+        <View style={brandedStyles.header}>
+          <View style={brandedStyles.logoRow}>
+            {logoUrl && (
+              <Image style={brandedStyles.logo} src={logoUrl} />
+            )}
+            <View style={{ flex: 1 }}>
+              <Text style={brandedStyles.title}>{data.title}</Text>
+              <Text style={brandedStyles.subtitle}>
+                Prepared for {data.employeeName} — {data.jobTitle}
+              </Text>
+              <Text style={brandedStyles.subtitle}>
+                Effective date: {data.startDate} | Document type: {docTypeLabel}
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Body sections */}
         {sectionEntries.map(([key, text]) => (
-          <View key={key} style={styles.clause}>
-            <Text style={styles.sectionHeading}>{key}</Text>
-            <Text style={styles.body}>{text}</Text>
+          <View key={key} style={brandedStyles.clause}>
+            <Text style={brandedStyles.sectionHeading}>{key}</Text>
+            <Text style={brandedStyles.body}>{text}</Text>
           </View>
         ))}
 
         {/* Signature block */}
-        <View style={styles.signatureSection}>
-          <Text style={styles.sectionHeading}>Signatures</Text>
-          <Text style={styles.body}>
+        <View style={brandedStyles.signatureSection}>
+          <Text style={brandedStyles.sectionHeading}>Signatures</Text>
+          <Text style={brandedStyles.body}>
             This document shall take effect as a legally binding contract upon
             signature by both parties.
           </Text>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 25 }}>
             <View style={{ width: "45%" }}>
-              <View style={styles.signatureLine} />
-              <Text style={styles.signatureLabel}>Employee signature</Text>
-              <Text style={[styles.signatureLabel, { marginTop: 4 }]}>
+              <View style={brandedStyles.signatureLine} />
+              <Text style={brandedStyles.signatureLabel}>Employee signature</Text>
+              <Text style={[brandedStyles.signatureLabel, { marginTop: 4 }]}>
                 Date: _______________
               </Text>
             </View>
             <View style={{ width: "45%" }}>
-              <View style={styles.signatureLine} />
-              <Text style={styles.signatureLabel}>Employer signature</Text>
-              <Text style={[styles.signatureLabel, { marginTop: 4 }]}>
+              <View style={brandedStyles.signatureLine} />
+              <Text style={brandedStyles.signatureLabel}>Employer signature</Text>
+              <Text style={[brandedStyles.signatureLabel, { marginTop: 4 }]}>
                 Date: _______________
               </Text>
             </View>
@@ -160,9 +192,10 @@ function buildDocument(data: PdfRenderInput, docTypeLabel: string) {
         </View>
 
         {/* Footer */}
-        <Text style={styles.footer}>
-          DocuHive — AI-Generated UK Employment Document | This document is
-          legally compliant with UK employment law including ERA 2025
+        <Text style={brandedStyles.footer}>
+          {b?.documentFooter
+            ? b.documentFooter
+            : "DocuHive — AI-Generated UK Employment Document | This document is legally compliant with UK employment law including ERA 2025"}
         </Text>
       </Page>
     </Document>

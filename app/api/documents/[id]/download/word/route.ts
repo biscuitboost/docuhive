@@ -4,6 +4,7 @@ import { documents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generators, WordRenderInput } from "@/lib/documents/word";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
+import { loadBranding } from "@/lib/documents/branding";
 
 /**
  * GET /api/documents/:id/download/word
@@ -50,9 +51,11 @@ export async function GET(
     }
 
     // Build render input from stored data
+    const branding = await loadBranding(tenantId);
     const wordInput: WordRenderInput = {
       title: doc.title,
       sections: doc.outputData as Record<string, string>,
+      branding,
     };
 
     const docxBuffer = await genFn(wordInput);

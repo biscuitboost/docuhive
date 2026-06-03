@@ -1,6 +1,7 @@
 /**
  * Word document generators using the docx library.
  * One generate function per document type.
+ * Supports custom branding (header, footer, colour).
  */
 import {
   Document,
@@ -15,6 +16,12 @@ import {
 export interface WordRenderInput {
   title: string;
   sections: Record<string, string>;
+  branding?: {
+    logoUrl?: string | null;
+    primaryColor?: string;
+    documentFooter?: string | null;
+    documentHeader?: string | null;
+  };
 }
 
 async function createWordDoc(
@@ -22,6 +29,26 @@ async function createWordDoc(
 ): Promise<Buffer> {
   const sectionEntries = Object.entries(data.sections);
   const children: Paragraph[] = [];
+  const b = data.branding;
+  const primary = b?.primaryColor ? b.primaryColor.replace("#", "") : "1e3a5f";
+
+  // Document header from branding
+  if (b?.documentHeader) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: b.documentHeader,
+            size: 16,
+            color: "64748b",
+            italics: true,
+          }),
+        ],
+        spacing: { after: 300 },
+        alignment: AlignmentType.CENTER,
+      })
+    );
+  }
 
   // Title paragraph
   children.push(
@@ -52,8 +79,14 @@ async function createWordDoc(
   for (const [key, text] of sectionEntries) {
     children.push(
       new Paragraph({
-        text: key,
-        heading: HeadingLevel.HEADING_2,
+        children: [
+          new TextRun({
+            text: key,
+            bold: true,
+            size: 26,
+            color: primary,
+          }),
+        ],
         spacing: { before: 300, after: 100 },
       })
     );
@@ -80,7 +113,7 @@ async function createWordDoc(
           text: "\nSignatures",
           bold: true,
           size: 28,
-          color: "1e3a5f",
+          color: primary,
         }),
       ],
       spacing: { before: 600, after: 200 },
@@ -143,6 +176,32 @@ async function createWordDoc(
       spacing: { after: 400 },
     })
   );
+
+  // Document footer from branding
+  if (b?.documentFooter) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: b.documentFooter,
+            size: 16,
+            color: "64748b",
+            italics: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 400 },
+        border: {
+          top: {
+            color: "cbd5e1",
+            size: 1,
+            space: 8,
+            style: BorderStyle.SINGLE,
+          },
+        },
+      })
+    );
+  }
 
   const doc = new Document({
     sections: [

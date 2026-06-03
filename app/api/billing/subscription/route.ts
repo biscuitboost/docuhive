@@ -45,6 +45,7 @@ export async function GET() {
       planPrice: planConfig.price,
       docsLimit: planConfig.docsLimit,
       multiUser: planConfig.multiUser,
+      allowBranding: planConfig.allowBranding,
       stripeCustomerId: tenant[0].stripeCustomerId,
       stripeSubscriptionId: tenant[0].stripeSubscriptionId,
       subscription: sub.length > 0

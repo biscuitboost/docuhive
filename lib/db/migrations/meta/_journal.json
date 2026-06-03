@@ -29,6 +29,13 @@
       "when": 1780474871933,
       "tag": "0003_empty_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780488233426,
+      "tag": "0004_curious_shape",
+      "breakpoints": true
     }
   ]
 }

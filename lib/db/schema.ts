@@ -28,6 +28,11 @@ export const tenants = pgTable("tenants", {
   plan: planEnum("plan").notNull().default("essentials"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  // Branding
+  logoUrl: text("logo_url"),
+  primaryColor: text("primary_color").default("#2563eb"),
+  documentFooter: text("document_footer"),
+  documentHeader: text("document_header"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

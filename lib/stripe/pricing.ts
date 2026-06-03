@@ -10,6 +10,7 @@ export interface PlanConfig {
   price: number; // in GBP (pounds)
   docsLimit: number | null; // null = unlimited
   multiUser: boolean;
+  allowBranding: boolean;
   stripePriceId?: string;
 }
 
@@ -20,6 +21,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     price: 49,
     docsLimit: 10,
     multiUser: false,
+    allowBranding: false,
     stripePriceId: process.env.STRIPE_PRICE_ESSENTIALS,
   },
   pro: {
@@ -28,6 +30,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     price: 79,
     docsLimit: null, // unlimited
     multiUser: false,
+    allowBranding: true,
     stripePriceId: process.env.STRIPE_PRICE_PRO,
   },
   team: {
@@ -36,6 +39,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     price: 99,
     docsLimit: null, // unlimited
     multiUser: true,
+    allowBranding: true,
     stripePriceId: process.env.STRIPE_PRICE_TEAM,
   },
 };

@@ -13,7 +13,13 @@ export async function GET() {
     const { tenantId } = await requireAuth();
 
     const [tenant] = await db
-      .select({ name: tenants.name })
+      .select({
+        name: tenants.name,
+        logoUrl: tenants.logoUrl,
+        primaryColor: tenants.primaryColor,
+        documentFooter: tenants.documentFooter,
+        documentHeader: tenants.documentHeader,
+      })
       .from(tenants)
       .where(eq(tenants.id, tenantId))
       .limit(1);
@@ -22,7 +28,15 @@ export async function GET() {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ name: tenant.name });
+    return NextResponse.json({
+      name: tenant.name,
+      branding: {
+        logoUrl: tenant.logoUrl,
+        primaryColor: tenant.primaryColor,
+        documentFooter: tenant.documentFooter,
+        documentHeader: tenant.documentHeader,
+      },
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
@@ -42,25 +56,50 @@ export async function PATCH(request: Request) {
     const { tenantId } = await requireAuth();
 
     const body = await request.json();
-    const { name } = body;
+    const { name, branding } = body;
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    const updateFields: Record<string, string | undefined> = {};
+    if (name && typeof name === "string" && name.trim().length > 0) {
+      updateFields.name = name.trim();
+    }
+    if (branding && typeof branding === "object") {
+      if (typeof branding.logoUrl === "string") updateFields.logoUrl = branding.logoUrl;
+      if (typeof branding.primaryColor === "string") updateFields.primaryColor = branding.primaryColor;
+      if (typeof branding.documentFooter === "string") updateFields.documentFooter = branding.documentFooter;
+      if (typeof branding.documentHeader === "string") updateFields.documentHeader = branding.documentHeader;
     }
 
-    const trimmedName = name.trim();
+    if (Object.keys(updateFields).length === 0) {
+      return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+    }
+
+    updateFields.updatedAt = new Date().toISOString();
 
     const [updated] = await db
       .update(tenants)
-      .set({ name: trimmedName, updatedAt: new Date() })
+      .set(updateFields as any)
       .where(eq(tenants.id, tenantId))
-      .returning({ name: tenants.name });
+      .returning({
+        name: tenants.name,
+        logoUrl: tenants.logoUrl,
+        primaryColor: tenants.primaryColor,
+        documentFooter: tenants.documentFooter,
+        documentHeader: tenants.documentHeader,
+      });
 
     if (!updated) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ name: updated.name });
+    return NextResponse.json({
+      name: updated.name,
+      branding: {
+        logoUrl: updated.logoUrl,
+        primaryColor: updated.primaryColor,
+        documentFooter: updated.documentFooter,
+        documentHeader: updated.documentHeader,
+      },
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });

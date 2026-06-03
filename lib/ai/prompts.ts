@@ -27,6 +27,7 @@ export const TEMPLATES: Record<string, { system: string; prompt: string }> = {
     system: SYSTEM_PROMPT,
     prompt: `Generate an employment contract with the following details:
 
+Employer/Company name: {{employer_name}}
 Employee name: {{employee_name}}
 Job title: {{job_title}}
 Start date: {{start_date}}
@@ -38,6 +39,8 @@ Notice period: {{notice_period}}
 Probation period: {{probation_period}}
 Pension scheme: {{pension_scheme}}
 Sick pay: {{sick_pay}}
+
+Write in the first person plural ('We' = the employer, 'you' = the employee) throughout. Include the employer's name in the opening clause.
 
 Include standard clauses for:
 - Duties and responsibilities
@@ -63,6 +66,7 @@ Output JSON with FLAT key-value pairs — each key maps directly to text. Use de
     system: SYSTEM_PROMPT,
     prompt: `Generate an offer letter with the following details:
 
+Company name: {{company_name}}
 Candidate name: {{candidate_name}}
 Job title: {{job_title}}
 Department: {{department}}
@@ -125,6 +129,8 @@ National Insurance: {{ni_category}}
 Employee NI: £{{employee_ni}}
 Pension deduction: £{{pension_deduction}}
 Net pay: £{{net_pay}}
+
+Format the payslip as a clean UK-style payslip with side-by-side earnings and deductions columns. Include the employee's full name, NI, tax code, PAYE reference at top. Show gross pay, tax, NI, pension, other deductions, and net pay. Include year-to-date totals for gross pay, tax paid, and NI paid.
 
 Output FLAT JSON with keys like "employee_details", "gross_pay", "income_tax", "employee_ni", "pension_deduction", "net_pay", "year_to_date", "message". No nested objects.`,
   },
@@ -293,6 +299,8 @@ Output FLAT JSON. Keys: "project_scope", "payment_terms", "freelancer_status", "
 
 Employee name: {{employee_name}}
 Employer name: {{employer_name}}
+Employer registered address: {{employer_address}}
+Termination reason: {{termination_reason}}
 Termination date: {{termination_date}}
 Employment length: {{employment_length}} years
 Notice pay: £{{notice_pay}}
@@ -395,6 +403,7 @@ Output FLAT JSON. Keys: "employee_details", "current_pattern", "proposed_pattern
     prompt: `Generate a UK GDPR-compliant employee/worker privacy notice with the following details:
 
 Organisation name: {{organisation_name}}
+Organisation registered address: {{organisation_address}}
 ICO registration number: {{ico_number}}
 DPO name: {{dpo_name}}
 DPO email: {{dpo_email}}
@@ -543,6 +552,8 @@ Break clause: {{break_clause}} (yes/no — {{break_date}})
 Permitted use: {{permitted_use}}
 Service charge: £{{service_charge}} per annum
 Insurance rent: {{insurance_rent}}
+
+Produce a simplified commercial lease in plain English rather than traditional conveyancing language. Avoid archaic legal phrasing like 'hereinafter' and 'aforesaid'. Use clear section headers with explanatory sub-headings. Include key commercial terms summary at the start.
 
 Include simplified clauses:
 1. Definitions

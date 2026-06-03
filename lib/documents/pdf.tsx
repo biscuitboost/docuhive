@@ -63,6 +63,13 @@ function getSignatureStyle(docTypeLabel: string): "employee-employer" | "party-p
   return "none";
 }
 
+function formatSectionKey(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase())
+    .trim();
+}
+
 function buildDocument(data: PdfRenderInput, docTypeLabel: string) {
   const sectionEntries = Object.entries(data.sections);
   const b = data.branding;
@@ -226,7 +233,7 @@ function buildDocument(data: PdfRenderInput, docTypeLabel: string) {
         {/* Body sections */}
         {sectionEntries.map(([key, text]) => (
           <View key={key} style={brandedStyles.clause}>
-            <Text style={brandedStyles.sectionHeading}>{key}</Text>
+            <Text style={brandedStyles.sectionHeading}>{formatSectionKey(key)}</Text>
             <Text style={brandedStyles.body}>{text}</Text>
           </View>
         ))}

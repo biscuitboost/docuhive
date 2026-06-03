@@ -16,7 +16,7 @@ type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "pays
 interface FieldDef {
   key: string;
   label: string;
-  type: "text" | "number" | "select";
+  type: "text" | "number" | "select" | "textarea";
   options?: { value: string; label: string }[];
   required?: boolean;
 }
@@ -30,6 +30,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     icon: "📋",
     category: "Employment",
     fields: [
+      { key: "employer_name", label: "Employer/company name", type: "text", required: true },
       { key: "employee_name", label: "Employee full name", type: "text", required: true },
       { key: "job_title", label: "Job title", type: "text", required: true },
       { key: "start_date", label: "Start date", type: "text", required: true },
@@ -60,6 +61,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     icon: "✉️",
     category: "Employment",
     fields: [
+      { key: "company_name", label: "Company name", type: "text", required: true },
       { key: "candidate_name", label: "Candidate name", type: "text", required: true },
       { key: "job_title", label: "Job title", type: "text", required: true },
       { key: "department", label: "Department", type: "text" },
@@ -164,7 +166,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     fields: [
       { key: "disclosing_party", label: "Disclosing party name", type: "text", required: true },
       { key: "receiving_party", label: "Receiving party name", type: "text", required: true },
-      { key: "purpose", label: "Purpose of disclosure", type: "text", required: true },
+      { key: "purpose", label: "Purpose of disclosure", type: "textarea", required: true },
       { key: "effective_date", label: "Effective date", type: "text", required: true },
       { key: "confidentiality_period", label: "Confidentiality period (years)", type: "text", required: true },
     ],
@@ -182,7 +184,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
         { value: "limited_company", label: "Limited company" },
         { value: "sole_trader", label: "Sole trader" },
       ], required: true },
-      { key: "services_description", label: "Description of services", type: "text", required: true },
+      { key: "services_description", label: "Description of services", type: "textarea", required: true },
       { key: "start_date", label: "Start date", type: "text", required: true },
       { key: "term", label: "Term (months)", type: "text" },
       { key: "fee", label: "Fee (£)", type: "text", required: true },
@@ -208,7 +210,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
         { value: "individual", label: "Individual" },
         { value: "limited_company", label: "Limited company" },
       ], required: true },
-      { key: "scope_of_work", label: "Scope of work", type: "text", required: true },
+      { key: "scope_of_work", label: "Scope of work", type: "textarea", required: true },
       { key: "start_date", label: "Start date", type: "text", required: true },
       { key: "end_date", label: "End date", type: "text" },
       { key: "fee", label: "Fee (£)", type: "text", required: true },
@@ -230,7 +232,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     fields: [
       { key: "client_name", label: "Client name", type: "text", required: true },
       { key: "freelancer_name", label: "Freelancer name", type: "text", required: true },
-      { key: "project_description", label: "Project description", type: "text", required: true },
+      { key: "project_description", label: "Project description", type: "textarea", required: true },
       { key: "start_date", label: "Start date", type: "text", required: true },
       { key: "delivery_date", label: "Delivery date", type: "text" },
       { key: "fee", label: "Fee (£)", type: "text", required: true },
@@ -247,6 +249,8 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     fields: [
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "employer_name", label: "Employer name", type: "text", required: true },
+      { key: "employer_address", label: "Employer registered address", type: "text", required: true },
+      { key: "termination_reason", label: "Termination reason", type: "textarea", required: true },
       { key: "termination_date", label: "Termination date", type: "text", required: true },
       { key: "employment_length", label: "Employment length (years)", type: "text", required: true },
       { key: "notice_pay", label: "Notice pay (£)", type: "text", required: true },
@@ -269,8 +273,8 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "employee_role", label: "Employee role", type: "text", required: true },
       { key: "meeting_date", label: "Meeting date", type: "text" },
-      { key: "issue_details", label: "Issue details", type: "text", required: true },
-      { key: "outcome", label: "Outcome (if known)", type: "text" },
+      { key: "issue_details", label: "Issue details", type: "textarea", required: true },
+      { key: "outcome", label: "Outcome (if known)", type: "textarea" },
     ],
   },
   {
@@ -286,7 +290,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "current_pattern", label: "Current working pattern", type: "text", required: true },
       { key: "proposed_pattern", label: "Proposed working pattern", type: "text", required: true },
       { key: "effective_date", label: "Proposed effective date", type: "text", required: true },
-      { key: "reasons", label: "Reasons for request", type: "text" },
+      { key: "reasons", label: "Reasons for request", type: "textarea" },
     ],
   },
 
@@ -299,6 +303,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     category: "Data Protection",
     fields: [
       { key: "organisation_name", label: "Organisation name", type: "text", required: true },
+      { key: "organisation_address", label: "Organisation registered address", type: "text", required: true },
       { key: "ico_number", label: "ICO registration number", type: "text", required: true },
       { key: "dpo_name", label: "Data Protection Officer name", type: "text" },
       { key: "dpo_email", label: "DPO email", type: "text" },
@@ -314,9 +319,9 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
     fields: [
       { key: "controller_name", label: "Controller name", type: "text", required: true },
       { key: "processor_name", label: "Processor name", type: "text", required: true },
-      { key: "processing_purposes", label: "Processing purposes", type: "text", required: true },
-      { key: "data_categories", label: "Data categories", type: "text", required: true },
-      { key: "data_subject_types", label: "Data subject types", type: "text", required: true },
+      { key: "processing_purposes", label: "Processing purposes", type: "textarea", required: true },
+      { key: "data_categories", label: "Data categories", type: "textarea", required: true },
+      { key: "data_subject_types", label: "Data subject types", type: "textarea", required: true },
       { key: "processing_duration", label: "Duration of processing", type: "text", required: true },
       { key: "effective_date", label: "Effective date", type: "text" },
     ],
@@ -657,6 +662,14 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
                           </option>
                         ))}
                       </select>
+                    ) : field.type === "textarea" ? (
+                      <textarea
+                        value={formValues[field.key] || ""}
+                        onChange={(e) => updateField(field.key, e.target.value)}
+                        placeholder={field.label}
+                        rows={4}
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ring-0 focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200"
+                      />
                     ) : (
                       <input
                         type={field.type === "number" ? "number" : "text"}

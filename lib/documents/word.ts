@@ -24,6 +24,13 @@ export interface WordRenderInput {
   };
 }
 
+function formatSectionKey(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase())
+    .trim();
+}
+
 async function createWordDoc(
   data: WordRenderInput
 ): Promise<Buffer> {
@@ -81,7 +88,7 @@ async function createWordDoc(
       new Paragraph({
         children: [
           new TextRun({
-            text: key,
+            text: formatSectionKey(key),
             bold: true,
             size: 26,
             color: primary,

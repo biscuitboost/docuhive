@@ -16,7 +16,7 @@ type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "pays
 interface FieldDef {
   key: string;
   label: string;
-  type: "text" | "number" | "select" | "textarea";
+  type: "text" | "number" | "select" | "textarea" | "date";
   options?: { value: string; label: string }[];
   required?: boolean;
 }
@@ -33,7 +33,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "employer_name", label: "Employer/company name", type: "text", required: true },
       { key: "employee_name", label: "Employee full name", type: "text", required: true },
       { key: "job_title", label: "Job title", type: "text", required: true },
-      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "date", required: true },
       { key: "employment_type", label: "Employment type", type: "select", required: true, options: [
         { value: "permanent", label: "Permanent" },
         { value: "fixed_term", label: "Fixed term" },
@@ -65,7 +65,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "candidate_name", label: "Candidate name", type: "text", required: true },
       { key: "job_title", label: "Job title", type: "text", required: true },
       { key: "department", label: "Department", type: "text" },
-      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "date", required: true },
       { key: "salary", label: "Salary (£)", type: "text", required: true },
       { key: "salary_period", label: "Salary period", type: "select", required: true, options: [
         { value: "year", label: "Per year" },
@@ -73,7 +73,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       ]},
       { key: "reporting_to", label: "Reporting to", type: "text" },
       { key: "location", label: "Location", type: "text" },
-      { key: "offer_expiry_date", label: "Offer expiry date", type: "text", required: true },
+      { key: "offer_expiry_date", label: "Offer expiry date", type: "date", required: true },
     ],
   },
   {
@@ -87,7 +87,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "company_address", label: "Company address", type: "text", required: true },
       { key: "industry", label: "Industry", type: "text" },
       { key: "employee_count", label: "Number of employees", type: "text" },
-      { key: "effective_date", label: "Effective date", type: "text", required: true },
+      { key: "effective_date", label: "Effective date", type: "date", required: true },
     ],
   },
   {
@@ -120,7 +120,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "ni_number", label: "NI number", type: "text", required: true },
       { key: "tax_code", label: "Tax code", type: "text", required: true },
-      { key: "leaving_date", label: "Leaving date", type: "text", required: true },
+      { key: "leaving_date", label: "Leaving date", type: "date", required: true },
       { key: "employer_name", label: "Employer name", type: "text", required: true },
       { key: "paye_reference", label: "PAYE reference", type: "text", required: true },
       { key: "pay_to_date", label: "Pay to date (£)", type: "text", required: true },
@@ -154,7 +154,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
         { value: "year", label: "Per year" },
         { value: "month", label: "Per month" },
       ]},
-      { key: "closing_date", label: "Closing date", type: "text" },
+      { key: "closing_date", label: "Closing date", type: "date" },
     ],
   },
   {
@@ -167,7 +167,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "disclosing_party", label: "Disclosing party name", type: "text", required: true },
       { key: "receiving_party", label: "Receiving party name", type: "text", required: true },
       { key: "purpose", label: "Purpose of disclosure", type: "textarea", required: true },
-      { key: "effective_date", label: "Effective date", type: "text", required: true },
+      { key: "effective_date", label: "Effective date", type: "date", required: true },
       { key: "confidentiality_period", label: "Confidentiality period (years)", type: "text", required: true },
     ],
   },
@@ -185,7 +185,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
         { value: "sole_trader", label: "Sole trader" },
       ], required: true },
       { key: "services_description", label: "Description of services", type: "textarea", required: true },
-      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "date", required: true },
       { key: "term", label: "Term (months)", type: "text" },
       { key: "fee", label: "Fee (£)", type: "text", required: true },
       { key: "fee_period", label: "Fee period", type: "select", options: [
@@ -211,8 +211,8 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
         { value: "limited_company", label: "Limited company" },
       ], required: true },
       { key: "scope_of_work", label: "Scope of work", type: "textarea", required: true },
-      { key: "start_date", label: "Start date", type: "text", required: true },
-      { key: "end_date", label: "End date", type: "text" },
+      { key: "start_date", label: "Start date", type: "date", required: true },
+      { key: "end_date", label: "End date", type: "date" },
       { key: "fee", label: "Fee (£)", type: "text", required: true },
       { key: "fee_period", label: "Fee period", type: "select", options: [
         { value: "day", label: "Per day" },
@@ -233,8 +233,8 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "client_name", label: "Client name", type: "text", required: true },
       { key: "freelancer_name", label: "Freelancer name", type: "text", required: true },
       { key: "project_description", label: "Project description", type: "textarea", required: true },
-      { key: "start_date", label: "Start date", type: "text", required: true },
-      { key: "delivery_date", label: "Delivery date", type: "text" },
+      { key: "start_date", label: "Start date", type: "date", required: true },
+      { key: "delivery_date", label: "Delivery date", type: "date" },
       { key: "fee", label: "Fee (£)", type: "text", required: true },
       { key: "payment_schedule", label: "Payment schedule", type: "text" },
       { key: "expenses", label: "Expenses covered", type: "text" },
@@ -251,11 +251,11 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "employer_name", label: "Employer name", type: "text", required: true },
       { key: "employer_address", label: "Employer registered address", type: "text", required: true },
       { key: "termination_reason", label: "Termination reason", type: "textarea", required: true },
-      { key: "termination_date", label: "Termination date", type: "text", required: true },
+      { key: "termination_date", label: "Termination date", type: "date", required: true },
       { key: "employment_length", label: "Employment length (years)", type: "text", required: true },
       { key: "notice_pay", label: "Notice pay (£)", type: "text", required: true },
       { key: "compensation_payment", label: "Compensation payment (£)", type: "text", required: true },
-      { key: "settlement_date", label: "Settlement date", type: "text" },
+      { key: "settlement_date", label: "Settlement date", type: "date" },
     ],
   },
   {
@@ -272,7 +272,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       ]},
       { key: "employee_name", label: "Employee name", type: "text", required: true },
       { key: "employee_role", label: "Employee role", type: "text", required: true },
-      { key: "meeting_date", label: "Meeting date", type: "text" },
+      { key: "meeting_date", label: "Meeting date", type: "date" },
       { key: "issue_details", label: "Issue details", type: "textarea", required: true },
       { key: "outcome", label: "Outcome (if known)", type: "textarea" },
     ],
@@ -289,7 +289,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "requested_change", label: "Requested change (what do you want to change?)", type: "text", required: true },
       { key: "current_pattern", label: "Current working pattern", type: "text", required: true },
       { key: "proposed_pattern", label: "Proposed working pattern", type: "text", required: true },
-      { key: "effective_date", label: "Proposed effective date", type: "text", required: true },
+      { key: "effective_date", label: "Proposed effective date", type: "date", required: true },
       { key: "reasons", label: "Reasons for request", type: "textarea" },
     ],
   },
@@ -307,7 +307,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "ico_number", label: "ICO registration number", type: "text", required: true },
       { key: "dpo_name", label: "Data Protection Officer name", type: "text" },
       { key: "dpo_email", label: "DPO email", type: "text" },
-      { key: "effective_date", label: "Effective date", type: "text", required: true },
+      { key: "effective_date", label: "Effective date", type: "date", required: true },
     ],
   },
   {
@@ -323,7 +323,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "data_categories", label: "Data categories", type: "textarea", required: true },
       { key: "data_subject_types", label: "Data subject types", type: "textarea", required: true },
       { key: "processing_duration", label: "Duration of processing", type: "text", required: true },
-      { key: "effective_date", label: "Effective date", type: "text" },
+      { key: "effective_date", label: "Effective date", type: "date" },
     ],
   },
   {
@@ -398,7 +398,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "company_number", label: "Company number", type: "text" },
       { key: "director_name", label: "Director name", type: "text", required: true },
       { key: "director_title", label: "Director title", type: "text", required: true },
-      { key: "start_date", label: "Start date", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "date", required: true },
       { key: "salary", label: "Salary (£)", type: "text", required: true },
       { key: "salary_period", label: "Salary period", type: "select", options: [
         { value: "year", label: "Per year" },
@@ -424,7 +424,7 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "shareholders", label: "Shareholders (names, comma-separated)", type: "text", required: true },
       { key: "share_structure", label: "Share structure (e.g. 100 ordinary shares)", type: "text", required: true },
       { key: "directors", label: "Directors (names, comma-separated)", type: "text" },
-      { key: "effective_date", label: "Effective date", type: "text", required: true },
+      { key: "effective_date", label: "Effective date", type: "date", required: true },
     ],
   },
 ];
@@ -487,6 +487,60 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
       setStep("form");
     }
   }, [initialType]);
+
+  // Pre-fill form values from org defaults
+  useEffect(() => {
+    if (step !== "form" || !selectedType) return;
+
+    fetch("/api/tenants")
+      .then((r) => r.json())
+      .then((json) => {
+        const d = json.defaults;
+        if (!d) return;
+
+        const prefill: Record<string, string> = {};
+        const mapping: [string, string[]][] = [
+          ["companyName", ["company_name", "employer_name", "business_name", "organisation_name", "controller_name"]],
+          ["companyAddress", ["company_address", "business_address", "organisation_address", "employer_address"]],
+          ["companyNumber", ["company_number"]],
+          ["vatNumber", ["vat_number"]],
+          ["defaultEmploymentType", ["employment_type"]],
+          ["defaultSalaryPeriod", ["salary_period"]],
+          ["defaultWorkingHours", ["working_hours"]],
+          ["defaultNoticePeriod", ["notice_period"]],
+          ["defaultProbationPeriod", ["probation_period"]],
+          ["defaultPensionScheme", ["pension_scheme"]],
+          ["defaultSickPay", ["sick_pay"]],
+          ["defaultHolidayEntitlement", ["holiday_entitlement"]],
+          ["defaultConfidentialityPeriod", ["confidentiality_period"]],
+          ["icoRegistrationNumber", ["ico_number"]],
+          ["dpoName", ["dpo_name"]],
+          ["dpoEmail", ["dpo_email"]],
+          ["defaultFeePeriod", ["fee_period"]],
+          ["defaultPaymentTerms", ["payment_terms"]],
+        ];
+
+        for (const [defaultKey, fieldKeys] of mapping) {
+          const val = d[defaultKey];
+          if (val && typeof val === "string" && val.trim()) {
+            for (const fk of fieldKeys) {
+              // Only pre-fill if the field exists in the doc type's fields and isn't already set
+              if (docType?.fields.some((f) => f.key === fk) && !formValues[fk]) {
+                prefill[fk] = val.trim();
+              }
+            }
+          }
+        }
+
+        if (Object.keys(prefill).length > 0) {
+          setFormValues((prev) => ({ ...prev, ...prefill }));
+        }
+      })
+      .catch(() => {
+        // Silently fail — defaults are optional
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, selectedType]);
 
   const docType = selectedType ? DOC_TYPES.find((d) => d.value === selectedType) : null;
 
@@ -669,6 +723,13 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
                         placeholder={field.label}
                         rows={4}
                         className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ring-0 focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200"
+                      />
+                    ) : field.type === "date" ? (
+                      <input
+                        type="date"
+                        value={formValues[field.key] || ""}
+                        onChange={(e) => updateField(field.key, e.target.value)}
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none ring-0 focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200"
                       />
                     ) : (
                       <input

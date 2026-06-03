@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles } from "lucide-react";
+import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
 
 type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45";
 
@@ -164,6 +165,7 @@ export default function DocumentWizard() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<{ id: string; url?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>("");
 
   const docType = selectedType ? DOC_TYPES.find((d) => d.value === selectedType) : null;
 
@@ -173,6 +175,8 @@ export default function DocumentWizard() {
     setGenerating(true);
     setError(null);
 
+    const model = selectedModel || getRecommendedModel(selectedType);
+
     try {
       const res = await fetch("/api/documents/generate", {
         method: "POST",
@@ -181,6 +185,7 @@ export default function DocumentWizard() {
           docType: selectedType,
           title: docType.label,
           userInputs: formValues,
+          model,
         }),
       });
 
@@ -275,6 +280,7 @@ export default function DocumentWizard() {
                 key={dt.value}
                 onClick={() => {
                   setSelectedType(dt.value);
+                  setSelectedModel(getRecommendedModel(dt.value));
                   setFormValues({});
                   setStep("form");
                 }}
@@ -339,6 +345,29 @@ export default function DocumentWizard() {
                     )}
                   </div>
                 ))}
+              </div>
+
+              {/* AI Model Selector */}
+              <div className="mt-6 border-t border-border pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-card-foreground">AI Model</label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Choose the AI model to generate your document
+                    </p>
+                  </div>
+                  <select
+                    value={selectedModel || getRecommendedModel(selectedType!)}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-56 rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
+                  >
+                    {AVAILABLE_MODELS.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} ({m.provider})
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {error && (

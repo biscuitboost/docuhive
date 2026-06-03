@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Archive, RefreshCw } from "lucide-react";
+import { Archive, RefreshCw, Share2, X, Check, Copy } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
 import VersionTimeline from "@/components/documents/VersionTimeline";
 import InlineSectionEditor from "@/components/documents/InlineSectionEditor";
+import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
 
 interface DocumentDetail {
   id: string;
@@ -120,6 +121,12 @@ export default function DocumentDetailPage() {
   const [showVersionPanel, setShowVersionPanel] = useState(false);
   const [showRegenerate, setShowRegenerate] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [regenerateModel, setRegenerateModel] = useState("");
+  const [showShare, setShowShare] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareEmail, setShareEmail] = useState("");
+  const [sharing, setSharing] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const refreshDocument = useCallback(() => {
     if (!params.id) return;
@@ -135,7 +142,10 @@ export default function DocumentDetailPage() {
         }
         return res.json();
       })
-      .then((data) => setDoc(data))
+      .then((data) => {
+        setDoc(data);
+        if (data.aiModel) setRegenerateModel(data.aiModel);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [params.id]);
@@ -293,9 +303,101 @@ export default function DocumentDetailPage() {
                   <Archive size={12} />
                   {doc.status === "archived" ? "Restore" : "Archive"}
                 </button>
+                {/* Share button */}
+                <button
+                  onClick={() => setShowShare(!showShare)}
+                  className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <Share2 size={12} />
+                  Share
+                </button>
               </div>
             </div>
           </div>
+
+          {/* Share modal */}
+          {showShare && (
+            <div className="border-t border-gray-100 p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900">Share Document</h3>
+                <button onClick={() => setShowShare(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={16} />
+                </button>
+              </div>
+              {shareUrl ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-500">Share this link with anyone to let them view the document.</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={shareUrl}
+                      className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-600"
+                    />
+                    <button
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(shareUrl);
+                        setShareCopied(true);
+                        setTimeout(() => setShareCopied(false), 2000);
+                      }}
+                      className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500"
+                    >
+                      {shareCopied ? <Check size={14} /> : <Copy size={14} />}
+                      {shareCopied ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await fetch(`/api/documents/${doc.id}/share`, { method: "DELETE" });
+                        setShareUrl(null);
+                        setShareEmail("");
+                      } catch {}
+                    }}
+                    className="text-xs text-red-500 hover:text-red-600"
+                  >
+                    Revoke share link
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-500">Generate a shareable link for this document.</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      placeholder="Recipient email (optional)"
+                      value={shareEmail}
+                      onChange={(e) => setShareEmail(e.target.value)}
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={async () => {
+                        setSharing(true);
+                        try {
+                          const res = await fetch(`/api/documents/${doc.id}/share`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email: shareEmail || undefined }),
+                          });
+                          if (!res.ok) throw new Error();
+                          const data = await res.json();
+                          setShareUrl(data.shareUrl);
+                        } catch {
+                          alert("Failed to generate share link");
+                        } finally {
+                          setSharing(false);
+                        }
+                      }}
+                      disabled={sharing}
+                      className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50"
+                    >
+                      {sharing ? "Generating..." : "Generate Link"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex">
             {/* Main content area */}
@@ -445,6 +547,23 @@ export default function DocumentDetailPage() {
                         </div>
                       ))}
                   </div>
+                  {/* AI Model Selector */}
+                  <div className="col-span-full mt-2">
+                    <label className="mb-1 block text-xs font-medium text-gray-600">
+                      AI Model
+                    </label>
+                    <select
+                      value={regenerateModel || (doc ? getRecommendedModel(doc.type as any) : "")}
+                      onChange={(e) => setRegenerateModel(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    >
+                      {AVAILABLE_MODELS.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.provider})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <button
                     onClick={async () => {
                       setRegenerating(true);
@@ -463,7 +582,10 @@ export default function DocumentDetailPage() {
                         const res = await fetch(`/api/documents/${doc.id}/regenerate`, {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ userInputs: Object.keys(inputs).length > 0 ? inputs : Object.fromEntries(inputEntries.map(([k, v]) => [k, String(v)])) }),
+                          body: JSON.stringify({
+                            userInputs: Object.keys(inputs).length > 0 ? inputs : Object.fromEntries(inputEntries.map(([k, v]) => [k, String(v)])),
+                            model: regenerateModel || undefined,
+                          }),
                         });
                         if (!res.ok) {
                           const err = await res.json();

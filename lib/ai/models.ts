@@ -12,6 +12,26 @@ export type DocType =
   | "p45"
   | "custom";
 
+export interface ModelOption {
+  id: string;
+  name: string;
+  provider: string;
+}
+
+export const AVAILABLE_MODELS: ModelOption[] = [
+  { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4", provider: "Anthropic" },
+  { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "Google" },
+  { id: "openai/gpt-4o", name: "GPT-4o", provider: "OpenAI" },
+  { id: "deepseek/deepseek-chat", name: "DeepSeek Chat", provider: "DeepSeek" },
+];
+
+/**
+ * Returns the recommended OpenRouter model for a given document type.
+ */
+export function getRecommendedModel(docType: DocType): string {
+  return getModelForDocType(docType);
+}
+
 /**
  * Returns the recommended OpenRouter model for a given document type.
  */

@@ -26,6 +26,7 @@ export async function POST(
     const { tenantId, clerkUserId } = await requireAuth();
     const body = await request.json().catch(() => ({}));
     const userInputs: Record<string, string> | undefined = body.userInputs;
+    const overrideModel: string | undefined = body.model;
 
     if (!userInputs || typeof userInputs !== "object") {
       return NextResponse.json(
@@ -72,7 +73,7 @@ export async function POST(
     }
 
     // Call AI directly (same path as initial generation)
-    const model = doc.aiModel ?? getModelForDocType(doc.type as any);
+    const model = overrideModel ?? doc.aiModel ?? getModelForDocType(doc.type as any);
     const promptResult = buildPrompt(doc.type as any, userInputs);
     if (!promptResult) {
       return NextResponse.json(

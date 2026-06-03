@@ -72,6 +72,11 @@ jest.mock('@clerk/nextjs/server', () => ({
   clerkClient: jest.fn(),
 }));
 
+jest.mock('@/lib/documents/notifications', () => ({
+  __esModule: true,
+  createNotification: jest.fn(),
+}));
+
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth/tenant';
 

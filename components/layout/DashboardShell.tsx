@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { usePathname } from "next/navigation"
+import { useTheme } from "@/lib/utils/theme-context"
 import {
   LayoutDashboard,
   FileText,
@@ -16,6 +17,8 @@ import {
   LogOut,
   Bell,
   CheckCheck,
+  Sun,
+  Moon,
 } from "lucide-react"
 
 // Clerk UserButton deferred to browser — safe from SSR crash
@@ -267,6 +270,7 @@ function NotificationsBell() {
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { theme, toggle } = useTheme()
 
   return (
     <div className="flex min-h-[100dvh] bg-muted/30">
@@ -313,6 +317,16 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           </button>
 
           <div className="flex-1" />
+
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggle}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-accent transition-colors"
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
 
           {/* Notifications bell */}
           <SignedIn>

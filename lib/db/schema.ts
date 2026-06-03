@@ -86,6 +86,8 @@ export const documents = pgTable("documents", {
   version: integer("version").notNull().default(1),
   createdBy: text("created_by"),
   currentIssuedVersion: integer("current_issued_version"),
+  shareToken: text("share_token").unique(),
+  sharedWith: text("shared_with").array(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

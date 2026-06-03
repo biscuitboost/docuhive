@@ -149,8 +149,8 @@ export default function DocumentDetailPage() {
     refreshDocument();
   }, [refreshDocument]);
 
-  // Handle section save from inline editor
-  function handleSectionSaved(sectionKey: string, _newContent: string) {
+  // Handle section save from inline editor (used by InlineSectionEditor callback)
+  function handleSectionSaved(_sectionKey: string, _newContent: string) {
     silentRefresh();
   }
 
@@ -210,7 +210,7 @@ export default function DocumentDetailPage() {
   const hasContent = sections.length > 0 && doc.status !== "draft";
 
   // Extract flat sections for inline editing
-  const inlineSections = contentToRender ? extractSections(contentToRender) : [];
+  // Unused in current render — kept for future split-view feature
 
   return (
     <DashboardShell>
@@ -281,7 +281,6 @@ export default function DocumentDetailPage() {
                   <div className="space-y-6">
                     {sections.map(([key, value]) => {
                       const rendered = renderContent(value);
-                      const flatKey = key; // Use the section key directly
 
                       return (
                         <div key={key} className="last:mb-0">

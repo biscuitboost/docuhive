@@ -48,7 +48,7 @@ export default function InlineSectionEditor({
         }
         return res.json();
       })
-      .then((data) => {
+      .then((_data) => {
         onSaved(sectionKey, draft.trim());
         setSaved(true);
         setIsEditing(false);

@@ -21,7 +21,7 @@ interface VersionTimelineProps {
 const CHANGE_TYPE_LABELS: Record<string, string> = {
   initial: "Initial",
   ai_edit: "AI Edit",
-  manual_edit: "Manual Edit",
+  manual_edit: "Manual",
   regenerate: "Regenerated",
   restore: "Restored",
 };

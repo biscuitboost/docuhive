@@ -2,7 +2,7 @@
 
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
-import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank, Receipt } from "lucide-react"
+import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank, Receipt, FileText } from "lucide-react"
 
 const tools = [
   {
@@ -59,6 +59,14 @@ const tools = [
     description: "Calculate statutory holiday entitlement and accrued days for full-time, part-time, and irregular hours workers",
     icon: Calculator,
     color: "text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30 dark:text-cyan-400",
+    comingSoon: false,
+  },
+  {
+    href: "/tools/invoice",
+    label: "Invoice Generator",
+    description: "Create professional invoices with line items, VAT calculations, and CSV export",
+    icon: FileText,
+    color: "text-violet-600 bg-violet-50 dark:bg-violet-950/30 dark:text-violet-400",
     comingSoon: false,
   },
 ]

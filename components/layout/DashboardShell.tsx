@@ -5,6 +5,7 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 import { usePathname } from "next/navigation"
 import { useTheme } from "@/lib/utils/theme-context"
+import KeyboardShortcuts from "./KeyboardShortcuts"
 import {
   LayoutDashboard,
   PlusCircle,
@@ -19,6 +20,7 @@ import {
   Sun,
   Moon,
   Calculator,
+  Keyboard,
 } from "lucide-react"
 
 // Clerk UserButton deferred to browser — safe from SSR crash
@@ -321,11 +323,25 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           {/* Dark mode toggle */}
           <button
             onClick={toggle}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-accent transition-colors"
+            className="hidden sm:flex rounded-lg p-2 text-muted-foreground hover:bg-accent transition-colors"
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             title={theme === "dark" ? "Light mode" : "Dark mode"}
           >
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+
+          {/* Keyboard shortcut hint */}
+          <button
+            onClick={() => {
+              // Dispatch a keyboard event to toggle shortcuts
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "?" }))
+            }}
+            className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors border border-border/50"
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts"
+          >
+            <Keyboard size={14} />
+            <kbd className="rounded border border-border bg-muted px-1 font-mono text-[10px]">?</kbd>
           </button>
 
           {/* Notifications bell */}
@@ -347,6 +363,8 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         </header>
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-background">{children}</main>
       </div>
+    {/* Keyboard shortcuts + command palette */}
+      <KeyboardShortcuts />
     </div>
   )
 }

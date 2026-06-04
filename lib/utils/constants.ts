@@ -77,6 +77,6 @@ export const UK_TAX_RATES = {
     mainRate: 0.25,
     marginalReliefLowerLimit: 50000,
     marginalReliefUpperLimit: 250000,
-    marginalReliefFraction: 1 / 40, //
+    marginalReliefFraction: 1 / 40,
   },
 } as const;

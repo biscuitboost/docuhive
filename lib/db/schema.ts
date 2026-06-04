@@ -237,6 +237,23 @@ export const emailTracking = pgTable("email_tracking", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// ── API Keys ────────────────────────────────────────────────────────
+// Tenant API keys for public API access (bearer token auth).
+
+export const apiKeys = pgTable("api_keys", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  name: text("name").notNull(),
+  keyPrefix: text("key_prefix").notNull(),
+  keyHash: text("key_hash").notNull(),
+  lastFour: text("last_four").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // ── Notifications ────────────────────────────────────────────────
 
 export const notificationTypeEnum = pgEnum("notification_type", [

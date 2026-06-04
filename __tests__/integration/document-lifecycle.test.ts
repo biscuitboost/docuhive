@@ -89,6 +89,7 @@ function makeThenableSelect(result: any[]) {
     from: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
+    groupBy: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     offset: jest.fn().mockReturnThis(),
     then: jest.fn((resolve: any) => Promise.resolve(resolve(result))),

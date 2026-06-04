@@ -1,9 +1,28 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { documents, subscriptions, tenants } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql, and, gte } from "drizzle-orm";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
 import { PLANS, PlanConfig } from "@/lib/stripe/pricing";
+import { DOCUMENT_TYPES } from "@/lib/utils/constants";
+
+export type DashboardAnalytics = {
+  typeBreakdown: Array<{
+    type: string;
+    label: string;
+    count: number;
+  }>;
+  monthlyTrend: Array<{
+    month: string;
+    count: number;
+  }>;
+  statusBreakdown: Array<{
+    status: string;
+    count: number;
+  }>;
+  totalDocuments: number;
+  thisMonthDocuments: number;
+};
 
 export type DashboardData = {
   recentDocuments: Array<{
@@ -22,6 +41,7 @@ export type DashboardData = {
   tenant: {
     name: string;
   };
+  analytics: DashboardAnalytics;
 };
 
 /**
@@ -60,27 +80,125 @@ export async function GET() {
     const planId = sub?.plan ?? "essentials";
     const planConfig: PlanConfig = PLANS[planId] ?? PLANS.essentials;
 
-    // Tenant info
-    const [tenant] = await db
-      .select({ name: tenants.name })
-      .from(tenants)
-      .where(eq(tenants.id, tenantId))
-      .limit(1);
+    // ── Analytics queries ──────────────────────────────────
 
-    const data: DashboardData = {
-      recentDocuments: docs.map((d) => ({
-        ...d,
-        createdAt: d.createdAt?.toISOString() ?? new Date().toISOString(),
-      })),
-      usage: {
-        documentsUsed: sub?.documentsUsed ?? 0,
-        docsLimit: planConfig.docsLimit,
-        plan: planConfig.name,
-      },
-      tenant: {
-        name: tenant?.name ?? "My Company",
-      },
-    };
+        // Type breakdown (most-used document types)
+        const typeCounts = await db
+          .select({
+            type: documents.type,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(documents)
+          .where(eq(documents.tenantId, tenantId))
+          .groupBy(documents.type)
+          .orderBy(desc(sql`count(*)`))
+          .limit(10);
+
+        const typeLabelMap: Record<string, string> = {};
+        for (const t of DOCUMENT_TYPES) {
+          typeLabelMap[t.value] = t.label;
+        }
+
+        const typeBreakdown = typeCounts.map((tc) => ({
+          type: tc.type,
+          label: typeLabelMap[tc.type] ?? tc.type,
+          count: tc.count,
+        }));
+
+        // Monthly trend (last 6 months)
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+        sixMonthsAgo.setDate(1);
+        sixMonthsAgo.setHours(0, 0, 0, 0);
+
+        const monthlyRaw = await db
+          .select({
+            month: sql<string>`to_char(${documents.createdAt}, 'YYYY-MM')`,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(documents)
+          .where(
+            and(
+              eq(documents.tenantId, tenantId),
+              gte(documents.createdAt, sixMonthsAgo)
+            )
+          )
+          .groupBy(sql`to_char(${documents.createdAt}, 'YYYY-MM')`)
+          .orderBy(sql`to_char(${documents.createdAt}, 'YYYY-MM')`);
+
+        // Fill in missing months
+        const monthlyMap = new Map<string, number>();
+        for (const r of monthlyRaw) monthlyMap.set(r.month, r.count);
+        const monthlyTrend: Array<{ month: string; count: number }> = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date();
+          d.setMonth(d.getMonth() - i);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          monthlyTrend.push({ month: key, count: monthlyMap.get(key) ?? 0 });
+        }
+
+        // Status breakdown
+        const statusCounts = await db
+          .select({
+            status: documents.status,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(documents)
+          .where(eq(documents.tenantId, tenantId))
+          .groupBy(documents.status)
+          .orderBy(desc(sql`count(*)`));
+
+        // Total count + this month
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const totalResult = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(documents)
+          .where(eq(documents.tenantId, tenantId));
+
+        const thisMonthResult = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(documents)
+          .where(
+            and(
+              eq(documents.tenantId, tenantId),
+              gte(documents.createdAt, startOfMonth)
+            )
+          );
+
+        // Tenant info
+        const [tenant] = await db
+          .select({ name: tenants.name })
+          .from(tenants)
+          .where(eq(tenants.id, tenantId))
+          .limit(1);
+
+        const data: DashboardData = {
+          recentDocuments: docs.map((d) => ({
+            ...d,
+            createdAt: d.createdAt?.toISOString() ?? new Date().toISOString(),
+          })),
+          usage: {
+            documentsUsed: sub?.documentsUsed ?? 0,
+            docsLimit: planConfig.docsLimit,
+            plan: planConfig.name,
+          },
+          tenant: {
+            name: tenant?.name ?? "My Company",
+          },
+          analytics: {
+            typeBreakdown,
+            monthlyTrend,
+            statusBreakdown: statusCounts.map((sc) => ({
+              status: sc.status,
+              count: sc.count,
+            })),
+            totalDocuments: totalResult[0]?.count ?? 0,
+            thisMonthDocuments: thisMonthResult[0]?.count ?? 0,
+          },
+        };
 
     return NextResponse.json(data);
   } catch (error) {

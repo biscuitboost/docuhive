@@ -5,7 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import DashboardShell from "@/components/layout/DashboardShell";
 import UsageBar from "@/components/billing/UsageBar";
-import { FileText, Plus, CreditCard, Clock, ChevronRight, Sparkles, Flag, ReceiptText, ScrollText, ArrowRightLeft } from "lucide-react";
+import AnalyticsCards from "@/components/dashboard/AnalyticsCards";
+import { FileText, Plus, CreditCard, Clock, ChevronRight, Sparkles, Flag, ReceiptText, ScrollText, ArrowRightLeft, BarChart3 } from "lucide-react";
 
 interface RecentDoc {
   id: string;
@@ -14,6 +15,14 @@ interface RecentDoc {
   status: string;
   createdAt: string;
   aiModel: string | null;
+}
+
+interface AnalyticsData {
+  typeBreakdown: Array<{ type: string; label: string; count: number }>;
+  monthlyTrend: Array<{ month: string; count: number }>;
+  statusBreakdown: Array<{ status: string; count: number }>;
+  totalDocuments: number;
+  thisMonthDocuments: number;
 }
 
 interface DashboardData {
@@ -26,6 +35,7 @@ interface DashboardData {
   tenant: {
     name: string;
   };
+  analytics: AnalyticsData;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -90,8 +100,22 @@ export default function DashboardPage() {
           }}
           className="grid grid-cols-1 gap-6 lg:grid-cols-3"
         >
-          {/* Main column — Recent Docs + Usage */}
+          {/* Main column — Recent Docs + Analytics + Usage */}
           <div className="space-y-6 lg:col-span-2">
+
+            {/* Analytics Section */}
+            {data && data.analytics && data.analytics.totalDocuments > 0 && (
+              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart3 size={16} className="text-muted-foreground" />
+                  <h2 className="text-sm font-semibold text-card-foreground">
+                    Dashboard Analytics
+                  </h2>
+                </div>
+                <AnalyticsCards analytics={data.analytics} />
+              </div>
+            )}
+
             {/* Usage Bar */}
             <UsageBar />
 

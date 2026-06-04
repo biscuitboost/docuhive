@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
+import { getSuggestions } from "@/lib/ai/suggestions";
+import { Sparkles } from "lucide-react";
 
 interface DocumentEditorProps {
   documentId: string;
   status: string;
+  docType: string;
   onDocumentUpdated: () => void;
 }
 
@@ -22,12 +25,14 @@ interface DocumentEditorProps {
 export default function DocumentEditor({
   documentId,
   status,
+  docType,
   onDocumentUpdated,
 }: DocumentEditorProps) {
   const [instruction, setInstruction] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const suggestions = getSuggestions(docType);
 
   // Only render for generated/complete documents
   if (status === "draft" || status === "archived") return null;
@@ -83,6 +88,28 @@ export default function DocumentEditor({
       <p className="mb-3 mt-1 text-xs text-gray-500">
         Be specific &mdash; e.g. &ldquo;Change the notice period to 3 months&rdquo;
       </p>
+
+      {/* Suggestion chips */}
+      {suggestions.length > 0 && (
+        <div className="mb-4">
+          <div className="mb-2 flex items-center gap-1.5">
+            <Sparkles size={13} className="text-purple-500" />
+            <span className="text-xs font-medium text-gray-600">Suggestions</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {suggestions.map((s) => (
+              <button
+                key={s.instruction}
+                type="button"
+                onClick={() => setInstruction(s.instruction)}
+                className="inline-flex items-center rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:border-purple-300 hover:bg-purple-100"
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <div className="relative flex-1">

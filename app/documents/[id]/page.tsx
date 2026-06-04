@@ -462,6 +462,7 @@ export default function DocumentDetailPage() {
                 <DocumentEditor
                   documentId={doc.id}
                   status={doc.status}
+                  docType={doc.type}
                   onDocumentUpdated={silentRefresh}
                 />
               </div>

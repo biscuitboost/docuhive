@@ -58,9 +58,11 @@ export const UK_TAX_RATES = {
   // National Insurance (Class 1, employed)
   ni: {
     primaryThreshold: { weekly: 242, monthly: 1048, annual: 12570 },
+    secondaryThreshold: { weekly: 175, monthly: 758, annual: 9100 },
     upperEarningsLimit: { weekly: 967, monthly: 4189, annual: 50270 },
     mainRate: 0.08,
     higherRate: 0.02,
+    employerRate: 0.138,
   },
 
   // Pension

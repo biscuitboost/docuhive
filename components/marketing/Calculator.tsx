@@ -1,9 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { UK_TAX_RATES } from "@/lib/utils/constants"
 
-const NI_RATE = 0.138
-const NI_THRESHOLD_ANNUAL = 9100
+// Employer Secondary NI threshold (£9,100 annual = £175/week)
+// This is different from the employee Primary Threshold (£12,570)
+const NI_THRESHOLD_ANNUAL = UK_TAX_RATES.ni.secondaryThreshold.annual
+const NI_RATE = UK_TAX_RATES.ni.employerRate
 const PENSION_EMPLOYER_RATE = 0.03
 const PENSION_THRESHOLD_ANNUAL = 6240
 

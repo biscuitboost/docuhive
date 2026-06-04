@@ -1,6 +1,7 @@
 import Hero from "@/components/marketing/Hero"
 import Features from "@/components/marketing/Features"
 import Calculator from "@/components/marketing/Calculator"
+import FAQSection from "@/components/marketing/FAQSection"
 import Footer from "@/components/layout/Footer"
 
 // Pricing uses useAuth() from Clerk which crashes during static generation
@@ -17,6 +18,7 @@ export default function Home() {
       <Features />
       <PricingSection />
       <Calculator />
+      <FAQSection />
       <Footer />
     </main>
   )

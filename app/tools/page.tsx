@@ -46,12 +46,12 @@ const tools = [
     comingSoon: false,
   },
   {
-    href: "#",
+    href: "/tools/statutory-payments",
     label: "Statutory Payments Calculator",
-    description: "Calculate SSP, SMP, SPP, and other statutory payments",
+    description: "Calculate SSP, SMP, SPP, SAP, ShPP, SPBP, and other UK statutory payments",
     icon: CalendarDays,
     color: "text-rose-600 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-400",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     href: "/tools/holiday-entitlement",

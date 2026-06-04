@@ -2,7 +2,7 @@
 
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
-import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank, Receipt, FileText, Clock } from "lucide-react"
+import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank, Receipt, FileText, Clock, TrendingUp, UserX } from "lucide-react"
 
 const tools = [
   {
@@ -75,6 +75,22 @@ const tools = [
     description: "Track billable hours and earnings by project — export CSV for invoicing",
     icon: Clock,
     color: "text-pink-600 bg-pink-50 dark:bg-pink-950/30 dark:text-pink-400",
+    comingSoon: false,
+  },
+  {
+    href: "/tools/cash-flow",
+    label: "Cash Flow Forecaster",
+    description: "Project monthly income, outgoings, and running balance — spot shortfalls before they happen",
+    icon: TrendingUp,
+    color: "text-teal-600 bg-teal-50 dark:bg-teal-950/30 dark:text-teal-400",
+    comingSoon: false,
+  },
+  {
+    href: "/tools/redundancy",
+    label: "Redundancy Calculator",
+    description: "Calculate statutory redundancy pay based on age, weekly pay, and years of continuous service",
+    icon: UserX,
+    color: "text-orange-600 bg-orange-50 dark:bg-orange-950/30 dark:text-orange-400",
     comingSoon: false,
   },
 ]

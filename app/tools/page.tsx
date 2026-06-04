@@ -30,12 +30,12 @@ const tools = [
     comingSoon: false,
   },
   {
-    href: "#",
+    href: "/tools/dividend",
     label: "Dividend Calculator",
     description: "Calculate dividend tax and net income from dividend payments",
     icon: PiggyBank,
     color: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     href: "#",

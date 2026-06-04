@@ -79,4 +79,12 @@ export const UK_TAX_RATES = {
     marginalReliefUpperLimit: 250000,
     marginalReliefFraction: 1 / 40,
   },
+
+  // Dividend Tax (2024/25)
+  dividendTax: {
+    allowance: 500,
+    basicRate: 0.0875,
+    higherRate: 0.3375,
+    additionalRate: 0.3935,
+  },
 } as const;

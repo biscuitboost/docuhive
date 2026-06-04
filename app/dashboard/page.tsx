@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import DashboardShell from "@/components/layout/DashboardShell";
 import UsageBar from "@/components/billing/UsageBar";
-import { FileText, Plus, CreditCard, Clock, ChevronRight, Sparkles, Flag } from "lucide-react";
+import { FileText, Plus, CreditCard, Clock, ChevronRight, Sparkles, Flag, ReceiptText, ScrollText, ArrowRightLeft } from "lucide-react";
 
 interface RecentDoc {
   id: string;
@@ -187,18 +187,52 @@ export default function DashboardPage() {
             </h2>
             <div className="space-y-3">
               <Link
-                href="/documents/new"
-                className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4 transition-all hover:bg-primary/10 hover:shadow-md hover:-translate-y-0.5"
+                href="/documents/new/payslip"
+                className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/50 hover:shadow-md hover:-translate-y-0.5"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-                  <Plus size={20} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                  <ReceiptText size={20} />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-card-foreground">
-                    New Document
+                    Generate a Payslip
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Generate a UK employment document
+                    Create an employee payslip with tax &amp; NI breakdown
+                  </p>
+                </div>
+              </Link>
+
+              <Link
+                href="/documents/new/employment_contract"
+                className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/50 hover:shadow-md hover:-translate-y-0.5"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                  <ScrollText size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-card-foreground">
+                    Create a Contract
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    UK employment contract with ERA 2025 compliance
+                  </p>
+                </div>
+              </Link>
+
+              <Link
+                href="/tools/paye"
+                className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/50 hover:shadow-md hover:-translate-y-0.5"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                  <ArrowRightLeft size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-card-foreground">
+                    Check Payroll
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Calculate tax, NI &amp; net pay instantly
                   </p>
                 </div>
               </Link>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles } from "lucide-react";
+import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles, BookmarkPlus, Save, Loader2, Trash2 } from "lucide-react";
 import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
 
 type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45"
@@ -478,6 +478,13 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
   const [result, setResult] = useState<{ id: string; url?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string>("");
+  const [savedTemplates, setSavedTemplates] = useState<{ id: string; name: string; formValues: Record<string, string> }[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveTemplateName, setSaveTemplateName] = useState("");
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
+  const [loadSuccess, setLoadSuccess] = useState(false);
 
   // If initialType provided, skip straight to the form
   useEffect(() => {
@@ -542,6 +549,19 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, selectedType]);
 
+  // Load saved templates for this doc type when entering form step
+  useEffect(() => {
+    if (step !== "form" || !selectedType) return;
+    setTemplatesLoading(true);
+    fetch(`/api/forms/templates?type=${selectedType}`)
+      .then((r) => r.json())
+      .then((json) => {
+        setSavedTemplates(json.templates ?? []);
+      })
+      .catch(() => setSavedTemplates([]))
+      .finally(() => setTemplatesLoading(false));
+  }, [step, selectedType]);
+
   const docType = selectedType ? DOC_TYPES.find((d) => d.value === selectedType) : null;
 
   const handleGenerate = async () => {
@@ -582,6 +602,49 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
 
   const updateField = (key: string, value: string) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleLoadTemplate = (template: { id: string; name: string; formValues: Record<string, string> }) => {
+    setFormValues((prev) => ({ ...prev, ...template.formValues }));
+    setLoadSuccess(true);
+    setTimeout(() => setLoadSuccess(false), 2500);
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!saveTemplateName.trim() || !selectedType) return;
+    setSavingTemplate(true);
+    try {
+      const res = await fetch("/api/forms/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: saveTemplateName.trim(), docType: selectedType, formValues }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to save");
+      }
+      const json = await res.json();
+      setSavedTemplates((prev) => [...prev, json.template]);
+      setSaveDialogOpen(false);
+      setSaveTemplateName("");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Failed to save template");
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    setDeletingTemplateId(id);
+    try {
+      const res = await fetch(`/api/forms/templates?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      setSavedTemplates((prev) => prev.filter((t) => t.id !== id));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Failed to delete template");
+    } finally {
+      setDeletingTemplateId(null);
+    }
   };
 
   const currentStepIndex = ["select", "form", "generating", "result"].indexOf(step);
@@ -696,6 +759,68 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
               </div>
             </div>
             <div className="p-6">
+              {/* Saved Templates Bar */}
+              <AnimatePresence>
+                {(savedTemplates.length > 0 || templatesLoading || loadSuccess) && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-6 border-b border-border pb-5"
+                  >
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <BookmarkPlus size={14} className="text-muted-foreground" />
+                      <span className="text-xs font-medium text-muted-foreground">Saved Templates</span>
+                    </div>
+                    {loadSuccess && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="text-xs text-emerald-600 dark:text-emerald-400 mb-2"
+                      >
+                        Template loaded &mdash; fields updated
+                      </motion.p>
+                    )}
+                    {templatesLoading ? (
+                      <div className="flex items-center gap-2 py-1">
+                        <Loader2 size={12} className="animate-spin text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Loading templates...</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {savedTemplates.map((tpl) => (
+                          <div
+                            key={tpl.id}
+                            className="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs"
+                          >
+                            <button
+                              onClick={() => handleLoadTemplate(tpl)}
+                              className="text-foreground hover:text-primary transition-colors truncate max-w-[140px]"
+                              title={`Load "${tpl.name}"`}
+                            >
+                              {tpl.name}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTemplate(tpl.id)}
+                              disabled={deletingTemplateId === tpl.id}
+                              className="text-muted-foreground/40 hover:text-red-500 transition-colors shrink-0"
+                              title={`Delete "${tpl.name}"`}
+                            >
+                              {deletingTemplateId === tpl.id ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <Trash2 size={12} />
+                              )}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="grid gap-5 sm:grid-cols-2">
                 {docType.fields.map((field) => (
                   <div key={field.key} className={field.key === "company_address" || field.key === "sick_pay" ? "sm:col-span-2" : ""}>
@@ -786,6 +911,15 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
                   Back
                 </button>
                 <button
+                  onClick={() => setSaveDialogOpen(true)}
+                  disabled={Object.keys(formValues).length === 0}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-accent active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150"
+                  title="Save current form values as a reusable template"
+                >
+                  <Save size={14} />
+                  Save as Template
+                </button>
+                <button
                   onClick={handleGenerate}
                   disabled={generating}
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 transition-all duration-150"
@@ -795,6 +929,70 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
                   <ArrowRight size={14} />
                 </button>
               </div>
+
+              {/* Save Template Modal */}
+              <AnimatePresence>
+                {saveDialogOpen && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    onClick={() => setSaveDialogOpen(false)}
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                      transition={{ duration: 0.15 }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
+                    >
+                      <h3 className="text-sm font-semibold text-foreground">Save as Template</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Name this template to reuse these values the next time you create this document type.
+                      </p>
+                      <div className="mt-4">
+                        <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                          Template Name
+                        </label>
+                        <input
+                          type="text"
+                          value={saveTemplateName}
+                          onChange={(e) => setSaveTemplateName(e.target.value)}
+                          placeholder="e.g. My Company Ltd defaults"
+                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveTemplate();
+                            if (e.key === "Escape") setSaveDialogOpen(false);
+                          }}
+                        />
+                      </div>
+                      <div className="mt-5 flex items-center gap-3">
+                        <button
+                          onClick={handleSaveTemplate}
+                          disabled={savingTemplate || !saveTemplateName.trim()}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {savingTemplate ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <BookmarkPlus size={14} />
+                          )}
+                          {savingTemplate ? "Saving..." : "Save Template"}
+                        </button>
+                        <button
+                          onClick={() => setSaveDialogOpen(false)}
+                          className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-accent"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}

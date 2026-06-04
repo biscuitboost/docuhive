@@ -152,6 +152,21 @@ export const documentTemplates = pgTable("document_templates", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// ── Saved Form Templates ─────────────────────────────────────────
+// User-saved form values for quick re-use when generating documents
+
+export const savedFormTemplates = pgTable("saved_form_templates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  name: text("name").notNull(),
+  docType: text("doc_type").notNull(),
+  formValues: jsonb("form_values").$type<Record<string, string>>().notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // ── Subscriptions ────────────────────────────────────────────────
 
 export const subscriptions = pgTable("subscriptions", {

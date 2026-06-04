@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles, BookmarkPlus, Save, Loader2, Trash2 } from "lucide-react";
+import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles, BookmarkPlus, Save, Loader2, Trash2, History } from "lucide-react";
 import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
 
 type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45"
@@ -485,6 +485,9 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
   const [loadSuccess, setLoadSuccess] = useState(false);
+  const [prefillSuggestions, setPrefillSuggestions] = useState<{ fieldKey: string; value: string; sourceType: string; sourceTitle: string }[]>([]);
+  const [prefillLoading, setPrefillLoading] = useState(false);
+  const [prefillVisible, setPrefillVisible] = useState(true);
 
   // If initialType provided, skip straight to the form
   useEffect(() => {
@@ -560,6 +563,35 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
       })
       .catch(() => setSavedTemplates([]))
       .finally(() => setTemplatesLoading(false));
+  }, [step, selectedType]);
+
+  // Smart Pre-fill: fetch suggestions from previous documents
+  useEffect(() => {
+    if (step !== "form" || !selectedType) return;
+    setPrefillLoading(true);
+    setPrefillVisible(true);
+
+    fetch(`/api/documents/prefill?docType=${selectedType}`)
+      .then((r) => r.json())
+      .then((json) => {
+        const suggestions = json.suggestions ?? [];
+        setPrefillSuggestions(suggestions);
+
+        // Auto-apply suggestions to empty fields
+        if (suggestions.length > 0) {
+          setFormValues((prev) => {
+            const next = { ...prev };
+            for (const s of suggestions) {
+              if (!next[s.fieldKey] || !next[s.fieldKey].trim()) {
+                next[s.fieldKey] = s.value;
+              }
+            }
+            return next;
+          });
+        }
+      })
+      .catch(() => setPrefillSuggestions([]))
+      .finally(() => setPrefillLoading(false));
   }, [step, selectedType]);
 
   const docType = selectedType ? DOC_TYPES.find((d) => d.value === selectedType) : null;
@@ -817,6 +849,45 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
                         ))}
                       </div>
                     )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Smart Pre-fill Banner */}
+              <AnimatePresence>
+                {prefillSuggestions.length > 0 && prefillVisible && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-5 rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20 px-4 py-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+                        <History size={13} />
+                        Auto-filled {prefillSuggestions.length} field{prefillSuggestions.length > 1 ? "s" : ""} from previous documents
+                      </div>
+                      <button
+                        onClick={() => setPrefillVisible(false)}
+                        className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 transition-colors"
+                      >
+                        <span className="text-xs">&times;</span>
+                      </button>
+                    </div>
+                    <p className="mt-1 text-[11px] text-blue-600/70 dark:text-blue-400/70 leading-relaxed">
+                      Values extracted from your recent documents. Edit any field to override.
+                    </p>
+                  </motion.div>
+                )}
+                {prefillLoading && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="mb-5 flex items-center gap-2"
+                  >
+                    <Loader2 size={12} className="animate-spin text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Checking previous documents for prefills...</span>
                   </motion.div>
                 )}
               </AnimatePresence>

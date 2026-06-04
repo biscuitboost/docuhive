@@ -228,7 +228,7 @@ export default function PAYECalculatorPage() {
           {/* Conversion CTA — turn this calculation into a payslip */}
           {numericSalary > 0 && (
             <ToolConversionCTA
-              href="/documents/new/payslip"
+              href={`/documents/new/payslip?gross_pay=${periodSalary.toFixed(2)}&income_tax=${periodTax.toFixed(2)}&employee_ni=${periodNi.toFixed(2)}&net_pay=${periodNet.toFixed(2)}`}
               action="Generate a Payslip"
               subtitle="with the tax &amp; NI calculated here — get a professional PDF payslip in seconds"
               icon="payslip"

@@ -572,7 +572,7 @@ function GeneratingSkeleton() {
   );
 }
 
-export default function DocumentWizard({ initialType }: { initialType?: string }) {
+export default function DocumentWizard({ initialType, initialFormValues: propsInitialFormValues }: { initialType?: string; initialFormValues?: Record<string, string> }) {
   const [step, setStep] = useState<"select" | "form" | "generating" | "result">("select");
   const [selectedType, setSelectedType] = useState<DocType | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
@@ -598,7 +598,11 @@ export default function DocumentWizard({ initialType }: { initialType?: string }
       setSelectedModel(getRecommendedModel(initialType as DocType));
       setStep("form");
     }
-  }, [initialType]);
+    // Seed form values from URL search params (CTA pre-fill)
+    if (propsInitialFormValues && Object.keys(propsInitialFormValues).length > 0) {
+      setFormValues((prev) => ({ ...prev, ...propsInitialFormValues }));
+    }
+  }, [initialType, propsInitialFormValues]);
 
   // Pre-fill form values from org defaults
   useEffect(() => {

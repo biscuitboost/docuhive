@@ -576,7 +576,7 @@ export default function StatutoryPaymentsPage() {
           {/* Conversion CTA — turn this into a payslip */}
           {weeklyPayment > 0 && (
             <ToolConversionCTA
-              href="/documents/new/payslip"
+              href={`/documents/new/payslip?gross_pay=${totalEntitlement.toFixed(2)}`}
               action="Generate a Payslip"
               subtitle="with the statutory payment calculated — get a professional PDF payslip with all deductions"
               icon="payslip"

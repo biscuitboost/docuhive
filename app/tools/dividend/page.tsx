@@ -306,7 +306,7 @@ export default function DividendCalculatorPage() {
           {/* Conversion CTA */}
           {numericDividends > 0 && (
             <ToolConversionCTA
-              href="/documents/new/payslip"
+              href={`/documents/new/payslip?gross_pay=${annualDividends.toFixed(2)}&income_tax=${dividendTax.toFixed(2)}&net_pay=${netDividendsAnnual.toFixed(2)}`}
               action="Generate a Payslip"
               subtitle="with your dividend income for director payroll — get a professional PDF payslip"
               icon="payslip"

@@ -442,7 +442,7 @@ export default function TimeTrackingPage() {
         {/* Conversion CTA — turn time entries into a payslip */}
         {entries.length > 0 && (
           <ToolConversionCTA
-            href="/documents/new/payslip"
+            href={`/documents/new/payslip?gross_pay=${grandEarnings.toFixed(2)}`}
             action="Generate a Payslip"
             subtitle="with your tracked hours — generate a professional payroll payslip from your time entries"
             icon="payslip"

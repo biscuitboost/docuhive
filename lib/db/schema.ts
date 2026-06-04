@@ -237,6 +237,19 @@ export const emailTracking = pgTable("email_tracking", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// ── Email Drip Tracking ──────────────────────────────────────────────
+// Tracks which onboarding/drip emails have been sent to each tenant
+// so we don't re-send or skip steps.
+
+export const emailDripTracking = pgTable("email_drip_tracking", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  emailType: text("email_type").notNull(),
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+});
+
 // ── API Keys ────────────────────────────────────────────────────────
 // Tenant API keys for public API access (bearer token auth).
 

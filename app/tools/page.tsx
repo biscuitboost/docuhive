@@ -54,12 +54,12 @@ const tools = [
     comingSoon: true,
   },
   {
-    href: "#",
+    href: "/tools/holiday-entitlement",
     label: "Holiday Entitlement Calculator",
-    description: "Calculate statutory holiday entitlement and accrued days",
+    description: "Calculate statutory holiday entitlement and accrued days for full-time, part-time, and irregular hours workers",
     icon: Calculator,
     color: "text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30 dark:text-cyan-400",
-    comingSoon: true,
+    comingSoon: false,
   },
 ]
 

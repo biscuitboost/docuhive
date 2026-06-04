@@ -283,7 +283,7 @@ export default function DocumentDetailPage() {
                   })}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
                 {/* Issued badge */}
                 {doc.currentIssuedVersion && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
@@ -348,7 +348,7 @@ export default function DocumentDetailPage() {
               {shareUrl ? (
                 <div className="space-y-3">
                   <p className="text-xs text-gray-500">Share this link with anyone to let them view the document.</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input
                       type="text"
                       readOnly
@@ -383,7 +383,7 @@ export default function DocumentDetailPage() {
               ) : (
                 <div className="space-y-3">
                   <p className="text-xs text-gray-500">Generate a shareable link for this document.</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input
                       type="email"
                       placeholder="Recipient email (optional)"
@@ -446,7 +446,7 @@ export default function DocumentDetailPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input
                       type="email"
                       placeholder="recipient@example.com"
@@ -620,7 +620,7 @@ export default function DocumentDetailPage() {
               </div>
 
               {/* Download buttons */}
-              <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 px-6 py-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-gray-100 px-4 sm:px-6 py-4">
                 {hasContent ? (
                   <>
                     <a

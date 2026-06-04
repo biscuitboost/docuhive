@@ -481,7 +481,7 @@ export default function InvoicePage() {
         {invoice.lineItems.length > 0 && (
           <div className="rounded-xl border border-border bg-white dark:bg-zinc-900 p-8 shadow-sm">
             <div className="border-b border-border pb-6 mb-6">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-bold text-foreground">
                     {invoice.companyName || "Your Company"}

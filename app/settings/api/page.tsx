@@ -208,7 +208,7 @@ export default function ApiSettingsPage() {
       {showCreate && (
         <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6">
           <h3 className="font-semibold text-gray-900">Create New API Key</h3>
-          <form onSubmit={handleCreate} className="mt-4 flex items-end gap-3">
+          <form onSubmit={handleCreate} className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
             <div className="flex-1">
               <label htmlFor="key-name" className="block text-sm font-medium text-gray-700">
                 Key Name
@@ -278,7 +278,7 @@ export default function ApiSettingsPage() {
                     : "border-gray-100 bg-gray-50 opacity-75"
                 }`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                       keyItem.isActive ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-500"
@@ -295,8 +295,11 @@ export default function ApiSettingsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
+                    <span className="hidden sm:inline text-xs text-gray-500">
                       Last used: {formatDate(keyItem.lastUsedAt)}
+                    </span>
+                    <span className="sm:hidden text-[10px] text-gray-400">
+                      {formatDate(keyItem.lastUsedAt)}
                     </span>
                     <button
                       onClick={() => handleToggle(keyItem)}

@@ -411,7 +411,7 @@ export default function StatutoryPaymentsPage() {
               </div>
 
               {/* Summary cards */}
-              <div className="mt-6 grid grid-cols-3 gap-3">
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="rounded-lg bg-muted/50 px-3 py-2.5 text-center">
                   <p className="text-[11px] text-muted-foreground">Weekly Rate</p>
                   <p className="text-sm font-bold tabular-nums text-card-foreground">

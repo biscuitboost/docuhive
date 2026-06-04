@@ -4,6 +4,7 @@ import { useState } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
 import { ArrowLeftRight } from "lucide-react"
 import Link from "next/link"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 const VAT_RATES = [
   { value: 20, label: "Standard (20%)" },
@@ -130,6 +131,16 @@ export default function VATCalculatorPage() {
             Results are rounded to 2 decimal places. This calculator is for guidance only — always consult HMRC or
             a qualified accountant for official VAT calculations.
           </p>
+
+          {/* Conversion CTA */}
+          {numericAmount > 0 && (
+            <ToolConversionCTA
+              href="/tools/invoice"
+              action="Generate an Invoice"
+              subtitle="with the VAT calculated here — create a professional invoice with VAT breakdown"
+              icon="invoice"
+            />
+          )}
         </div>
       </div>
     </DashboardShell>

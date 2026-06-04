@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
 import { Calculator, Info, AlertCircle, Download } from "lucide-react"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 interface YearBand {
   label: string
@@ -282,6 +283,16 @@ export default function RedundancyCalculatorPage() {
             <p className="text-sm font-medium text-card-foreground">Enter employee details</p>
             <p className="text-xs text-muted-foreground mt-1">Add their weekly pay, years of service, and age bracket to calculate statutory redundancy pay.</p>
           </div>
+        )}
+
+        {/* ── Conversion CTA ── */}
+        {totalRedundancyPay > 0 && (
+          <ToolConversionCTA
+            href="/documents/new/settlement_agreement"
+            action="Create a Settlement Agreement"
+            subtitle="to formalise the redundancy terms — get a legally-compliant PDF document"
+            icon="contract"
+          />
         )}
 
         {/* ── Footer disclaimer ── */}

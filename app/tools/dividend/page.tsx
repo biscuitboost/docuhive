@@ -5,6 +5,7 @@ import DashboardShell from "@/components/layout/DashboardShell"
 import { UK_TAX_RATES } from "@/lib/utils/constants"
 import Link from "next/link"
 import { ArrowLeftRight, Info, HelpCircle } from "lucide-react"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 type Period = "annual" | "monthly" | "weekly"
 
@@ -301,6 +302,16 @@ export default function DividendCalculatorPage() {
             and do not account for pension contributions, marriage allowance, or other reliefs.
             Always consult HMRC or a qualified accountant for official calculations.
           </p>
+
+          {/* Conversion CTA */}
+          {numericDividends > 0 && (
+            <ToolConversionCTA
+              href="/documents/new/payslip"
+              action="Generate a Payslip"
+              subtitle="with your dividend income for director payroll — get a professional PDF payslip"
+              icon="payslip"
+            />
+          )}
         </div>
       </div>
     </DashboardShell>

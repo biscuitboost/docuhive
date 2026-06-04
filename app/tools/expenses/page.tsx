@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 import Link from "next/link"
 import {
   Plus, Trash2, TrendingUp, Receipt, Briefcase, Utensils,
@@ -377,6 +378,16 @@ export default function ExpenseTrackerPage() {
           All data is stored locally in your browser — nothing is sent to our servers.
           Export your expenses as CSV for your records or accounting software.
         </p>
+
+        {/* Conversion CTA — turn tracked expenses into an employment contract */}
+        {expenses.length > 0 && (
+          <ToolConversionCTA
+            href="/documents/new/employment_contract"
+            action="Generate an Employment Contract"
+            subtitle="tracking expenses for staff? Create a professional employment contract to formalise the arrangement"
+            icon="contract"
+          />
+        )}
       </div>
     </DashboardShell>
   )

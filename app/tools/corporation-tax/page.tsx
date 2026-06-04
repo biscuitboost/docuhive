@@ -5,6 +5,7 @@ import DashboardShell from "@/components/layout/DashboardShell"
 import { UK_TAX_RATES } from "@/lib/utils/constants"
 import Link from "next/link"
 import { ArrowLeftRight, Info } from "lucide-react"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 type Period = "annual" | "monthly"
 
@@ -222,6 +223,16 @@ export default function CorporationTaxCalculatorPage() {
             and do not account for capital allowances, R&amp;D relief, losses carried forward, or other adjustments.
             Always consult HMRC or a qualified accountant for official calculations.
           </p>
+
+          {/* Conversion CTA — turn this into a real document */}
+          {annualProfit > 0 && (
+            <ToolConversionCTA
+              href="/documents/new/director_service_agreement"
+              action="Create a Director Service Agreement"
+              subtitle="with your company's profit details — formalise your director arrangements"
+              icon="contract"
+            />
+          )}
         </div>
       </div>
     </DashboardShell>

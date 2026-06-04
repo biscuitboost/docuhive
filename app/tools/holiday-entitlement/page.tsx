@@ -4,6 +4,7 @@ import { useState } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
 import { CalendarDays, Info, HelpCircle } from "lucide-react"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -500,6 +501,16 @@ export default function HolidayEntitlementPage() {
             They do not account for contractual leave above the statutory minimum, carry-over arrangements, or
             sector-specific rules. Always consult ACAS, HMRC, or a qualified HR professional for official advice.
           </p>
+
+          {/* Conversion CTA — turn this into a staff handbook */}
+          {statutoryEntitlementDays > 0 && (
+            <ToolConversionCTA
+              href="/documents/new/staff_handbook"
+              action="Create a Staff Handbook"
+              subtitle="with your holiday policy documented — get a compliant PDF handbook with your leave calculations"
+              icon="contract"
+            />
+          )}
         </div>
       </div>
     </DashboardShell>

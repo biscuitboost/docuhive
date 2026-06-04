@@ -4,6 +4,7 @@ import { useState } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
 import { CalendarDays, Info, HelpCircle, Banknote } from "lucide-react"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -571,6 +572,16 @@ export default function StatutoryPaymentsPage() {
             SSP does not include the first 3 waiting days — payment begins on day 4 of sickness.
             Parental payments are subject to qualifying conditions including continuous employment and earnings thresholds.
           </p>
+
+          {/* Conversion CTA — turn this into a payslip */}
+          {weeklyPayment > 0 && (
+            <ToolConversionCTA
+              href="/documents/new/payslip"
+              action="Generate a Payslip"
+              subtitle="with the statutory payment calculated — get a professional PDF payslip with all deductions"
+              icon="payslip"
+            />
+          )}
         </div>
       </div>
     </DashboardShell>

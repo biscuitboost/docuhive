@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 import Link from "next/link"
 import {
   FileText, Plus, Trash2, Download, RefreshCw, Calculator, Receipt,
@@ -557,6 +558,16 @@ export default function InvoicePage() {
           This is a guide tool only — for guidance only, check with your accountant.
           All data stays in your browser. Export as CSV for your records or accounting software.
         </p>
+
+        {/* Conversion CTA — turn this invoice into a payslip */}
+        {invoice.lineItems.length > 0 && (
+          <ToolConversionCTA
+            href="/documents/new/payslip"
+            action="Generate a Payslip"
+            subtitle="with the invoiced amount — get a professional PDF payslip for payroll records"
+            icon="payslip"
+          />
+        )}
       </div>
     </DashboardShell>
   )

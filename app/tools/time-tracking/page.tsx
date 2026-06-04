@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 import Link from "next/link"
 import {
   Plus, Trash2, Clock, TrendingUp, Briefcase, Code, PenTool,
@@ -437,6 +438,16 @@ export default function TimeTrackingPage() {
           All data is stored locally in your browser — nothing is sent to our servers.
           Export your time entries as CSV for invoicing, payroll, or accounting.
         </p>
+
+        {/* Conversion CTA — turn time entries into a payslip */}
+        {entries.length > 0 && (
+          <ToolConversionCTA
+            href="/documents/new/payslip"
+            action="Generate a Payslip"
+            subtitle="with your tracked hours — generate a professional payroll payslip from your time entries"
+            icon="payslip"
+          />
+        )}
       </div>
     </DashboardShell>
   )

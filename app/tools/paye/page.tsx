@@ -5,6 +5,7 @@ import DashboardShell from "@/components/layout/DashboardShell"
 import { UK_TAX_RATES } from "@/lib/utils/constants"
 import Link from "next/link"
 import { ArrowLeftRight, HelpCircle } from "lucide-react"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 type Period = "annual" | "monthly" | "weekly"
 
@@ -223,6 +224,16 @@ export default function PAYECalculatorPage() {
             and do not account for pension contributions, student loan repayments, or other deductions.
             Always consult HMRC or a qualified accountant for official calculations.
           </p>
+
+          {/* Conversion CTA — turn this calculation into a payslip */}
+          {numericSalary > 0 && (
+            <ToolConversionCTA
+              href="/documents/new/payslip"
+              action="Generate a Payslip"
+              subtitle="with the tax &amp; NI calculated here — get a professional PDF payslip in seconds"
+              icon="payslip"
+            />
+          )}
         </div>
       </div>
     </DashboardShell>

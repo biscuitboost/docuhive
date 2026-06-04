@@ -8,6 +8,7 @@ import {
   DollarSign, CalendarDays, PiggyBank, AlertCircle,
   ArrowUpCircle,
 } from "lucide-react"
+import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 interface CashFlowItem {
   id: string
@@ -534,6 +535,16 @@ export default function CashFlowPage() {
           For guidance only — consult your accountant for detailed cash flow planning.
           Data stays in your browser and is not saved on our servers.
         </p>
+
+        {/* Conversion CTA */}
+        {incomeItems.length > 0 && (
+          <ToolConversionCTA
+            href="/documents/new/payslip"
+            action="Generate a Payslip"
+            subtitle="with your projected payroll costs — turn your cash flow into an actual employee payslip"
+            icon="payslip"
+          />
+        )}
       </div>
     </DashboardShell>
   )

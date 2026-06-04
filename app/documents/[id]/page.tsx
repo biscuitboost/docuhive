@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Archive, RefreshCw, Share2, X, Check, Copy, Sparkles, FileText, ArrowLeftRight } from "lucide-react";
+import { Archive, RefreshCw, Share2, X, Check, Copy, Sparkles, FileText, ArrowLeftRight, Download } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
 import VersionTimeline from "@/components/documents/VersionTimeline";
@@ -508,6 +508,22 @@ export default function DocumentDetailPage() {
                         />
                       </svg>
                       Download Word
+                    </a>
+                    {/* Export CSV — structured data for payroll docs, key-value for others */}
+                    <a
+                      href={`/api/documents/${doc.id}/export/csv`}
+                      className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm hover:bg-emerald-50"
+                    >
+                      <Download size={14} />
+                      Export CSV
+                    </a>
+                    {/* Export JSON — full document data for API integration */}
+                    <a
+                      href={`/api/documents/${doc.id}/export/json`}
+                      className="inline-flex items-center gap-2 rounded-lg border border-violet-300 bg-white px-4 py-2 text-sm font-semibold text-violet-700 shadow-sm hover:bg-violet-50"
+                    >
+                      <Download size={14} />
+                      Export JSON
                     </a>
                     {/* Version history toggle */}
                     <button

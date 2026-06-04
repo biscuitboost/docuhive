@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Plus, FileText, Download, Loader2, Search, Trash2, Archive, RotateCcw, ChevronLeft, ChevronRight, Sparkles, Flag, CheckSquare, DownloadCloud, RefreshCw } from "lucide-react";
+import { Plus, FileText, Download, Loader2, Search, Trash2, Archive, RotateCcw, ChevronLeft, ChevronRight, Sparkles, Flag, CheckSquare, DownloadCloud, RefreshCw, FileSpreadsheet, Code2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Document {
@@ -281,6 +281,56 @@ export default function DocumentList() {
     }
   }, [selectedIds, page]);
 
+  /** Export selected documents as CSV (bulk). */
+  const handleBulkCsvExport = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setBulkActionLoading("csv");
+    try {
+      const res = await fetch("/api/documents/bulk/export/csv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentIds: Array.from(selectedIds) }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "CSV export failed" }));
+        throw new Error(err.error);
+      }
+
+      const blob = await res.blob();
+      triggerDownload(blob, `docu-hive-export-${new Date().toISOString().split("T")[0]}.csv`);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "CSV export failed");
+    } finally {
+      setBulkActionLoading(null);
+    }
+  }, [selectedIds]);
+
+  /** Export selected documents as JSON (bulk). */
+  const handleBulkJsonExport = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setBulkActionLoading("json");
+    try {
+      const res = await fetch("/api/documents/bulk/export/json", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentIds: Array.from(selectedIds) }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "JSON export failed" }));
+        throw new Error(err.error);
+      }
+
+      const blob = await res.blob();
+      triggerDownload(blob, `docu-hive-export-${new Date().toISOString().split("T")[0]}.json`);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "JSON export failed");
+    } finally {
+      setBulkActionLoading(null);
+    }
+  }, [selectedIds]);
+
   return (
     <div>
       {/* Search + Filters */}
@@ -371,6 +421,31 @@ export default function DocumentList() {
                     <Archive size={14} />
                   )}
                   Archive
+                </button>
+                {/* Export buttons */}
+                <button
+                  onClick={handleBulkCsvExport}
+                  disabled={bulkActionLoading !== null}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-card px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50 active:scale-[0.97] disabled:opacity-50 transition-all duration-150"
+                >
+                  {bulkActionLoading === "csv" ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <FileSpreadsheet size={14} />
+                  )}
+                  Export CSV
+                </button>
+                <button
+                  onClick={handleBulkJsonExport}
+                  disabled={bulkActionLoading !== null}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-card px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-50 active:scale-[0.97] disabled:opacity-50 transition-all duration-150"
+                >
+                  {bulkActionLoading === "json" ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Code2 size={14} />
+                  )}
+                  Export JSON
                 </button>
                 <button
                   onClick={() => setSelectedIds(new Set())}

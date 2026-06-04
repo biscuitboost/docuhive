@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { tenants } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
-import { stripe } from "@/lib/stripe/client";
+import stripe from "@/lib/stripe/client";
 
 /**
  * GET /api/billing/invoices

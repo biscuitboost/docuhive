@@ -2,7 +2,7 @@
 
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
-import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank, Receipt, FileText } from "lucide-react"
+import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank, Receipt, FileText, Clock } from "lucide-react"
 
 const tools = [
   {
@@ -67,6 +67,14 @@ const tools = [
     description: "Create professional invoices with line items, VAT calculations, and CSV export",
     icon: FileText,
     color: "text-violet-600 bg-violet-50 dark:bg-violet-950/30 dark:text-violet-400",
+    comingSoon: false,
+  },
+  {
+    href: "/tools/time-tracking",
+    label: "Time Tracker",
+    description: "Track billable hours and earnings by project — export CSV for invoicing",
+    icon: Clock,
+    color: "text-pink-600 bg-pink-50 dark:bg-pink-950/30 dark:text-pink-400",
     comingSoon: false,
   },
 ]

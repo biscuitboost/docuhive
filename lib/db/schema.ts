@@ -211,6 +211,32 @@ export const tenantLegislativeActions = pgTable("tenant_legislative_actions", {
   actionedAt: timestamp("actioned_at").notNull().defaultNow(),
 });
 
+// ── Email Tracking ────────────────────────────────────────────────
+// Tracks emails sent from the app and when recipients open shared documents.
+
+export const emailStatusEnum = pgEnum("email_status", [
+  "sent",
+  "delivered",
+  "opened",
+  "failed",
+]);
+
+export const emailTracking = pgTable("email_tracking", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  documentId: uuid("document_id")
+    .notNull()
+    .references(() => documents.id),
+  recipientEmail: text("recipient_email").notNull(),
+  senderName: text("sender_name"),
+  status: emailStatusEnum("status").notNull().default("sent"),
+  openedAt: timestamp("opened_at"),
+  shareToken: text("share_token"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // ── Notifications ────────────────────────────────────────────────
 
 export const notificationTypeEnum = pgEnum("notification_type", [

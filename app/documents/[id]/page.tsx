@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Archive, RefreshCw, Share2, X, Check, Copy, Sparkles, FileText, ArrowLeftRight, Download } from "lucide-react";
+import { Archive, RefreshCw, Share2, X, Check, Copy, Sparkles, FileText, ArrowLeftRight, Download, Send, Eye } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
 import VersionTimeline from "@/components/documents/VersionTimeline";
@@ -130,6 +130,11 @@ export default function DocumentDetailPage() {
   const [shareEmail, setShareEmail] = useState("");
   const [sharing, setSharing] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [sendEmailAddr, setSendEmailAddr] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [trackingRecords, setTrackingRecords] = useState<Array<{ id: string; recipientEmail: string; status: string; openedAt: string | null; createdAt: string }>>([]);
+  const [showTracking, setShowTracking] = useState(false);
 
   const refreshDocument = useCallback(() => {
     if (!params.id) return;
@@ -159,6 +164,17 @@ export default function DocumentDetailPage() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => { if (data) setDoc(data); })
       .catch(() => {});
+  }, [params.id]);
+
+  const loadTracking = useCallback(async () => {
+    if (!params.id) return;
+    try {
+      const res = await fetch(`/api/documents/${params.id}/email-tracking`);
+      if (res.ok) {
+        const data = await res.json();
+        setTrackingRecords(data.tracking || []);
+      }
+    } catch {}
   }, [params.id]);
 
   useEffect(() => {
@@ -327,6 +343,8 @@ export default function DocumentDetailPage() {
                   <X size={16} />
                 </button>
               </div>
+
+              {/* Share link section */}
               {shareUrl ? (
                 <div className="space-y-3">
                   <p className="text-xs text-gray-500">Share this link with anyone to let them view the document.</p>
@@ -397,6 +415,140 @@ export default function DocumentDetailPage() {
                       {sharing ? "Generating..." : "Generate Link"}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Send via Email section — separate from link generation */}
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Send via Email
+                </h4>
+                <p className="mb-3 text-xs text-gray-500">
+                  Email a share link directly to a recipient with open tracking.
+                </p>
+                {emailSent ? (
+                  <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    <div className="flex items-center gap-2">
+                      <Check size={16} />
+                      <span className="font-medium">Email sent!</span>
+                    </div>
+                    <p className="mt-1 text-xs text-emerald-600">
+                      {sendEmailAddr} will receive a link to view this document.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setEmailSent(false);
+                        setSendEmailAddr("");
+                      }}
+                      className="mt-2 text-xs font-medium text-emerald-700 underline hover:text-emerald-600"
+                    >
+                      Send another
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      placeholder="recipient@example.com"
+                      value={sendEmailAddr}
+                      onChange={(e) => setSendEmailAddr(e.target.value)}
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!sendEmailAddr.includes("@")) return;
+                        setSendingEmail(true);
+                        try {
+                          const res = await fetch(`/api/documents/${doc.id}/send-email`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email: sendEmailAddr }),
+                          });
+                          if (!res.ok) {
+                            const err = await res.json();
+                            throw new Error(err.error || "Failed to send");
+                          }
+                          setEmailSent(true);
+                          // Refresh tracking data
+                          loadTracking();
+                        } catch (e) {
+                          alert(e instanceof Error ? e.message : "Failed to send email");
+                        } finally {
+                          setSendingEmail(false);
+                        }
+                      }}
+                      disabled={sendingEmail || !sendEmailAddr.includes("@")}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                    >
+                      <Send size={14} />
+                      {sendingEmail ? "Sending..." : "Send"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Open tracking section */}
+              {trackingRecords.length > 0 && (
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <button
+                    onClick={() => setShowTracking(!showTracking)}
+                    className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-gray-700"
+                  >
+                    <Eye size={14} />
+                    Email Tracking ({trackingRecords.length})
+                    <svg
+                      className={`h-3 w-3 transition-transform ${showTracking ? "rotate-180" : ""}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {showTracking && (
+                    <div className="mt-2 space-y-2">
+                      {trackingRecords.map((rec) => (
+                        <div
+                          key={rec.id}
+                          className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-gray-900">
+                              {rec.recipientEmail}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(rec.createdAt).toLocaleDateString("en-GB", {
+                                day: "numeric", month: "short", year: "numeric",
+                              })}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                rec.status === "opened"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : rec.status === "failed"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              <Eye size={10} />
+                              {rec.status === "opened"
+                                ? "Opened"
+                                : rec.status === "failed"
+                                ? "Failed"
+                                : "Sent"}
+                            </span>
+                            {rec.openedAt && (
+                              <span className="text-xs text-gray-400">
+                                {new Date(rec.openedAt).toLocaleDateString("en-GB", {
+                                  day: "numeric", month: "short",
+                                })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

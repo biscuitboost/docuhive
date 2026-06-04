@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Plus, FileText, Download, Loader2, Search, Trash2, Archive, RotateCcw, ChevronLeft, ChevronRight, Sparkles, Flag } from "lucide-react";
+import { Plus, FileText, Download, Loader2, Search, Trash2, Archive, RotateCcw, ChevronLeft, ChevronRight, Sparkles, Flag, CheckSquare, DownloadCloud, RefreshCw } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Document {
@@ -52,7 +52,7 @@ const STATUS_STYLES: Record<string, string> = {
   archived: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
 };
 
-/** Trigger a client-side file download for the given document. */
+/** Trigger a client-side file download for a single document. */
 async function downloadDocument(doc: Document) {
   const res = await fetch(`/api/documents/${doc.id}/download`);
   if (!res.ok) {
@@ -63,9 +63,21 @@ async function downloadDocument(doc: Document) {
   const blob = await res.blob();
   const disposition = res.headers.get("Content-Disposition");
   const filename = disposition
-    ? disposition.replace(/^.*filename=\\"?(.+?)\\"?\\s*$/i, "$1")
+    ? disposition.replace(/^.*filename=\\"?(.+?)\\"?\s*$/i, "$1")
     : `${doc.title.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
 
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/** Trigger a client-side download for a blob with a given filename. */
+function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -99,6 +111,8 @@ export default function DocumentList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkActionLoading, setBulkActionLoading] = useState<string | null>(null);
   const limit = 20;
 
   function fetchDocs(p: number) {
@@ -129,11 +143,37 @@ export default function DocumentList() {
     return typeMatch && searchMatch;
   });
 
+  const allVisibleSelected = filtered.length > 0 && filtered.every((d) => selectedIds.has(d.id));
+
+  function handleSelectAll() {
+    if (allVisibleSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((d) => d.id)));
+    }
+  }
+
+  function handleSelectOne(id: string) {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  }
+
   async function handleDelete(docId: string) {
     try {
       const res = await fetch(`/api/documents/${docId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
       setDeleteConfirmId(null);
+      // Remove from selection if selected
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(docId);
+        return next;
+      });
       fetchDocs(page);
     } catch {
       alert("Failed to delete document");
@@ -154,6 +194,92 @@ export default function DocumentList() {
       alert(`Failed to ${newStatus === "archived" ? "archive" : "restore"} document`);
     }
   }
+
+  // ── Bulk Actions ────────────────────────────────────────────────
+
+  /** Download selected documents as a ZIP. */
+  const handleBulkDownload = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setBulkActionLoading("download");
+    try {
+      const res = await fetch("/api/documents/bulk/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentIds: Array.from(selectedIds) }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Download failed" }));
+        throw new Error(err.error);
+      }
+
+      const blob = await res.blob();
+      triggerDownload(blob, "documents.zip");
+
+      // Refresh list after download updates status
+      fetchDocs(page);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Bulk download failed");
+    } finally {
+      setBulkActionLoading(null);
+    }
+  }, [selectedIds, page]);
+
+  /** Archive selected documents. */
+  const handleBulkArchive = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setBulkActionLoading("archive");
+    try {
+      const res = await fetch("/api/documents/bulk/archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentIds: Array.from(selectedIds), action: "archive" }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Archive failed" }));
+        throw new Error(err.error);
+      }
+
+      setSelectedIds(new Set());
+      fetchDocs(page);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Bulk archive failed");
+    } finally {
+      setBulkActionLoading(null);
+    }
+  }, [selectedIds, page]);
+
+  /** Regenerate selected documents. */
+  const handleBulkRegenerate = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setBulkActionLoading("regenerate");
+    try {
+      const res = await fetch("/api/documents/bulk/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentIds: Array.from(selectedIds) }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Regenerate failed" }));
+        throw new Error(err.error);
+      }
+
+      const result = await res.json();
+      setSelectedIds(new Set());
+      fetchDocs(page);
+
+      if (result.errors && result.errors.length > 0) {
+        const errorCount = result.errors.length;
+        alert(`${result.regenerated} document(s) regenerated. ${errorCount} error(s) — check documents for details.`);
+      }
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Bulk regenerate failed");
+    } finally {
+      setBulkActionLoading(null);
+    }
+  }, [selectedIds, page]);
 
   return (
     <div>
@@ -194,6 +320,70 @@ export default function DocumentList() {
           </Link>
         </div>
       </div>
+
+      {/* Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 shadow-sm"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm font-medium text-card-foreground">
+                {selectedIds.size} document{selectedIds.size > 1 ? "s" : ""} selected
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleBulkDownload}
+                  disabled={bulkActionLoading !== null}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.97] disabled:opacity-50 transition-all duration-150"
+                >
+                  {bulkActionLoading === "download" ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <DownloadCloud size={14} />
+                  )}
+                  Download ZIP
+                </button>
+                <button
+                  onClick={handleBulkRegenerate}
+                  disabled={bulkActionLoading !== null}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-card-foreground hover:bg-accent active:scale-[0.97] disabled:opacity-50 transition-all duration-150"
+                >
+                  {bulkActionLoading === "regenerate" ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <RefreshCw size={14} />
+                  )}
+                  Regenerate
+                </button>
+                <button
+                  onClick={handleBulkArchive}
+                  disabled={bulkActionLoading !== null}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-card-foreground hover:bg-accent active:scale-[0.97] disabled:opacity-50 transition-all duration-150"
+                >
+                  {bulkActionLoading === "archive" ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Archive size={14} />
+                  )}
+                  Archive
+                </button>
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  disabled={bulkActionLoading !== null}
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-card-foreground transition-colors duration-150"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Content */}
       {loading ? (
@@ -265,6 +455,18 @@ export default function DocumentList() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
+                  <th className="px-3 py-3.5 w-10">
+                    <button
+                      onClick={handleSelectAll}
+                      className={`flex items-center justify-center w-5 h-5 rounded border transition-colors duration-150 ${
+                        allVisibleSelected
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "border-muted-foreground/30 hover:border-muted-foreground/60"
+                      }`}
+                    >
+                      {allVisibleSelected && <CheckSquare size={14} />}
+                    </button>
+                  </th>
                   <th className="px-4 py-3.5 font-medium text-muted-foreground">Title</th>
                   <th className="px-4 py-3.5 font-medium text-muted-foreground">Type</th>
                   <th className="px-4 py-3.5 font-medium text-muted-foreground">Status</th>
@@ -282,8 +484,22 @@ export default function DocumentList() {
                       animate="visible"
                       exit={{ opacity: 0, y: -8, transition: { duration: 0.15 } }}
                       custom={i}
-                      className="hover:bg-accent/40 transition-colors duration-150"
+                      className={`hover:bg-accent/40 transition-colors duration-150 ${
+                        selectedIds.has(doc.id) ? "bg-primary/[0.03]" : ""
+                      }`}
                     >
+                      <td className="px-3 py-3.5">
+                        <button
+                          onClick={() => handleSelectOne(doc.id)}
+                          className={`flex items-center justify-center w-5 h-5 rounded border transition-colors duration-150 ${
+                            selectedIds.has(doc.id)
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-muted-foreground/30 hover:border-muted-foreground/60"
+                          }`}
+                        >
+                          {selectedIds.has(doc.id) && <CheckSquare size={14} />}
+                        </button>
+                      </td>
                       <td className="px-4 py-3.5 font-medium text-card-foreground">{doc.title}</td>
                       <td className="px-4 py-3.5 text-muted-foreground">
                         {TYPE_LABELS[doc.type] || doc.type}
@@ -382,19 +598,33 @@ export default function DocumentList() {
                   animate="visible"
                   exit={{ opacity: 0, y: -8, transition: { duration: 0.15 } }}
                   custom={i}
-                  className="rounded-xl border bg-card p-4 shadow-sm"
+                  className={`rounded-xl border bg-card p-4 shadow-sm ${
+                    selectedIds.has(doc.id) ? "border-primary/40 ring-1 ring-primary/20" : ""
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/documents/${doc.id}`}
-                        className="text-sm font-semibold text-card-foreground hover:text-primary transition-colors truncate block"
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <button
+                        onClick={() => handleSelectOne(doc.id)}
+                        className={`mt-0.5 flex items-center justify-center w-5 h-5 shrink-0 rounded border transition-colors duration-150 ${
+                          selectedIds.has(doc.id)
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "border-muted-foreground/30 hover:border-muted-foreground/60"
+                        }`}
                       >
-                        {doc.title}
-                      </Link>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {TYPE_LABELS[doc.type] || doc.type} · {new Date(doc.createdAt).toLocaleDateString("en-GB")}
-                      </p>
+                        {selectedIds.has(doc.id) && <CheckSquare size={14} />}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          href={`/documents/${doc.id}`}
+                          className="text-sm font-semibold text-card-foreground hover:text-primary transition-colors truncate block"
+                        >
+                          {doc.title}
+                        </Link>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {TYPE_LABELS[doc.type] || doc.type} · {new Date(doc.createdAt).toLocaleDateString("en-GB")}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span

@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Archive, RefreshCw, Share2, X, Check, Copy, Sparkles, FileText } from "lucide-react";
+import { Archive, RefreshCw, Share2, X, Check, Copy, Sparkles, FileText, ArrowLeftRight } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import DocumentEditor from "@/components/documents/DocumentEditor";
 import VersionTimeline from "@/components/documents/VersionTimeline";
+import DocumentCompare from "@/components/documents/DocumentCompare";
 import InlineSectionEditor from "@/components/documents/InlineSectionEditor";
 import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
 
@@ -120,6 +121,7 @@ export default function DocumentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showVersionPanel, setShowVersionPanel] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
   const [showRegenerate, setShowRegenerate] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [regenerateModel, setRegenerateModel] = useState("");
@@ -508,7 +510,10 @@ export default function DocumentDetailPage() {
                     </a>
                     {/* Version history toggle */}
                     <button
-                      onClick={() => setShowVersionPanel(!showVersionPanel)}
+                      onClick={() => {
+                        setShowVersionPanel(!showVersionPanel);
+                        if (showCompare) setShowCompare(false);
+                      }}
                       className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm ${
                         showVersionPanel
                           ? "border-blue-300 bg-blue-50 text-blue-700"
@@ -519,6 +524,21 @@ export default function DocumentDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Version History
+                    </button>
+                    {/* Compare versions button */}
+                    <button
+                      onClick={() => {
+                        setShowCompare(!showCompare);
+                        if (showVersionPanel) setShowVersionPanel(false);
+                      }}
+                      className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm ${
+                        showCompare
+                          ? "border-purple-300 bg-purple-50 text-purple-700"
+                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <ArrowLeftRight size={14} />
+                      Compare
                     </button>
                     {/* Regenerate button */}
                     <button
@@ -656,6 +676,17 @@ export default function DocumentDetailPage() {
                   currentVersion={doc.version}
                   onRestore={handleVersionChange}
                   onIssue={handleVersionChange}
+                />
+              </div>
+            )}
+
+            {/* Compare versions sidebar panel */}
+            {showCompare && (
+              <div className="w-80 shrink-0 border-l border-gray-200 p-4">
+                <DocumentCompare
+                  documentId={doc.id}
+                  versionNum={doc.version}
+                  onClose={() => setShowCompare(false)}
                 />
               </div>
             )}

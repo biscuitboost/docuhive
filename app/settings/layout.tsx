@@ -6,6 +6,7 @@ import DashboardShell from "@/components/layout/DashboardShell"
 
 const settingsTabs = [
   { href: "/settings", label: "General", exact: true },
+  { href: "/settings/templates", label: "Templates", exact: false },
   { href: "/settings/billing", label: "Billing", exact: false },
   { href: "/settings/branding", label: "Branding", exact: false },
   { href: "/settings/team", label: "Team", exact: false },

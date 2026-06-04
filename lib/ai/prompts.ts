@@ -647,8 +647,13 @@ Output FLAT JSON. Keys: "parties", "definitions", "business_purpose", "board", "
   },
 };
 
+import { db } from "@/lib/db";
+import { documentTemplates } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
+
 /**
  * Builds the full prompt for a given document type by interpolating user inputs.
+ * Falls back to default TEMPLATES if no docType match or DB error.
  */
 export function buildPrompt(
   docType: string,
@@ -663,4 +668,46 @@ export function buildPrompt(
   }
 
   return { system: template.system, prompt: filled };
+}
+
+/**
+ * Resolves a prompt for document generation, checking tenant-specific
+ * custom templates in the database before falling back to hardcoded defaults.
+ *
+ * This is the preferred entry point for document generation — it respects
+ * the Template Editor feature.
+ */
+export async function resolvePrompt(
+  docType: string,
+  userInputs: Record<string, string>,
+  tenantId: string
+): Promise<{ system: string; prompt: string } | null> {
+  // Check for a tenant-specific custom template
+  try {
+    const [customTemplate] = await db
+      .select()
+      .from(documentTemplates)
+      .where(
+        and(
+          eq(documentTemplates.tenantId, tenantId),
+          eq(documentTemplates.type, docType as any),
+          eq(documentTemplates.isActive, true)
+        )
+      )
+      .limit(1);
+
+    if (customTemplate) {
+      let filled = customTemplate.promptTemplate;
+      for (const [key, value] of Object.entries(userInputs)) {
+        filled = filled.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
+      }
+      return { system: SYSTEM_PROMPT, prompt: filled };
+    }
+  } catch {
+    // DB error — fall through to default templates
+    console.warn("[resolvePrompt] Failed to query custom templates, using defaults");
+  }
+
+  // Fall back to hardcoded templates
+  return buildPrompt(docType, userInputs);
 }

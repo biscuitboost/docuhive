@@ -140,6 +140,9 @@ export const documentVersions = pgTable("document_versions", {
 
 export const documentTemplates = pgTable("document_templates", {
   id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
   type: docTypeEnum("type").notNull(),
   name: text("name").notNull(),
   version: integer("version").notNull().default(1),

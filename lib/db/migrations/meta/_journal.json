@@ -43,6 +43,13 @@
       "when": 1780492962181,
       "tag": "0005_fearless_ma_gnuci",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780496400000,
+      "tag": "0006_rough_iron_patriot",
+      "breakpoints": true
     }
   ]
 }

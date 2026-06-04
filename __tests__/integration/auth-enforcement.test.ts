@@ -179,6 +179,26 @@ describe('Auth Enforcement Across All API Routes', () => {
       expect(res.status).toBe(401);
       expect(json.error).toContain('Unauthorized');
     });
+
+    it('GET /api/templates enforces auth (tenant-scoped)', async () => {
+      const { GET } = require('@/app/api/templates/route');
+      const req = makeRequest('GET', 'http://localhost:3000/api/templates');
+      mockRequireAuth.mockRejectedValue(new AuthError('Unauthorized'));
+      const res = await GET(req);
+      const json = await res.json();
+      expect(res.status).toBe(401);
+      expect(json.error).toContain('Unauthorized');
+    });
+
+    it('POST /api/templates enforces auth', async () => {
+      const { POST } = require('@/app/api/templates/route');
+      const req = makePostRequest({ type: 'employment_contract', name: 'Test', promptTemplate: 'Test' });
+      mockRequireAuth.mockRejectedValue(new AuthError('Unauthorized'));
+      const res = await POST(req);
+      const json = await res.json();
+      expect(res.status).toBe(401);
+      expect(json.error).toContain('Unauthorized');
+    });
   });
 
   describe('Endpoints that DO NOT enforce auth (KNOWN GAPS)', () => {
@@ -201,15 +221,6 @@ describe('Auth Enforcement Across All API Routes', () => {
       const req = makeRequest('GET', 'http://localhost:3000/api/stripe/portal');
       const res = await GET(req);
       expect(res.status).toBe(401);
-    });
-  });
-
-  describe('Public endpoints (no auth needed by design)', () => {
-    it('GET /api/templates is public — no auth required (code-audit verified)', () => {
-      const fs = require('fs');
-      const code = fs.readFileSync('/home/hermes/projects/docuhive/app/api/templates/route.ts', 'utf8');
-      expect(code).not.toContain('requireAuth');
-      expect(code).toContain('documentTemplates');
     });
   });
 });

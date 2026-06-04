@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { generateDocument as aiGenerate } from "@/lib/ai/client";
 import { getModelForDocType } from "@/lib/ai/models";
-import { buildPrompt } from "@/lib/ai/prompts";
+import { buildPrompt, resolvePrompt } from "@/lib/ai/prompts";
 import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { renderers, PdfRenderInput } from "@/lib/documents/pdf";
@@ -68,8 +68,8 @@ export async function generateDocument(
   const docType = validated.docType as DocType;
   const model = validated.model ?? getModelForDocType(docType);
 
-  // Build the prompt from templates
-  const promptResult = buildPrompt(docType, validated.userInputs);
+  // Build the prompt from templates — check DB custom templates first
+  const promptResult = await resolvePrompt(docType, validated.userInputs, validated.tenantId);
   if (!promptResult) {
     throw new Error(`No template found for document type: ${docType}`);
   }

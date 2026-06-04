@@ -57,6 +57,7 @@ function getSignatureStyle(docTypeLabel: string): "employee-employer" | "party-p
     "Terms & Conditions",
     "Commercial Lease",
     "Shareholder Agreement",
+    "Partnership Agreement",
   ];
   if (employerEmployee.includes(docTypeLabel)) return "employee-employer";
   if (bothParties.includes(docTypeLabel)) return "party-party";
@@ -923,6 +924,42 @@ export async function renderShareholderAgreementPdf(
   return renderPdf(data, "Shareholder Agreement");
 }
 
+export async function renderPartnershipAgreementPdf(
+  data: PdfRenderInput
+): Promise<Buffer> {
+  return renderPdf(data, "Partnership Agreement");
+}
+
+export async function renderAppraisalFormPdf(
+  data: PdfRenderInput
+): Promise<Buffer> {
+  return renderPdf(data, "Appraisal Form");
+}
+
+export async function renderRiskAssessmentPdf(
+  data: PdfRenderInput
+): Promise<Buffer> {
+  return renderPdf(data, "Risk Assessment");
+}
+
+export async function renderHealthSafetyPolicyPdf(
+  data: PdfRenderInput
+): Promise<Buffer> {
+  return renderPdf(data, "Health & Safety Policy");
+}
+
+export async function renderEqualOpportunitiesPolicyPdf(
+  data: PdfRenderInput
+): Promise<Buffer> {
+  return renderPdf(data, "Equal Opportunities Policy");
+}
+
+export async function renderMaternityPaternityLeaveFormPdf(
+  data: PdfRenderInput
+): Promise<Buffer> {
+  return renderPdf(data, "Maternity/Paternity Leave Form");
+}
+
 /**
  * Map of doc type to render function.
  */
@@ -950,4 +987,10 @@ export const renderers: Record<
   commercial_lease: renderCommercialLeasePdf,
   director_service_agreement: renderDirectorServiceAgreementPdf,
   shareholder_agreement: renderShareholderAgreementPdf,
+  partnership_agreement: renderPartnershipAgreementPdf,
+  appraisal_form: renderAppraisalFormPdf,
+  risk_assessment: renderRiskAssessmentPdf,
+  health_safety_policy: renderHealthSafetyPolicyPdf,
+  equal_opportunities_policy: renderEqualOpportunitiesPolicyPdf,
+  maternity_paternity_leave_form: renderMaternityPaternityLeaveFormPdf,
 };

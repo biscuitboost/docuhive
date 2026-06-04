@@ -32,6 +32,14 @@ export const DOCUMENT_TYPES = [
   { value: "commercial_lease", label: "Commercial Lease" },
   { value: "director_service_agreement", label: "Director Service Agreement" },
   { value: "shareholder_agreement", label: "Shareholder Agreement" },
+
+  // ── New Document Types ──
+  { value: "partnership_agreement", label: "Partnership Agreement" },
+  { value: "appraisal_form", label: "Appraisal Form" },
+  { value: "risk_assessment", label: "Risk Assessment" },
+  { value: "health_safety_policy", label: "Health & Safety Policy" },
+  { value: "equal_opportunities_policy", label: "Equal Opportunities Policy" },
+  { value: "maternity_paternity_leave_form", label: "Maternity/Paternity Leave Form" },
 ] as const;
 
 export type DocumentType = (typeof DOCUMENT_TYPES)[number]["value"];

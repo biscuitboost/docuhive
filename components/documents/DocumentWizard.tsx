@@ -11,7 +11,9 @@ type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "pays
   | "freelancer_contract" | "settlement_agreement" | "disciplinary_grievance_letters"
   | "flexible_working_request" | "gdpr_privacy_notice" | "data_processing_agreement"
   | "privacy_policy" | "terms_and_conditions" | "commercial_lease"
-  | "director_service_agreement" | "shareholder_agreement";
+  | "director_service_agreement" | "shareholder_agreement"
+  | "partnership_agreement" | "appraisal_form" | "risk_assessment"
+  | "health_safety_policy" | "equal_opportunities_policy" | "maternity_paternity_leave_form";
 
 interface FieldDef {
   key: string;
@@ -425,6 +427,106 @@ const DOC_TYPES: { value: DocType; label: string; description: string; icon: str
       { key: "share_structure", label: "Share structure (e.g. 100 ordinary shares)", type: "text", required: true },
       { key: "directors", label: "Directors (names, comma-separated)", type: "text" },
       { key: "effective_date", label: "Effective date", type: "date", required: true },
+    ],
+  },
+
+  // ── New Document Types ──
+  {
+    value: "partnership_agreement",
+    label: "Partnership Agreement",
+    description: "Partnership deed under the Partnership Act 1890",
+    icon: "🤝",
+    category: "Commercial",
+    fields: [
+      { key: "partnership_name", label: "Partnership name", type: "text", required: true },
+      { key: "partners", label: "Partners (names, comma-separated)", type: "text", required: true },
+      { key: "business_type", label: "Business type", type: "text", required: true },
+      { key: "business_address", label: "Business address", type: "text", required: true },
+      { key: "start_date", label: "Start date", type: "date", required: true },
+      { key: "capital_contribution", label: "Capital contribution (each partner)", type: "text", required: true },
+      { key: "profit_sharing_ratio", label: "Profit sharing ratio (e.g. 50:50)", type: "text", required: true },
+      { key: "account_reference_date", label: "Account reference date", type: "text" },
+    ],
+  },
+  {
+    value: "appraisal_form",
+    label: "Appraisal Form",
+    description: "Employee performance review assessment form",
+    icon: "📋",
+    category: "HR & Compliance",
+    fields: [
+      { key: "employee_name", label: "Employee name", type: "text", required: true },
+      { key: "job_title", label: "Job title", type: "text", required: true },
+      { key: "department", label: "Department", type: "text" },
+      { key: "line_manager", label: "Line manager", type: "text", required: true },
+      { key: "review_period_from", label: "Review period from", type: "date", required: true },
+      { key: "review_period_to", label: "Review period to", type: "date", required: true },
+      { key: "review_date", label: "Review date", type: "date", required: true },
+    ],
+  },
+  {
+    value: "risk_assessment",
+    label: "Risk Assessment",
+    description: "Workplace health and safety risk assessment form",
+    icon: "⚠️",
+    category: "HR & Compliance",
+    fields: [
+      { key: "company_name", label: "Company name", type: "text", required: true },
+      { key: "assessment_location", label: "Assessment location", type: "text", required: true },
+      { key: "assessor_name", label: "Assessor name", type: "text", required: true },
+      { key: "assessment_date", label: "Assessment date", type: "date", required: true },
+      { key: "review_date", label: "Review date", type: "date" },
+      { key: "activity_description", label: "Activity/area being assessed", type: "textarea", required: true },
+    ],
+  },
+  {
+    value: "health_safety_policy",
+    label: "Health & Safety Policy",
+    description: "Comprehensive policy under Health and Safety at Work Act 1974",
+    icon: "🛡️",
+    category: "HR & Compliance",
+    fields: [
+      { key: "company_name", label: "Company name", type: "text", required: true },
+      { key: "company_address", label: "Company address", type: "text", required: true },
+      { key: "industry_sector", label: "Industry/sector", type: "text" },
+      { key: "employee_count", label: "Number of employees", type: "text" },
+      { key: "effective_date", label: "Effective date", type: "date", required: true },
+      { key: "responsible_manager", label: "Senior manager responsible for H&S", type: "text", required: true },
+      { key: "health_safety_advisor", label: "Health and safety advisor", type: "text" },
+    ],
+  },
+  {
+    value: "equal_opportunities_policy",
+    label: "Equal Opportunities Policy",
+    description: "Equality Act 2010 compliant equal opportunities policy",
+    icon: "⚖️",
+    category: "HR & Compliance",
+    fields: [
+      { key: "company_name", label: "Company name", type: "text", required: true },
+      { key: "policy_owner", label: "Policy owner / monitoring officer", type: "text" },
+      { key: "effective_date", label: "Effective date", type: "date", required: true },
+      { key: "review_date", label: "Review date", type: "date" },
+    ],
+  },
+  {
+    value: "maternity_paternity_leave_form",
+    label: "Maternity/Paternity Leave Form",
+    description: "Leave notification form with statutory pay eligibility",
+    icon: "👶",
+    category: "HR & Compliance",
+    fields: [
+      { key: "employee_name", label: "Employee name", type: "text", required: true },
+      { key: "employee_role", label: "Employee role", type: "text", required: true },
+      { key: "leave_type", label: "Leave type", type: "select", required: true, options: [
+        { value: "maternity", label: "Maternity" },
+        { value: "paternity", label: "Paternity" },
+        { value: "shared_parental", label: "Shared Parental" },
+        { value: "adoption", label: "Adoption" },
+      ]},
+      { key: "ewc", label: "Expected week of childbirth / placement date", type: "date", required: true },
+      { key: "actual_date", label: "Actual birth / placement date", type: "date" },
+      { key: "partner_name", label: "Partner name (for shared parental)", type: "text" },
+      { key: "partner_employer", label: "Partner employer", type: "text" },
     ],
   },
 ];

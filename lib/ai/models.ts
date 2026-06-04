@@ -29,6 +29,13 @@ export type DocType =
   | "commercial_lease"
   | "director_service_agreement"
   | "shareholder_agreement"
+  // ── New Document Types ──
+  | "partnership_agreement"
+  | "appraisal_form"
+  | "risk_assessment"
+  | "health_safety_policy"
+  | "equal_opportunities_policy"
+  | "maternity_paternity_leave_form"
   | "custom";
 
 export interface ModelOption {
@@ -90,6 +97,16 @@ export function getModelForDocType(docType: DocType): string {
 
     case "custom":
       return "openai/gpt-4o";
+
+    // ── New Document Types ──
+    case "partnership_agreement":
+    case "risk_assessment":
+      return "anthropic/claude-sonnet-4";
+    case "appraisal_form":
+    case "health_safety_policy":
+    case "equal_opportunities_policy":
+    case "maternity_paternity_leave_form":
+      return "google/gemini-2.5-pro";
 
     default:
       return "openai/gpt-4o";

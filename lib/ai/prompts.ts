@@ -645,6 +645,217 @@ Compliance: Companies Act 2006.
 
 Output FLAT JSON. Keys: "parties", "definitions", "business_purpose", "board", "reserved_matters", "share_transfers", "minority_protection", "dividends", "funding", "non_compete", "leaver_provisions", "valuation", "dispute_resolution", "deadlock", "termination", "governing_law", "signature_block". Each value must be a plain string.`,
   },
+
+  // ── New Document Types ──
+
+  partnership_agreement: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK Partnership Agreement under the Partnership Act 1890 with the following details:
+
+Partnership name: {{partnership_name}}
+Partners: {{partners}} (names of all partners)
+Business type: {{business_type}}
+Business address: {{business_address}}
+Start date: {{start_date}}
+Capital contribution: {{capital_contribution}}
+Profit sharing ratio: {{profit_sharing_ratio}}
+Account reference date: {{account_reference_date}}
+
+Include standard clauses:
+1. Name and business
+2. Duration of partnership
+3. Capital and current accounts
+4. Profit sharing and drawings
+5. Management and decision-making
+6. Banking and accounts
+7. Holidays and leave
+8. Sick leave and incapacity
+9. Non-compete and confidentiality
+10. Retirement and expulsion
+11. Dissolution and winding up
+12. Death of a partner
+13. Dispute resolution (mediation)
+14. Governing law (England and Wales)
+
+Output FLAT JSON. Keys: "parties", "name_and_business", "duration", "capital", "profit_sharing", "management", "banking", "holidays", "incapacity", "restrictive_covenants", "retirement", "dissolution", "death", "dispute_resolution", "governing_law", "signature_block". Each value must be a plain string.`,
+  },
+
+  appraisal_form: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK employee appraisal/review form with the following details:
+
+Employee name: {{employee_name}}
+Job title: {{job_title}}
+Department: {{department}}
+Line manager: {{line_manager}}
+Review period from: {{review_period_from}}
+Review period to: {{review_period_to}}
+Review date: {{review_date}}
+
+Include sections:
+1. Employee details
+2. Key achievements during review period
+3. Performance against objectives
+4. Core competencies assessment (teamwork, communication, problem-solving, leadership)
+5. Areas for development
+6. Training and development plan
+7. Objectives for next period
+8. Overall performance rating (1-5 scale)
+9. Employee comments
+10. Manager comments
+11. Signatures
+
+Compliance: ACAS performance management guidance, Equality Act 2010.
+
+Output FLAT JSON. Keys: "employee_details", "key_achievements", "performance_against_objectives", "competency_assessment", "development_areas", "training_plan", "future_objectives", "overall_rating", "employee_comments", "manager_comments", "signatures". Each value must be a plain string.`,
+  },
+
+  risk_assessment: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK Health and Safety risk assessment form compliant with the Management of Health and Safety at Work Regulations 1999 with the following details:
+
+Company name: {{company_name}}
+Assessment location: {{assessment_location}}
+Assessor name: {{assessor_name}}
+Assessment date: {{assessment_date}}
+Review date: {{review_date}}
+Activity/area being assessed: {{activity_description}}
+
+Include sections:
+1. Assessment details
+2. Hazard identification table (hazard, who might be harmed, existing controls, risk rating L/M/H, further action required)
+3. Risk rating matrix guidance (likelihood × severity)
+4. Action plan (priority, action required, responsible person, target date, completed date)
+5. Persons affected (employees, contractors, visitors, members of the public, vulnerable persons)
+6. Significant findings summary
+7. Review and monitoring schedule
+8. Signatures
+
+Compliance: Health and Safety at Work Act 1974, Management Regulations 1999, COSHH, RIDDOR.
+
+Output FLAT JSON. Keys: "assessment_details", "hazard_identification", "risk_matrix", "action_plan", "persons_affected", "significant_findings", "review_schedule", "signatures". Each value must be a plain string.`,
+  },
+
+  health_safety_policy: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a comprehensive UK Health and Safety Policy document compliant with the Health and Safety at Work Act 1974 with the following details:
+
+Company name: {{company_name}}
+Company address: {{company_address}}
+Industry/sector: {{industry_sector}}
+Number of employees: {{employee_count}}
+Effective date: {{effective_date}}
+Senior manager responsible: {{responsible_manager}}
+Health and safety advisor: {{health_safety_advisor}}
+
+Include sections:
+Part 1 — Statement of Intent:
+- Senior management commitment
+- Policy aims and objectives
+- Consultation arrangements
+
+Part 2 — Organisation of Health and Safety:
+- Responsibilities (employer, managers, supervisors, employees)
+- Health and safety roles and competent persons
+- Training arrangements
+- Consultation with employee representatives
+
+Part 3 — Arrangements:
+- Risk assessments
+- Information and instruction
+- Training and competence
+- Accident reporting (RIDDOR)
+- First aid
+- Fire safety and emergency procedures
+- Display screen equipment (DSE)
+- Manual handling
+- Workplace equipment (PUWER)
+- Personal protective equipment (PPE)
+- Control of substances hazardous to health (COSHH)
+- Lone working
+- Work at height
+- Asbestos management
+- Electrical safety
+- Noise and vibration
+- Stress management
+- Violence at work
+- Monitoring and review
+
+Compliance: Health and Safety at Work Act 1974, Management Regulations 1999, all relevant ACoPs.
+
+Output FLAT JSON. Keys: "statement_of_intent", "organisation_responsibilities", "training", "consultation", "risk_assessment", "accident_reporting", "first_aid", "fire_safety", "dse", "manual_handling", "ppe", "coshh", "lone_working", "electrical_safety", "monitoring", "review". Each value must be a plain string.`,
+  },
+
+  equal_opportunities_policy: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK Equal Opportunities Policy compliant with the Equality Act 2010 with the following details:
+
+Company name: {{company_name}}
+Policy owner/monitoring officer: {{policy_owner}}
+Effective date: {{effective_date}}
+Review date: {{review_date}}
+
+Include sections:
+1. Policy statement — commitment to equality and diversity
+2. Scope — who the policy applies to (employees, contractors, job applicants, visitors)
+3. Protected characteristics covered (age, disability, gender reassignment, marriage/civil partnership, pregnancy/maternity, race, religion/belief, sex, sexual orientation)
+4. Types of discrimination prohibited (direct, indirect, harassment, victimisation, failure to make reasonable adjustments)
+5. Recruitment and selection — fair recruitment practices
+6. Employment policies — promotion, training, development, redundancy
+7. Reasonable adjustments for disabled employees
+8. Monitoring and review — diversity monitoring, reporting
+9. Complaints and grievance procedure
+10. Disciplinary consequences for breach
+11. Responsibilities (employer, managers, all employees)
+12. Related policies (dignity at work, anti-harassment, flexible working)
+
+Compliance: Equality Act 2010, Public Sector Equality Duty (if applicable), ACAS guidance.
+
+Output FLAT JSON. Keys: "policy_statement", "scope", "protected_characteristics", "discrimination_types", "recruitment", "employment_policies", "reasonable_adjustments", "monitoring", "complaints", "disciplinary", "responsibilities", "related_policies". Each value must be a plain string.`,
+  },
+
+  maternity_paternity_leave_form: {
+    system: SYSTEM_PROMPT,
+    prompt: `Generate a UK Maternity/Paternity Leave request form compliant with employment law with the following details:
+
+Employee name: {{employee_name}}
+Employee role: {{employee_role}}
+Leave type: {{leave_type}} (maternity / paternity / shared parental / adoption)
+Expected week of childbirth / placement date: {{ewc}}
+Actual birth / placement date: {{actual_date}}
+Partner name (if shared parental): {{partner_name}}
+Partner employer: {{partner_employer}}
+
+Include Form Sections:
+
+Part A — Leave notification:
+1. Employee details
+2. Leave type and dates
+3. Expected week of childbirth / placement
+4. Intended start date of leave
+5. Intended return to work date
+6. Declaration
+
+Part B — Statutory Pay entitlement information:
+1. Continuous employment length
+2. Average weekly earnings (AWE) calculation
+3. Eligibility for Statutory Maternity Pay (SMP) / Statutory Paternity Pay (SPP) / Shared Parental Pay (ShPP)
+4. Pay rates and periods
+5. KIT / SPLIT days intention
+
+Part C — Employer response:
+1. Acknowledgement of notification
+2. SMP/SPP/ShPP eligibility decision
+3. Pay rate confirmation
+4. Keep in touch (KIT) arrangements
+5. Right to return to work confirmation
+6. Pension arrangements during leave
+7. Holiday accrual during leave
+
+Compliance: Employment Rights Act 1996, Maternity and Parental Leave Regulations 1999, Shared Parental Leave Regulations 2014, The Children and Families Act 2014, ACAS guidance.
+
+Output FLAT JSON. Keys: "employee_details", "leave_type", "leave_dates", "notification", "statutory_pay", "awe_calculation", "pay_eligibility", "employer_response", "kit_arrangements", "return_to_work", "declaration". Each value must be a plain string.`,
+  },
 };
 
 import { db } from "@/lib/db";

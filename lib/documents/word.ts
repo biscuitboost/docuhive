@@ -351,6 +351,42 @@ export async function generateShareholderAgreementWord(
   return createWordDoc(data);
 }
 
+export async function generatePartnershipAgreementWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateAppraisalFormWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateRiskAssessmentWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateHealthSafetyPolicyWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateEqualOpportunitiesPolicyWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
+export async function generateMaternityPaternityLeaveFormWord(
+  data: WordRenderInput
+): Promise<Buffer> {
+  return createWordDoc(data);
+}
+
 /**
  * Map of doc type to Word generator function.
  */
@@ -378,4 +414,10 @@ export const generators: Record<
   commercial_lease: generateCommercialLeaseWord,
   director_service_agreement: generateDirectorServiceAgreementWord,
   shareholder_agreement: generateShareholderAgreementWord,
+  partnership_agreement: generatePartnershipAgreementWord,
+  appraisal_form: generateAppraisalFormWord,
+  risk_assessment: generateRiskAssessmentWord,
+  health_safety_policy: generateHealthSafetyPolicyWord,
+  equal_opportunities_policy: generateEqualOpportunitiesPolicyWord,
+  maternity_paternity_leave_form: generateMaternityPaternityLeaveFormWord,
 };

@@ -22,12 +22,12 @@ const tools = [
     comingSoon: false,
   },
   {
-    href: "#",
+    href: "/tools/corporation-tax",
     label: "Corporation Tax Calculator",
-    description: "Estimate corporation tax liability at main rate (25%) or small profits rate (19%)",
+    description: "Estimate corporation tax liability — small profits rate (19%), main rate (25%), or marginal relief",
     icon: Building,
     color: "text-purple-600 bg-purple-50 dark:bg-purple-950/30 dark:text-purple-400",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     href: "#",

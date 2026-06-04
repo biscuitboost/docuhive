@@ -70,4 +70,13 @@ export const UK_TAX_RATES = {
     minimumEmployeeContribution: 0.05,
     totalMinimumContribution: 0.08,
   },
+
+  // Corporation Tax (2024/25)
+  corporationTax: {
+    smallProfitsRate: 0.19,
+    mainRate: 0.25,
+    marginalReliefLowerLimit: 50000,
+    marginalReliefUpperLimit: 250000,
+    marginalReliefFraction: 1 / 40, //
+  },
 } as const;

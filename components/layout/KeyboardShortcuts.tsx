@@ -30,18 +30,6 @@ export default function KeyboardShortcuts() {
   const lastKeyTime = useRef(0)
   const chordBuffer = useRef<string[]>([])
 
-  // Define all shortcuts
-  const shortcuts: ShortcutEntry[] = [
-    { keys: "g then d", label: "Go to Dashboard", action: () => router.push("/dashboard"), category: "Navigation" },
-    { keys: "g then n", label: "New Document", action: () => router.push("/documents/new"), category: "Navigation" },
-    { keys: "g then t", label: "Tools", action: () => router.push("/tools"), category: "Navigation" },
-    { keys: "g then s", label: "Settings", action: () => router.push("/settings"), category: "Navigation" },
-    { keys: "g then l", label: "Legislative Updates", action: () => router.push("/legislative"), category: "Navigation" },
-    { keys: "⌘K / Ctrl+K", label: "Command palette", action: () => {}, category: "General" },
-    { keys: "?", label: "Show keyboard shortcuts", action: () => {}, category: "General" },
-    { keys: "Esc", label: "Close dialog / menu", action: () => {}, category: "General" },
-  ]
-
   const paletteItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { label: "New Document", href: "/documents/new", icon: PlusCircle },
@@ -62,16 +50,25 @@ export default function KeyboardShortcuts() {
 
       const chord = chordBuffer.current.join(" then ")
 
+      // Define shortcuts inside callback to avoid deps issues
+      const navShortcuts: ShortcutEntry[] = [
+        { keys: "g then d", label: "Go to Dashboard", action: () => router.push("/dashboard"), category: "Navigation" },
+        { keys: "g then n", label: "New Document", action: () => router.push("/documents/new"), category: "Navigation" },
+        { keys: "g then t", label: "Tools", action: () => router.push("/tools"), category: "Navigation" },
+        { keys: "g then s", label: "Settings", action: () => router.push("/settings"), category: "Navigation" },
+        { keys: "g then l", label: "Legislative Updates", action: () => router.push("/legislative"), category: "Navigation" },
+      ]
+
       // Match against two-key chords
       if (chordBuffer.current.length === 2) {
-        const match = shortcuts.find((s) => s.keys === chord && s.category === "Navigation")
+        const match = navShortcuts.find((s) => s.keys === chord)
         if (match) {
           match.action()
         }
         chordBuffer.current = []
       }
     },
-    [shortcuts, router]
+    [router]
   )
 
   useEffect(() => {

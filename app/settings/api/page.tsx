@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Key, Plus, Trash2, Copy, Check, Eye, EyeOff, KeyRound, AlertCircle, Loader2, ToggleLeft, ToggleRight } from "lucide-react"
+import { Key, Plus, Trash2, Copy, Check, KeyRound, AlertCircle, Loader2, ToggleLeft, ToggleRight } from "lucide-react"
 
 interface ApiKey {
   id: string

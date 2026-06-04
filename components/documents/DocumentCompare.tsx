@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { X, ArrowLeftRight, ChevronDown, ChevronRight } from "lucide-react";
-import { formatDate } from "./VersionTimeline";
 
 interface VersionMeta {
   version: number;

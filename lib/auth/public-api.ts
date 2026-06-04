@@ -7,7 +7,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { apiKeys } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { hashApiKey, isValidKeyFormat } from "@/lib/utils/api-keys";
 import { sql } from "drizzle-orm";
 
@@ -18,9 +18,11 @@ export interface PublicAuthResult {
 }
 
 export class PublicAuthError extends Error {
-  constructor(message: string, public status: number = 401) {
+  public status: number = 401;
+  constructor(message: string, status: number = 401) {
     super(message);
     this.name = "PublicAuthError";
+    this.status = status;
   }
 }
 

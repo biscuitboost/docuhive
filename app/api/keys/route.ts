@@ -12,7 +12,7 @@ import { requireAuth, AuthError } from "@/lib/auth/tenant";
 import { db } from "@/lib/db";
 import { apiKeys } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { generateApiKey, redactApiKey } from "@/lib/utils/api-keys";
+import { generateApiKey } from "@/lib/utils/api-keys";
 
 // ── List API Keys ──────────────────────────────────────────────────
 

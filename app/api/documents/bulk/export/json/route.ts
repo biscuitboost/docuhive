@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { requireAuth, AuthError } from "@/lib/auth/tenant";
-import { generateJsonExport } from "@/lib/documents/export";
 
 /**
  * POST /api/documents/bulk/export/json

@@ -39,7 +39,7 @@ function base62Encode(bytes: Buffer): string {
  * Returns { plaintextKey, keyPrefix, keyHash, lastFour }.
  * The plaintext key should be shown to the user exactly once.
  */
-export function generateApiKey(name: string): {
+export function generateApiKey(_name: string): {
   plaintextKey: string;
   keyPrefix: string;
   keyHash: string;

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { generateDocument as aiGenerate } from "@/lib/ai/client";
 import { getModelForDocType } from "@/lib/ai/models";
-import { buildPrompt, resolvePrompt } from "@/lib/ai/prompts";
+import { resolvePrompt } from "@/lib/ai/prompts";
 import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { renderers, PdfRenderInput } from "@/lib/documents/pdf";

@@ -2,7 +2,7 @@
 
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
-import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank } from "lucide-react"
+import { Calculator, Percent, PoundSterling, Building, CalendarDays, PiggyBank, Receipt } from "lucide-react"
 
 const tools = [
   {
@@ -35,6 +35,14 @@ const tools = [
     description: "Calculate dividend tax and net income from dividend payments",
     icon: PiggyBank,
     color: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400",
+    comingSoon: false,
+  },
+  {
+    href: "/tools/expenses",
+    label: "Expense Tracker",
+    description: "Track and categorise business expenses — export CSV for your accounting software",
+    icon: Receipt,
+    color: "text-rose-600 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-400",
     comingSoon: false,
   },
   {

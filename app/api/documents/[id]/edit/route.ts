@@ -67,6 +67,13 @@ export async function POST(
 
     const model = doc.aiModel ?? "deepseek/deepseek-chat";
 
+    // Build the system prompt with jurisdiction context
+    let systemContent = SYSTEM_PROMPT;
+    if (doc.jurisdiction) {
+      const jurLabel = doc.jurisdiction === "scotland" ? "Scotland" : "England and Wales";
+      systemContent = SYSTEM_PROMPT + `\n\nThe current jurisdiction is ${jurLabel}.`;
+    }
+
     // Build the editor prompt instructing the AI to return the full document
     const editPrompt = [
       `Current document content:\n${JSON.stringify(doc.outputData, null, 2)}`,
@@ -91,7 +98,7 @@ export async function POST(
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemContent },
           { role: "user", content: editPrompt },
         ],
         response_format: { type: "json_object" },

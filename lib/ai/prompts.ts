@@ -22,7 +22,9 @@ Output valid JSON matching the requested structure.
 
 For every document type, use correct UK statutory language and cite relevant legislation where appropriate.
 
-You know the differences between English/Welsh law and Scots law. When jurisdiction is 'scotland', use Scots law terminology (e.g. 'pursuer' not 'claimant', 'Session' not 'High Court', sheriff court jurisdiction, Scottish property law principles). When jurisdiction is 'england_wales', use English law as currently described.`;
+You know the differences between English/Welsh law and Scots law. When jurisdiction is 'scotland', use Scots law terminology (e.g. 'pursuer' not 'claimant', 'Session' not 'High Court', sheriff court jurisdiction, Scottish property law principles). When jurisdiction is 'england_wales', use English law as currently described.
+
+The current jurisdiction is {{jurisdiction}}.`;
 
 export const TEMPLATES: Record<string, { system: string; prompt: string }> = {
   employment_contract: {
@@ -575,8 +577,6 @@ Include simplified clauses:
 14. Governing law ({{jurisdiction}})
 
 This is a simplified template for informational use — both parties should seek legal advice.
-
-NOTE for Scotland: Scottish property law differs materially from English/Welsh law. Key differences include: heritable property (not freehold), Scottish rates and STL (not business rates), security/eviction via Sheriff Court, feudal abolition, and the Land Registration etc. (Scotland) Act 2012. If jurisdiction is 'scotland', adapt references accordingly.
 
 Output FLAT JSON. Keys: "parties", "premises", "term", "rent", "rent_review", "service_charge", "insurance", "repair", "alterations", "alienation", "permitted_use", "break_clause", "forfeiture", "notices", "governing_law". Each value must be a plain string.`,
   },

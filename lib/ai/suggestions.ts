@@ -107,7 +107,7 @@ export const DOC_TYPE_SUGGESTIONS: Record<string, Suggestion[]> = {
   terms_and_conditions: [
     { label: "Add cancellation rights", instruction: "Add cancellation and returns clause: 14-day cooling-off period under Consumer Contracts Regulations 2013" },
     { label: "Add liability cap", instruction: "Add limitation of liability clause: capped at the total amount paid in the last 12 months, nothing excluded for death or fraud" },
-    { label: "Add dispute resolution", instruction: "Add dispute resolution: negotiation, mediation, then exclusive jurisdiction of English courts" },
+    { label: "Add dispute resolution", instruction: "Add dispute resolution: negotiation, mediation, then governing law and exclusive jurisdiction clause appropriate to the document's jurisdiction" },
   ],
   payslip: [
     { label: "Add year-to-date totals", instruction: "Add year-to-date totals for gross pay, tax paid, and NI paid" },

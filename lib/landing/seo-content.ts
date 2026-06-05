@@ -239,7 +239,7 @@ export const LANDING_PAGES: LandingSEOData[] = [
       "Generate a free UK NDA (non-disclosure agreement) template. Mutual and unilateral options. AI-powered, solicitor-reviewed. Download as PDF or Word.",
     heading: "Free UK NDA Template",
     intro:
-      "Protect your confidential information with a professionally drafted UK NDA. Our AI generates both mutual and unilateral non-disclosure agreements that are enforceable under English law. Perfect for sharing business plans, financial data, or trade secrets with potential partners, investors, or employees.",
+      "Protect your confidential information with a professionally drafted UK NDA. Our AI generates both mutual and unilateral non-disclosure agreements that are enforceable under UK law. Perfect for sharing business plans, financial data, or trade secrets with potential partners, investors, or employees.",
     benefits: [
       "Mutual and unilateral NDA options available",
       "Enforceable under English and Welsh law",

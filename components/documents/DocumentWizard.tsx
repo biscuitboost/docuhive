@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ArrowLeft, ArrowRight, Download, FileDown, Sparkles, BookmarkPlus, Save, Loader2, Trash2, History } from "lucide-react";
 import { AVAILABLE_MODELS, getRecommendedModel } from "@/lib/ai/models";
+import { JURISDICTIONS } from "@/lib/utils/constants";
 
 type DocType = "employment_contract" | "offer_letter" | "staff_handbook" | "payslip" | "p45"
   | "job_description" | "nda" | "service_agreement" | "consultant_agreement"
@@ -590,6 +591,7 @@ export default function DocumentWizard({ initialType, initialFormValues: propsIn
   const [prefillSuggestions, setPrefillSuggestions] = useState<{ fieldKey: string; value: string; sourceType: string; sourceTitle: string }[]>([]);
   const [prefillLoading, setPrefillLoading] = useState(false);
   const [prefillVisible, setPrefillVisible] = useState(true);
+  const [jurisdiction, setJurisdiction] = useState<string>("england_wales");
 
   // If initialType provided, skip straight to the form
   useEffect(() => {
@@ -613,6 +615,11 @@ export default function DocumentWizard({ initialType, initialFormValues: propsIn
       .then((json) => {
         const d = json.defaults;
         if (!d) return;
+
+        // Set jurisdiction from tenant defaults
+        if (json.jurisdiction) {
+          setJurisdiction(json.jurisdiction);
+        }
 
         const prefill: Record<string, string> = {};
         const mapping: [string, string[]][] = [
@@ -719,6 +726,7 @@ export default function DocumentWizard({ initialType, initialFormValues: propsIn
           title: docType.label,
           userInputs: formValues,
           model,
+          jurisdiction,
         }),
       });
 
@@ -997,6 +1005,27 @@ export default function DocumentWizard({ initialType, initialFormValues: propsIn
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Jurisdiction Selector */}
+              <div className="mb-6 rounded-lg border border-muted bg-muted/30 px-4 py-3">
+                <label className="mb-1.5 block text-sm font-medium text-card-foreground">
+                  Jurisdiction
+                </label>
+                <select
+                  value={jurisdiction}
+                  onChange={(e) => setJurisdiction(e.target.value)}
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none ring-0 focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200"
+                >
+                  {JURISDICTIONS.map((j) => (
+                    <option key={j.value} value={j.value}>
+                      {j.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Affects governing law clauses, legal terminology, and regulatory references in generated documents.
+                </p>
+              </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
                 {docType.fields.map((field) => (

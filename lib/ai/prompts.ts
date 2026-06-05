@@ -20,7 +20,9 @@ You have expert knowledge of:
 Generate documents that are legally compliant, accurate, and tailored to the provided inputs.
 Output valid JSON matching the requested structure.
 
-For every document type, use correct UK statutory language and cite relevant legislation where appropriate.`;
+For every document type, use correct UK statutory language and cite relevant legislation where appropriate.
+
+You know the differences between English/Welsh law and Scots law. When jurisdiction is 'scotland', use Scots law terminology (e.g. 'pursuer' not 'claimant', 'Session' not 'High Court', sheriff court jurisdiction, Scottish property law principles). When jurisdiction is 'england_wales', use English law as currently described.`;
 
 export const TEMPLATES: Record<string, { system: string; prompt: string }> = {
   employment_contract: {
@@ -57,7 +59,7 @@ Include standard clauses for:
 - Disciplinary and grievance procedures
 - Data protection
 - Termination
-- Entire agreement and governing law (England and Wales)
+- Entire agreement and governing law ({{jurisdiction}})
 
 Output JSON with FLAT key-value pairs — each key maps directly to text. Use descriptive keys like "header", "duties_and_responsibilities", "remuneration", etc. Each value must be a plain string, not a nested object.`,
   },
@@ -204,7 +206,7 @@ Include standard clauses:
 5. Term and termination
 6. Return of materials
 7. Remedies
-8. Governing law (England and Wales)
+8. Governing law ({{jurisdiction}})
 
 Output FLAT JSON. Keys: "parties", "definitions", "obligations", "permitted_disclosures", "exclusions", "term", "return_of_materials", "remedies", "governing_law", "signature_block". Each value must be a plain string.`,
   },
@@ -234,7 +236,7 @@ Include standard clauses:
 9. Term and termination
 10. IR35 status clause (outside IR35 where appropriate)
 11. Dispute resolution
-12. Governing law
+12. Governing law ({{jurisdiction}})
 
 Output FLAT JSON. Keys: "parties", "definitions", "appointment", "provider_obligations", "client_obligations", "fees_and_payment", "intellectual_property", "confidentiality", "liability", "term_and_termination", "ir35_status", "dispute_resolution", "governing_law", "signature_block". Each value must be a plain string.`,
   },
@@ -263,7 +265,7 @@ Include standard clauses:
 7. Limitation of liability
 8. Termination
 9. Dispute resolution
-10. Governing law
+10. Governing law ({{jurisdiction}})
 
 Output FLAT JSON. Keys: "parties", "services", "payment", "consultant_status", "confidentiality", "intellectual_property", "warranties", "liability", "termination", "governing_law", "signature_block". Each value must be a plain string.`,
   },
@@ -288,7 +290,7 @@ Include:
 4. Confidentiality
 5. Intellectual property
 6. Termination
-7. Governing law
+7. Governing law ({{jurisdiction}})
 
 Output FLAT JSON. Keys: "project_scope", "payment_terms", "freelancer_status", "confidentiality", "intellectual_property", "termination", "governing_law", "signature_block". Each value must be a plain string.`,
   },
@@ -456,7 +458,7 @@ Include standard clauses:
 11. Audit rights
 12. Deletion and return of data
 13. Liability
-14. Governing law
+14. Governing law ({{jurisdiction}})
 
 Schedule: description of processing (categories of data subjects, categories of personal data, nature and purpose of processing, retention periods).
 
@@ -527,7 +529,7 @@ Include standard clauses:
 13. Data protection
 14. Complaints
 15. Events outside our control
-16. Governing law and jurisdiction
+16. Governing law and jurisdiction ({{jurisdiction}})
 17. Entire agreement
 
 Compliance: Consumer Rights Act 2015, Consumer Contracts Regulations 2013, UK GDPR.
@@ -569,9 +571,11 @@ Include simplified clauses:
 11. Break clause
 12. Forfeiture
 13. Service of notices
-14. Governing law
+14. Governing law ({{jurisdiction}})
 
 This is a simplified template for informational use — both parties should seek legal advice.
+
+NOTE for Scotland: Scottish property law differs materially from English/Welsh law. Key differences include: heritable property (not freehold), Scottish rates and STL (not business rates), security/eviction via Sheriff Court, feudal abolition, and the Land Registration etc. (Scotland) Act 2012. If jurisdiction is 'scotland', adapt references accordingly.
 
 Output FLAT JSON. Keys: "parties", "premises", "term", "rent", "rent_review", "service_charge", "insurance", "repair", "alterations", "alienation", "permitted_use", "break_clause", "forfeiture", "notices", "governing_law". Each value must be a plain string.`,
   },
@@ -608,7 +612,7 @@ Include clauses:
 12. Confidentiality
 13. Intellectual property
 14. Outside interests and conflicts of interest
-15. Governing law
+15. Governing law ({{jurisdiction}})
 
 Output FLAT JSON. Keys: "parties", "appointment", "duties", "remuneration", "pension", "bonus", "holiday", "sick_pay", "expenses", "termination", "compensation", "restrictive_covenants", "confidentiality", "intellectual_property", "conflicts", "governing_law", "signature_block". Each value must be a plain string.`,
   },
@@ -639,7 +643,7 @@ Include clauses:
 12. Dispute resolution (including mediation, expert determination)
 13. Deadlock
 14. Termination
-15. Governing law
+15. Governing law ({{jurisdiction}})
 
 Compliance: Companies Act 2006.
 
@@ -675,7 +679,7 @@ Include standard clauses:
 11. Dissolution and winding up
 12. Death of a partner
 13. Dispute resolution (mediation)
-14. Governing law (England and Wales)
+14. Governing law ({{jurisdiction}})
 
 Output FLAT JSON. Keys: "parties", "name_and_business", "duration", "capital", "profit_sharing", "management", "banking", "holidays", "incapacity", "restrictive_covenants", "retirement", "dissolution", "death", "dispute_resolution", "governing_law", "signature_block". Each value must be a plain string.`,
   },

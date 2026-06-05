@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 
         // Regenerate with the same inputs
         const model = doc.aiModel ?? getModelForDocType(doc.type as any);
-        const promptResult = buildPrompt(doc.type as any, userInputs);
+        const promptResult = buildPrompt(doc.type as any, userInputs, doc.jurisdiction ?? undefined);
         if (!promptResult) {
           errors.push({
             id: doc.id,

@@ -74,7 +74,7 @@ export async function POST(
 
     // Call AI directly (same path as initial generation)
     const model = overrideModel ?? doc.aiModel ?? getModelForDocType(doc.type as any);
-    const promptResult = buildPrompt(doc.type as any, userInputs);
+    const promptResult = buildPrompt(doc.type as any, userInputs, doc.jurisdiction ?? undefined);
     if (!promptResult) {
       return NextResponse.json(
         { error: `No template found for document type: ${doc.type}` },

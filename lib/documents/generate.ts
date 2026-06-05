@@ -47,6 +47,7 @@ export const GenerateDocumentInputSchema = z.object({
   userInputs: z.record(z.string(), z.string()),
   model: z.string().optional(),
   createdBy: z.string().optional(),
+  jurisdiction: z.enum(["england_wales", "scotland"]).optional(),
 });
 
 export type GenerateDocumentInput = z.infer<typeof GenerateDocumentInputSchema>;
@@ -75,7 +76,7 @@ export async function generateDocument(
   const model = validated.model ?? getModelForDocType(docType);
 
   // Build the prompt from templates — check DB custom templates first
-  const promptResult = await resolvePrompt(docType, validated.userInputs, validated.tenantId);
+  const promptResult = await resolvePrompt(docType, validated.userInputs, validated.tenantId, validated.jurisdiction);
   if (!promptResult) {
     throw new Error(`No template found for document type: ${docType}`);
   }
@@ -122,18 +123,24 @@ export async function generateDocument(
 
   // Save document record to database with AI content persisted
   const content = aiResult.content;
+  const insertValues: any = {
+    tenantId: validated.tenantId,
+    type: docType as any,
+    title: validated.title,
+    status: "generated",
+    inputData: validated.userInputs,
+    outputData: content,
+    aiModel: model,
+    createdBy: validated.createdBy ?? null,
+  };
+
+  if (validated.jurisdiction) {
+    insertValues.jurisdiction = validated.jurisdiction;
+  }
+
   const [doc] = await db
     .insert(documents)
-    .values({
-      tenantId: validated.tenantId,
-      type: docType as any,
-      title: validated.title,
-      status: "generated",
-      inputData: validated.userInputs,
-      outputData: content,
-      aiModel: model,
-      createdBy: validated.createdBy ?? null,
-    })
+    .values(insertValues)
     .returning({ id: documents.id });
 
   // Create initial version snapshot

@@ -872,17 +872,34 @@ import { eq, and } from "drizzle-orm";
  */
 export function buildPrompt(
   docType: string,
-  userInputs: Record<string, string>
+  userInputs: Record<string, string>,
+  jurisdiction?: string
 ): { system: string; prompt: string } | null {
   const template = TEMPLATES[docType];
   if (!template) return null;
 
+  let system = template.system;
   let filled = template.prompt;
-  for (const [key, value] of Object.entries(userInputs)) {
+
+  // Inject jurisdiction into interpolation variables
+  const inputs = { ...userInputs };
+  if (jurisdiction) {
+    inputs["jurisdiction"] = jurisdiction === "scotland" ? "Scotland" : "England and Wales";
+  }
+
+  for (const [key, value] of Object.entries(inputs)) {
     filled = filled.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
   }
 
-  return { system: template.system, prompt: filled };
+  // Also inject jurisdiction into the system prompt
+  if (jurisdiction) {
+    system = system.replace(
+      new RegExp("\\{\\{jurisdiction\\}\\}", "g"),
+      jurisdiction === "scotland" ? "Scotland" : "England and Wales"
+    );
+  }
+
+  return { system, prompt: filled };
 }
 
 /**
@@ -895,7 +912,8 @@ export function buildPrompt(
 export async function resolvePrompt(
   docType: string,
   userInputs: Record<string, string>,
-  tenantId: string
+  tenantId: string,
+  jurisdiction?: string
 ): Promise<{ system: string; prompt: string } | null> {
   // Check for a tenant-specific custom template
   try {
@@ -913,7 +931,12 @@ export async function resolvePrompt(
 
     if (customTemplate) {
       let filled = customTemplate.promptTemplate;
-      for (const [key, value] of Object.entries(userInputs)) {
+      // Inject jurisdiction into interpolation variables for custom templates too
+      const inputs = { ...userInputs };
+      if (jurisdiction) {
+        inputs["jurisdiction"] = jurisdiction === "scotland" ? "Scotland" : "England and Wales";
+      }
+      for (const [key, value] of Object.entries(inputs)) {
         filled = filled.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
       }
       return { system: SYSTEM_PROMPT, prompt: filled };
@@ -924,5 +947,5 @@ export async function resolvePrompt(
   }
 
   // Fall back to hardcoded templates
-  return buildPrompt(docType, userInputs);
+  return buildPrompt(docType, userInputs, jurisdiction);
 }

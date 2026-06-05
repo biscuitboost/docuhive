@@ -6,6 +6,7 @@ import dynamic from "next/dynamic"
 import { usePathname } from "next/navigation"
 import { useTheme } from "@/lib/utils/theme-context"
 import KeyboardShortcuts from "./KeyboardShortcuts"
+import UsageBadge from "@/components/billing/UsageBadge"
 import {
   LayoutDashboard,
   PlusCircle,
@@ -98,6 +99,13 @@ function SidebarContent({ pathname, onNav }: { pathname: string; onNav?: () => v
           )
         })}
       </nav>
+
+      {/* Plan usage badge */}
+      <div className="px-3 py-2">
+        <SignedIn>
+          <UsageBadge />
+        </SignedIn>
+      </div>
 
       {/* Sign out */}
       <div className="border-t border-border px-3 py-3">

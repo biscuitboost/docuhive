@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/onboarding-emails?secret=@cron-secret",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/usage-alerts?secret=@cron-secret",
+      "schedule": "0 14 * * *"
     }
   ]
 }

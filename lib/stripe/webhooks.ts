@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { tenants, subscriptions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getPlanByPriceId, PLANS, type PlanId } from "./pricing";
+import { sendAbandonedCheckoutEmail } from "@/lib/email/abandoned-checkout";
 
 /**
  * Maps Stripe subscription statuses to our enum.
@@ -151,6 +152,21 @@ export async function handleStripeWebhook(
             documentsUsed: 0,
           });
         }
+      }
+      break;
+    }
+
+    case "checkout.session.expired": {
+      const expiredSession = event.data.object as Stripe.Checkout.Session;
+      const tenantId = expiredSession.metadata?.tenantId;
+      const plan = expiredSession.metadata?.plan ?? "essentials";
+      const sessionId = expiredSession.id;
+
+      if (tenantId) {
+        // Fire-and-forget: send the abandoned checkout email
+        sendAbandonedCheckoutEmail({ tenantId, plan, sessionId }).catch((err) => {
+          console.error("[webhooks] Abandoned checkout email failed:", err);
+        });
       }
       break;
     }

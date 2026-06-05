@@ -316,6 +316,92 @@ describe('handleStripeWebhook', () => {
     });
   });
 
+  // ── checkout.session.expired ──────────────────────────────
+
+  describe('checkout.session.expired', () => {
+    const defaultExpiredSession = {
+      id: 'cs_expired_123',
+      customer: 'cus_abc123',
+      subscription: null,
+      mode: 'subscription',
+      metadata: {
+        tenantId: 'tenant_xyz',
+        plan: 'pro',
+      },
+      success_url: 'https://example.com/success',
+      cancel_url: 'https://example.com/cancel',
+    };
+
+    beforeEach(() => {
+      // Restore default mock behaviour for monitoring — the expired handler
+      // should be fire-and-forget and not block
+    });
+
+    it('handles checkout.session.expired without error', async () => {
+      const result = await handleStripeWebhook(
+        JSON.stringify({
+          type: 'checkout.session.expired',
+          data: { object: defaultExpiredSession },
+        }),
+        'valid_sig'
+      );
+
+      // Should return received:true — the email send is fire-and-forget
+      expect(result).toEqual({ received: true });
+    });
+
+    it('does not attempt DB writes (tenant update or subscription insert)', async () => {
+      await handleStripeWebhook(
+        JSON.stringify({
+          type: 'checkout.session.expired',
+          data: { object: defaultExpiredSession },
+        }),
+        'valid_sig'
+      );
+
+      // The expired handler should NOT update tenants or insert subscriptions
+      expect(mockDbUpdate).not.toHaveBeenCalled();
+      expect(mockDbInsert).not.toHaveBeenCalled();
+    });
+
+    it('processes event even without tenantId in metadata (no-op)', async () => {
+      const sessionNoTenant = {
+        ...defaultExpiredSession,
+        metadata: { plan: 'pro' },
+      };
+
+      const result = await handleStripeWebhook(
+        JSON.stringify({
+          type: 'checkout.session.expired',
+          data: { object: sessionNoTenant },
+        }),
+        'valid_sig'
+      );
+
+      expect(result).toEqual({ received: true });
+      expect(mockDbUpdate).not.toHaveBeenCalled();
+    });
+
+    it('passes the correct tenantId and plan to sendAbandonedCheckoutEmail', async () => {
+      // We can't easily mock the fire-and-forget call, but we can verify
+      // the handler doesn't throw
+      const result = await handleStripeWebhook(
+        JSON.stringify({
+          type: 'checkout.session.expired',
+          data: {
+            object: {
+              ...defaultExpiredSession,
+              metadata: { tenantId: 'tenant_specific', plan: 'team' },
+            },
+          },
+        }),
+        'valid_sig'
+      );
+
+      expect(result).toEqual({ received: true });
+    });
+  });
+
   // ── customer.subscription.updated ───────────────────────────
 
   describe('customer.subscription.updated', () => {

@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/calculator(.*)",
   "/ping",
   "/landing(.*)",
+  "/api/health",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

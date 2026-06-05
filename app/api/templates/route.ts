@@ -57,7 +57,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
     const message = error instanceof Error ? error.message : "Failed to load templates";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[templates] GET error:", error);
+    return NextResponse.json({ error: message, detail: error instanceof Error ? error.stack : undefined }, { status: 500 });
   }
 }
 

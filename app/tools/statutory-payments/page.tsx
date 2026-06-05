@@ -5,12 +5,15 @@ import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
 import { CalendarDays, Info, HelpCircle, Banknote } from "lucide-react"
 import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
+import { UK_TAX_RATES } from "@/lib/utils/constants"
 
 // ── Constants ──────────────────────────────────────────────────────
 
-const SSP_WEEKLY = 116.75
+const SspConfig = UK_TAX_RATES.statutoryPayments.ssp
+const SSP_WEEKLY = SspConfig.weekly // £123.25
 const SSP_MAX_WEEKS = 28
-const PARENTAL_WEEKLY = 184.03
+const PARENTAL_WEEKLY = UK_TAX_RATES.statutoryPayments.statutoryFlatRate // £194.32
+const SSP_ELIGIBILITY_THRESHOLD = UK_TAX_RATES.ni.lowerEarningsLimit.weekly // £129
 
 type PaymentType = "ssp" | "smp" | "spp" | "sap" | "shpp" | "spbp"
 
@@ -101,7 +104,7 @@ export default function StatutoryPaymentsPage() {
 
   // For SSP: determine daily rate and weekly rate
   const sspDailyRate = SSP_WEEKLY / qualifyingDays
-  const isSspEligible = numericAwe >= 123 // Lower Earnings Limit = £123/week
+  const isSspEligible = numericAwe >= SSP_ELIGIBILITY_THRESHOLD // Lower Earnings Limit
 
   // For parental payments: 90% AWE vs flat rate, choose lower
   const ninetyPercentAwe = numericAwe * 0.9
@@ -110,7 +113,7 @@ export default function StatutoryPaymentsPage() {
   let remainingWeeksPayment = 0
 
   if (paymentType === "ssp") {
-    weeklyPayment = SSP_WEEKLY
+    weeklyPayment = numericAwe > 0 ? Math.min(numericAwe * 0.8, SSP_WEEKLY) : SSP_WEEKLY
   } else if (config.firstSixWeeks) {
     // SMP/SAP: first 6 weeks at 90% AWE, remaining at lower of flat rate or 90% AWE
     firstSixWeeksPayment = ninetyPercentAwe
@@ -139,22 +142,24 @@ export default function StatutoryPaymentsPage() {
 
   if (paymentType === "ssp") {
     breakdown.push(
-      { label: "Weekly SSP Rate", value: `£${SSP_WEEKLY.toFixed(2)}`, accent: true },
+      { label: "Weekly SSP Flat Rate", value: `£${SSP_WEEKLY.toFixed(2)}`, accent: true },
+      { label: "80% of AWE", value: numericAwe > 0 ? `£${(numericAwe * 0.8).toFixed(2)}` : "N/A", accent: true },
+      { label: "Effective Weekly Rate", value: `£${weeklyPayment.toFixed(2)}`, accent: true, tooltip: "Lower of £123.25/week flat rate and 80% of AWE (day 1 SSP rules)" },
       { label: "Qualifying Days per Week", value: `${qualifyingDays} day(s)`, accent: true },
-      { label: "Daily Rate", value: `£${sspDailyRate.toFixed(2)}`, accent: true },
+      { label: "Daily Rate", value: `£${(weeklyPayment / qualifyingDays).toFixed(2)}`, accent: true },
       { label: "Maximum Duration", value: `${SSP_MAX_WEEKS} weeks`, accent: true },
     )
     if (numericAwe > 0) {
       breakdown.push({
-        label: "AWE Check (min. £123/week)",
+        label: `AWE Check (min. £${SSP_ELIGIBILITY_THRESHOLD}/week)`,
         value: isSspEligible ? "✓ Eligible" : "✗ Below threshold",
         highlight: true,
-        tooltip: "Employees must earn at least £123/week (Lower Earnings Limit) to qualify for SSP",
+        tooltip: `Employees must earn at least £${SSP_ELIGIBILITY_THRESHOLD}/week (Lower Earnings Limit) to qualify for SSP`,
       })
       if (isSspEligible) {
         breakdown.push({
           label: "Total SSP (28 weeks max)",
-          value: `£${(SSP_WEEKLY * SSP_MAX_WEEKS).toFixed(2)}`,
+          value: `£${(weeklyPayment * SSP_MAX_WEEKS).toFixed(2)}`,
           highlight: true,
         })
       }
@@ -255,7 +260,7 @@ export default function StatutoryPaymentsPage() {
 
           {/* Description */}
           <div className="mb-4 rounded-lg bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
-            {config.description}. {isParentalType ? `Maximum ${config.durationWeeks} weeks at £${PARENTAL_WEEKLY.toFixed(2)}/wk or 90% of AWE.` : `Up to ${SSP_MAX_WEEKS} weeks at £${SSP_WEEKLY.toFixed(2)}/wk.`}
+            {config.description}. {isParentalType ? `Maximum ${config.durationWeeks} weeks at £${PARENTAL_WEEKLY.toFixed(2)}/wk or 90% of AWE.` : `Up to ${SSP_MAX_WEEKS} weeks at lower of 80% AWE and £${SSP_WEEKLY.toFixed(2)}/wk.`}
           </div>
 
           {/* Average Weekly Earnings input (all types except SSP) */}
@@ -309,7 +314,7 @@ export default function StatutoryPaymentsPage() {
                   />
                 </div>
                 <p className="mt-1 text-[11px] text-muted-foreground/60">
-                  Enter earnings to check eligibility (£123/week minimum for SSP)
+                  Enter earnings to check eligibility (£{SSP_ELIGIBILITY_THRESHOLD}/week minimum for SSP)
                 </p>
               </div>
 
@@ -350,14 +355,14 @@ export default function StatutoryPaymentsPage() {
                         <div className="mb-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30 px-4 py-3">
                           <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-300">
                             <Info size={14} />
-                            <span>Earnings above £123/week — employee qualifies for SSP</span>
+                            <span>Earnings above £{SSP_ELIGIBILITY_THRESHOLD}/week — employee qualifies for SSP</span>
                           </div>
                         </div>
                       ) : (
                         <div className="mb-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 px-4 py-3">
                           <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
                             <Info size={14} />
-                            <span>Earnings below £123/week — employee does not qualify for SSP</span>
+                            <span>Earnings below £{SSP_ELIGIBILITY_THRESHOLD}/week — employee does not qualify for SSP</span>
                           </div>
                         </div>
                       )}
@@ -375,7 +380,7 @@ export default function StatutoryPaymentsPage() {
                     <div className="rounded-lg bg-muted/50 px-3 py-2.5 text-center">
                       <p className="text-[11px] text-muted-foreground">Daily Rate</p>
                       <p className="text-sm font-bold tabular-nums text-card-foreground">
-                        £{sspDailyRate.toFixed(2)}
+                        £{(weeklyPayment / qualifyingDays).toFixed(2)}
                       </p>
                     </div>
                     <div className="rounded-lg bg-muted/50 px-3 py-2.5 text-center">
@@ -469,14 +474,14 @@ export default function StatutoryPaymentsPage() {
             <div className="mt-3 space-y-2 rounded-lg border border-border bg-muted/30 p-4">
               {paymentType === "ssp" && (
                 <>
-                  <h4 className="text-xs font-semibold text-card-foreground mb-2">SSP Calculation</h4>
-                  <MiniRow label={`Qualifying days per week`} value={`${qualifyingDays} day(s)`} />
-                  <MiniRow label={`Daily rate (£${SSP_WEEKLY.toFixed(2)} ÷ ${qualifyingDays})`} value={`£${sspDailyRate.toFixed(2)}`} />
-                  <MiniRow label="Weekly rate" value={`£${SSP_WEEKLY.toFixed(2)}`} />
+                  <h4 className="text-xs font-semibold text-card-foreground mb-2">SSP Calculation (Day 1 Rules)</h4>
+                  <MiniRow label="80% of AWE" value={numericAwe > 0 ? `£${(numericAwe * 0.8).toFixed(2)}` : "N/A"} />
+                  <MiniRow label={"Flat rate"} value={`£${SSP_WEEKLY.toFixed(2)}`} />
+                  <MiniRow label={"Effective weekly rate (lower)"} value={`£${weeklyPayment.toFixed(2)}`} />
+                  <MiniRow label={`Daily rate (£${weeklyPayment.toFixed(2)} ÷ ${qualifyingDays})`} value={`£${(weeklyPayment / qualifyingDays).toFixed(2)}`} />
                   <MiniRow label="Maximum duration" value={`${SSP_MAX_WEEKS} weeks`} />
                   <p className="text-[10px] text-muted-foreground mt-1">
-                    SSP is £{SSP_WEEKLY.toFixed(2)} per week for up to 28 weeks. The daily rate depends on
-                    how many days the employee normally works. No payment for the first 3 waiting days.
+                    SSP is the lower of 80% of AWE and £{SSP_WEEKLY.toFixed(2)}/week flat rate, for up to 28 weeks. From April 2026 SSP is payable from day 1 (no waiting days).
                   </p>
                 </>
               )}
@@ -552,11 +557,11 @@ export default function StatutoryPaymentsPage() {
             <div className="flex gap-2">
               <Info size={14} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
               <div className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                <p className="font-semibold mb-1">2024/25 Statutory Payment Rates</p>
+                <p className="font-semibold mb-1">2026/27 Statutory Payment Rates</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>SSP: <strong>£{SSP_WEEKLY.toFixed(2)}</strong>/wk for up to 28 weeks</li>
-                  <li>SSP eligibility: AWE must be at least <strong>£123/week</strong></li>
-                  <li>SSP: First <strong>3 waiting days</strong> are not paid</li>
+                  <li>SSP eligibility: AWE must be at least <strong>£{SSP_ELIGIBILITY_THRESHOLD}/week</strong></li>
+                  <li>SSP: Payable from <strong>day 1</strong> (no waiting days from April 2026)</li>
                   <li>SMP: First 6 weeks at <strong>90% AWE</strong>, then £{PARENTAL_WEEKLY.toFixed(2)}/wk or 90% AWE</li>
                   <li>SPP, SAP, ShPP, SPBP: £{PARENTAL_WEEKLY.toFixed(2)}/wk or <strong>90% AWE</strong> (whichever lower)</li>
                 </ul>
@@ -566,10 +571,10 @@ export default function StatutoryPaymentsPage() {
 
           {/* Info note */}
           <p className="mt-6 text-[11px] text-muted-foreground/60 leading-relaxed">
-            Calculations are based on 2024/25 statutory payment rates and are for guidance only.
+            Calculations are based on 2026/27 statutory payment rates and are for guidance only.
             They do not account for contractual enhancements, collective agreements, or company-specific policies.
             Always consult HMRC, ACAS, or a qualified payroll professional for official advice.
-            SSP does not include the first 3 waiting days — payment begins on day 4 of sickness.
+            From April 2026, SSP is payable from day 1 of sickness — the previous 3 waiting-day rule no longer applies.
             Parental payments are subject to qualifying conditions including continuous employment and earnings thresholds.
           </p>
 

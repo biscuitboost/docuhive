@@ -4,6 +4,8 @@ import { useEffect, useState, FormEvent } from "react"
 import { useUser } from "@clerk/nextjs"
 import { Mail, User, Building2, Check, Loader2, Settings2 } from "lucide-react"
 
+import { JURISDICTIONS, type Jurisdiction } from "@/lib/utils/constants"
+
 interface TenantDefaults {
   companyName: string
   companyAddress: string
@@ -49,6 +51,7 @@ const EMPTY_DEFAULTS: TenantDefaults = {
 export default function GeneralSettingsPage() {
   const { user, isLoaded: clerkLoaded } = useUser()
   const [orgName, setOrgName] = useState("")
+  const [jurisdiction, setJurisdiction] = useState<Jurisdiction>("england_wales")
   const [defaults, setDefaults] = useState<TenantDefaults>(EMPTY_DEFAULTS)
   const [saving, setSaving] = useState(false)
   const [savingDefaults, setSavingDefaults] = useState(false)
@@ -63,6 +66,7 @@ export default function GeneralSettingsPage() {
       .then((r) => r.json())
       .then((json) => {
         if (json.name) setOrgName(json.name)
+        if (json.jurisdiction) setJurisdiction(json.jurisdiction)
         if (json.defaults) {
           setDefaults({ ...EMPTY_DEFAULTS, ...json.defaults })
         }
@@ -81,7 +85,7 @@ export default function GeneralSettingsPage() {
       const res = await fetch("/api/tenants", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: orgName.trim() }),
+        body: JSON.stringify({ name: orgName.trim(), jurisdiction }),
       })
       if (!res.ok) {
         const json = await res.json()
@@ -179,6 +183,32 @@ export default function GeneralSettingsPage() {
           )}
         </div>
       </form>
+
+      {/* Jurisdiction */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="flex items-center gap-2">
+          <Settings2 size={16} className="text-gray-400" />
+          <h3 className="text-sm font-semibold text-gray-900">
+            Jurisdiction
+          </h3>
+        </div>
+        <p className="mt-1 text-xs text-gray-500">
+          Select the legal jurisdiction for this organisation. This affects statutory thresholds and document generation.
+        </p>
+        <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <select
+            value={jurisdiction}
+            onChange={(e) => setJurisdiction(e.target.value as Jurisdiction)}
+            className="block w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {JURISDICTIONS.map((j) => (
+              <option key={j.value} value={j.value}>
+                {j.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Organisation Defaults */}
       <form onSubmit={handleDefaultsSave}>

@@ -13,6 +13,7 @@ export const docTypeEnum = pgEnum("doc_type", [
   "custom",
 ]);
 export const docStatusEnum = pgEnum("doc_status", ["draft", "generated", "downloaded", "archived", "issued"]);
+export const jurisdictionEnum = pgEnum("jurisdiction", ["england_wales", "scotland"]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "active",
   "past_due",
@@ -54,6 +55,7 @@ export const tenants = pgTable("tenants", {
   dpoEmail: text("dpo_email"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  jurisdiction: text("jurisdiction").notNull().default("england_wales"),
 });
 
 // ── Tenant Members ───────────────────────────────────────────────
@@ -102,6 +104,7 @@ export const documents = pgTable("documents", {
   outputData: jsonb("output_data").$type<Record<string, unknown>>(),
   outputUrl: text("output_url"),
   aiModel: text("ai_model"),
+  jurisdiction: text("jurisdiction"),
   version: integer("version").notNull().default(1),
   createdBy: text("created_by"),
   currentIssuedVersion: integer("current_issued_version"),

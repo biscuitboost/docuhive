@@ -19,6 +19,7 @@ export async function GET() {
         primaryColor: tenants.primaryColor,
         documentFooter: tenants.documentFooter,
         documentHeader: tenants.documentHeader,
+        jurisdiction: tenants.jurisdiction,
         // Defaults
         companyName: tenants.companyName,
         companyAddress: tenants.companyAddress,
@@ -49,6 +50,7 @@ export async function GET() {
 
     return NextResponse.json({
       name: tenant.name,
+      jurisdiction: tenant.jurisdiction,
       branding: {
         logoUrl: tenant.logoUrl,
         primaryColor: tenant.primaryColor,
@@ -95,11 +97,14 @@ export async function PATCH(request: Request) {
     const { tenantId } = await requireAuth();
 
     const body = await request.json();
-    const { name, branding, defaults } = body;
+    const { name, jurisdiction, branding, defaults } = body;
 
     const updateFields: Record<string, unknown> = {};
     if (name && typeof name === "string" && name.trim().length > 0) {
       updateFields.name = name.trim();
+    }
+    if (jurisdiction && typeof jurisdiction === "string") {
+      updateFields.jurisdiction = jurisdiction;
     }
     if (branding && typeof branding === "object") {
       if (typeof branding.logoUrl === "string") updateFields.logoUrl = branding.logoUrl;
@@ -144,6 +149,7 @@ export async function PATCH(request: Request) {
         primaryColor: tenants.primaryColor,
         documentFooter: tenants.documentFooter,
         documentHeader: tenants.documentHeader,
+        jurisdiction: tenants.jurisdiction,
         companyName: tenants.companyName,
         companyAddress: tenants.companyAddress,
         companyNumber: tenants.companyNumber,
@@ -170,6 +176,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({
       name: updated.name,
+      jurisdiction: updated.jurisdiction,
       branding: {
         logoUrl: updated.logoUrl,
         primaryColor: updated.primaryColor,

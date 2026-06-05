@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import Pricing from '@/components/marketing/Pricing'
 
 describe('Pricing Component', () => {
@@ -7,9 +7,15 @@ describe('Pricing Component', () => {
     expect(screen.getByText('Simple, transparent pricing')).toBeInTheDocument()
   })
 
-  it('renders the pricing subtitle', () => {
+  it('renders the pricing subtitle with annual billing mention', () => {
     render(<Pricing />)
-    expect(screen.getByText('No hidden fees. Cancel anytime. All plans billed monthly.')).toBeInTheDocument()
+    expect(screen.getByText(/Save 2 months with annual billing/i)).toBeInTheDocument()
+  })
+
+  it('renders billing toggle buttons', () => {
+    render(<Pricing />)
+    expect(screen.getByText('Monthly')).toBeInTheDocument()
+    expect(screen.getByText('Annual')).toBeInTheDocument()
   })
 
   it('renders all three pricing tiers', () => {
@@ -19,17 +25,40 @@ describe('Pricing Component', () => {
     expect(screen.getByText('Team')).toBeInTheDocument()
   })
 
-  it('displays correct prices with GBP symbol', () => {
+  it('displays monthly prices by default with GBP symbol', () => {
     render(<Pricing />)
     expect(screen.getByText('£49')).toBeInTheDocument()
     expect(screen.getByText('£79')).toBeInTheDocument()
     expect(screen.getByText('£99')).toBeInTheDocument()
   })
 
-  it('displays /mo suffix for each tier', () => {
+  it('displays /mo suffix for each tier by default', () => {
     render(<Pricing />)
     const monthlyLabels = screen.getAllByText('/mo')
     expect(monthlyLabels).toHaveLength(3)
+  })
+
+  it('shows annual prices when toggle is clicked', () => {
+    render(<Pricing />)
+    fireEvent.click(screen.getByText('Annual'))
+    expect(screen.getByText('£490')).toBeInTheDocument()
+    expect(screen.getByText('£790')).toBeInTheDocument()
+    expect(screen.getByText('£990')).toBeInTheDocument()
+  })
+
+  it('shows /yr suffix when annual billing is selected', () => {
+    render(<Pricing />)
+    fireEvent.click(screen.getByText('Annual'))
+    const yearlyLabels = screen.getAllByText('/yr')
+    expect(yearlyLabels).toHaveLength(3)
+  })
+
+  it('shows save badges on annual plan cards', () => {
+    render(<Pricing />)
+    fireEvent.click(screen.getByText('Annual'))
+    // All 3 plans have savings > 0, so 3 badges should render
+    const badges = screen.getAllByText(/Save £\d+\/yr/)
+    expect(badges).toHaveLength(3)
   })
 
   it('renders the Most Popular badge on the Pro plan', () => {
@@ -81,8 +110,16 @@ describe('Pricing Component', () => {
 
   it('renders all interactable button elements', () => {
     render(<Pricing />)
-    // All 3 pricing cards have a subscribe button
+    // All 3 pricing cards have a subscribe button + 2 toggle buttons = 5 total
     const allButtons = screen.getAllByRole('button')
-    expect(allButtons).toHaveLength(3)
+    expect(allButtons).toHaveLength(5)
+  })
+
+  it('shows annual price comparison hint on annual toggle', () => {
+    render(<Pricing />)
+    fireEvent.click(screen.getByText('Annual'))
+    // Should show the equivalent monthly price as reference
+    const monthlyRefs = screen.getAllByText(/£\d+\/mo if billed monthly/)
+    expect(monthlyRefs).toHaveLength(3)
   })
 })

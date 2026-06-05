@@ -5,12 +5,14 @@ import { Check, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
+import { getAnnualSavings, getAnnualSavingsPercent, type BillingMode } from "@/lib/stripe/pricing"
 
 const plans = [
   {
     id: "essentials" as const,
     name: "Essentials",
     price: 49,
+    annualPrice: 490,
     description: "For sole traders and micro-businesses just getting started.",
     popular: false,
     features: [
@@ -26,6 +28,7 @@ const plans = [
     id: "pro" as const,
     name: "Pro",
     price: 79,
+    annualPrice: 790,
     description: "For growing businesses that need unlimited document generation.",
     popular: true,
     features: [
@@ -41,6 +44,7 @@ const plans = [
     id: "team" as const,
     name: "Team",
     price: 99,
+    annualPrice: 990,
     description: "For businesses with multiple users and advanced needs.",
     popular: false,
     features: [
@@ -58,6 +62,7 @@ export default function Pricing() {
   const { isSignedIn } = useAuth()
   const router = useRouter()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [billing, setBilling] = useState<BillingMode>("monthly")
   const [error, setError] = useState<string | null>(null)
   // Check for canceled param from Stripe redirect
   const [params] = useState(() =>
@@ -66,6 +71,15 @@ export default function Pricing() {
       : new URLSearchParams()
   )
   const showCanceled = params.get('canceled') === 'true'
+
+  function getDisplayPrice(plan: typeof plans[0]) {
+    if (billing === "annual") return `£${plan.annualPrice}`
+    return `£${plan.price}`
+  }
+
+  function getDisplaySuffix() {
+    return billing === "annual" ? "/yr" : "/mo"
+  }
 
   async function handleSubscribe(planId: string) {
     if (!isSignedIn) {
@@ -80,7 +94,7 @@ export default function Pricing() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId }),
+        body: JSON.stringify({ plan: planId, billing }),
       })
 
       const data = await res.json()
@@ -108,8 +122,37 @@ export default function Pricing() {
             Simple, transparent pricing
           </h2>
           <p className="mt-4 text-lg text-gray-400">
-            No hidden fees. Cancel anytime. All plans billed monthly.
+            No hidden fees. Cancel anytime. Save 2 months with annual billing.
           </p>
+        </div>
+
+        {/* Billing toggle */}
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <button
+            onClick={() => setBilling("monthly")}
+            className={cn(
+              "rounded-lg px-4 py-2 text-sm font-medium transition-all",
+              billing === "monthly"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-400 hover:text-gray-300"
+            )}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBilling("annual")}
+            className={cn(
+              "rounded-lg px-4 py-2 text-sm font-medium transition-all inline-flex items-center gap-2",
+              billing === "annual"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-400 hover:text-gray-300"
+            )}
+          >
+            Annual
+            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-400">
+              Save ~{getAnnualSavingsPercent("pro")}%
+            </span>
+          </button>
         </div>
 
         {error && (
@@ -124,9 +167,10 @@ export default function Pricing() {
           </div>
         )}
 
-        <div className="mt-16 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => {
             const isLoading = loadingPlan === plan.id
+            const savings = billing === "annual" ? getAnnualSavings(plan.id) : 0
 
             return (
               <div
@@ -145,15 +189,29 @@ export default function Pricing() {
                     </span>
                   </div>
                 )}
+
+                {billing === "annual" && savings > 0 && (
+                  <div className="absolute -top-3 right-4">
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-0.5 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/30">
+                      Save £{savings}/yr
+                    </span>
+                  </div>
+                )}
+
                 <div className="mb-8">
                   <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
                   <p className="mt-2 text-sm text-gray-400">{plan.description}</p>
                   <div className="mt-6 flex items-baseline gap-1">
                     <span className="text-4xl font-bold tracking-tight text-white">
-                      £{plan.price}
+                      {getDisplayPrice(plan)}
                     </span>
-                    <span className="text-sm text-gray-400">/mo</span>
+                    <span className="text-sm text-gray-400">{getDisplaySuffix()}</span>
                   </div>
+                  {billing === "annual" && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      £{plan.price}/mo if billed monthly
+                    </p>
+                  )}
                 </div>
                 <ul className="mb-8 flex-1 space-y-3">
                   {plan.features.map((feature) => (
@@ -174,7 +232,11 @@ export default function Pricing() {
                   )}
                 >
                   {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {isLoading ? "Redirecting..." : isSignedIn ? "Subscribe Now" : "Start Free Trial"}
+                  {isLoading
+                    ? "Redirecting..."
+                    : isSignedIn
+                    ? billing === "annual" ? "Subscribe Yearly" : "Subscribe Monthly"
+                    : "Start Free Trial"}
                 </button>
               </div>
             )

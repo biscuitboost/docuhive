@@ -69,9 +69,9 @@ jest.mock('@/lib/auth/tenant', () => ({
 jest.mock('@/lib/stripe/pricing', () => ({
   __esModule: true,
   PLANS: {
-    essentials: { id: 'essentials', name: 'Essentials', price: 49, docsLimit: 10, multiUser: false, stripePriceId: 'price_essentials_test' },
-    pro: { id: 'pro', name: 'Pro', price: 79, docsLimit: null, multiUser: false, stripePriceId: 'price_pro_test' },
-    team: { id: 'team', name: 'Team', price: 99, docsLimit: null, multiUser: true, stripePriceId: 'price_team_test' },
+    essentials: { id: 'essentials', name: 'Essentials', price: 49, docsLimit: 10, multiUser: false, stripePriceId: 'price_essentials_test', stripeAnnualPriceId: 'price_essentials_annual_test' },
+    pro: { id: 'pro', name: 'Pro', price: 79, docsLimit: null, multiUser: false, stripePriceId: 'price_pro_test', stripeAnnualPriceId: 'price_pro_annual_test' },
+    team: { id: 'team', name: 'Team', price: 99, docsLimit: null, multiUser: true, stripePriceId: 'price_team_test', stripeAnnualPriceId: 'price_team_annual_test' },
   },
   getPlanByPriceId: jest.fn((priceId: string) => {
     const map: Record<string, string> = {
@@ -83,11 +83,19 @@ jest.mock('@/lib/stripe/pricing', () => ({
   }),
   getPlan: jest.fn((planId: string) => {
     const PLANS = {
-      essentials: { id: 'essentials', name: 'Essentials', price: 49, docsLimit: 10, multiUser: false, stripePriceId: 'price_essentials_test' },
-      pro: { id: 'pro', name: 'Pro', price: 79, docsLimit: null, multiUser: false, stripePriceId: 'price_pro_test' },
-      team: { id: 'team', name: 'Team', price: 99, docsLimit: null, multiUser: true, stripePriceId: 'price_team_test' },
+      essentials: { id: 'essentials', name: 'Essentials', price: 49, docsLimit: 10, multiUser: false, stripePriceId: 'price_essentials_test', stripeAnnualPriceId: 'price_essentials_annual_test' },
+      pro: { id: 'pro', name: 'Pro', price: 79, docsLimit: null, multiUser: false, stripePriceId: 'price_pro_test', stripeAnnualPriceId: 'price_pro_annual_test' },
+      team: { id: 'team', name: 'Team', price: 99, docsLimit: null, multiUser: true, stripePriceId: 'price_team_test', stripeAnnualPriceId: 'price_team_annual_test' },
     };
     return PLANS[planId as keyof typeof PLANS];
+  }),
+  getPriceId: jest.fn((planId: string, mode: string) => {
+    const map: Record<string, Record<string, string>> = {
+      essentials: { monthly: 'price_essentials_test', annual: 'price_essentials_annual_test' },
+      pro: { monthly: 'price_pro_test', annual: 'price_pro_annual_test' },
+      team: { monthly: 'price_team_test', annual: 'price_team_annual_test' },
+    };
+    return map[planId]?.[mode];
   }),
 }));
 
@@ -168,13 +176,13 @@ describe('POST /api/stripe/checkout', () => {
     expect(mockStripeCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         line_items: [{ price: 'price_essentials_test', quantity: 1 }],
-        metadata: { tenantId: 'tenant_test_001', plan: 'essentials' },
+        metadata: { tenantId: 'tenant_test_001', plan: 'essentials', billing: 'monthly' },
       })
     );
     expect(json.url).toContain('checkout.stripe.com');
   });
 
-  it('accepts a valid plan ID', async () => {
+  it('accepts a valid plan ID with monthly billing', async () => {
     const req = makePostRequest({ plan: 'pro' });
     const res = await POST(req);
     const json = await res.json();
@@ -183,11 +191,26 @@ describe('POST /api/stripe/checkout', () => {
     expect(mockStripeCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         line_items: [{ price: 'price_pro_test', quantity: 1 }],
-        metadata: { tenantId: 'tenant_test_001', plan: 'pro' },
+        metadata: { tenantId: 'tenant_test_001', plan: 'pro', billing: 'monthly' },
       })
     );
     expect(json.url).toBe('https://checkout.stripe.com/c/pay/test_session_123');
     expect(json.sessionId).toBe('cs_test_abc123');
+  });
+
+  it('accepts annual billing for a valid plan', async () => {
+    const req = makePostRequest({ plan: 'pro', billing: 'annual' });
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockStripeCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        line_items: [{ price: 'price_pro_annual_test', quantity: 1 }],
+        metadata: { tenantId: 'tenant_test_001', plan: 'pro', billing: 'annual' },
+      })
+    );
+    expect(json.url).toBe('https://checkout.stripe.com/c/pay/test_session_123');
   });
 
   it('rejects an invalid plan with 400', async () => {
@@ -219,7 +242,7 @@ describe('POST /api/stripe/checkout', () => {
     expect(mockStripeCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: 'subscription',
-        metadata: { tenantId: 'tenant_test_001', plan: 'team' },
+        metadata: { tenantId: 'tenant_test_001', plan: 'team', billing: 'monthly' },
       })
     );
   });
@@ -282,6 +305,7 @@ describe('GET /api/stripe/checkout', () => {
       expect.objectContaining({
         mode: 'subscription',
         line_items: [{ price: 'price_pro_test', quantity: 1 }],
+        metadata: { plan: 'pro', billing: 'monthly' },
       })
     );
   });
@@ -295,6 +319,7 @@ describe('GET /api/stripe/checkout', () => {
     expect(mockStripeCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         line_items: [{ price: 'price_essentials_test', quantity: 1 }],
+        metadata: { plan: 'essentials', billing: 'monthly' },
       })
     );
     expect(json.url).toBe('https://checkout.stripe.com/c/pay/test_session_456');
@@ -316,7 +341,7 @@ describe('GET /api/stripe/checkout', () => {
 
     expect(mockStripeCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        metadata: { tenantId: 'tenant_abc', plan: 'essentials' },
+        metadata: { tenantId: 'tenant_abc', plan: 'essentials', billing: 'monthly' },
       })
     );
   });
@@ -326,7 +351,7 @@ describe('GET /api/stripe/checkout', () => {
     await GET(req);
 
     const callArgs = mockStripeCreate.mock.calls[0][0];
-    expect(callArgs.metadata).toEqual({ plan: 'essentials' });
+    expect(callArgs.metadata).toEqual({ plan: 'essentials', billing: 'monthly' });
     expect(callArgs.metadata.tenantId).toBeUndefined();
   });
 

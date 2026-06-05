@@ -41,10 +41,21 @@ jest.mock('@/lib/stripe/client', () => ({
 jest.mock('@/lib/stripe/pricing', () => ({
   __esModule: true,
   PLANS: {
-    essentials: { id: 'essentials', name: 'Essentials', price: 49, docsLimit: 10, multiUser: false, stripePriceId: 'price_essentials_test' },
-    pro: { id: 'pro', name: 'Pro', price: 79, docsLimit: null, multiUser: false, stripePriceId: 'price_pro_test' },
-    team: { id: 'team', name: 'Team', price: 99, docsLimit: null, multiUser: true, stripePriceId: 'price_team_test' },
+    essentials: { id: 'essentials', name: 'Essentials', price: 49, annualPrice: 490, docsLimit: 10, multiUser: false, stripePriceId: 'price_essentials_test', stripeAnnualPriceId: 'price_essentials_annual_test' },
+    pro: { id: 'pro', name: 'Pro', price: 79, annualPrice: 790, docsLimit: null, multiUser: false, stripePriceId: 'price_pro_test', stripeAnnualPriceId: 'price_pro_annual_test' },
+    team: { id: 'team', name: 'Team', price: 99, annualPrice: 990, docsLimit: null, multiUser: true, stripePriceId: 'price_team_test', stripeAnnualPriceId: 'price_team_annual_test' },
   },
+  getPriceId: jest.fn((planId: string, mode: string) => {
+    const map: Record<string, string> = {
+      'essentials_monthly': 'price_essentials_test',
+      'essentials_annual': 'price_essentials_annual_test',
+      'pro_monthly': 'price_pro_test',
+      'pro_annual': 'price_pro_annual_test',
+      'team_monthly': 'price_team_test',
+      'team_annual': 'price_team_annual_test',
+    };
+    return map[`${planId}_${mode}`];
+  }),
   getPlanByPriceId: jest.fn((priceId: string) => {
     const map: Record<string, string> = {
       price_essentials_test: 'essentials',
@@ -54,12 +65,25 @@ jest.mock('@/lib/stripe/pricing', () => ({
     return map[priceId];
   }),
   getPlan: jest.fn((planId: string) => {
-    const PLANS = {
+    const PLANS: Record<string, any> = {
       essentials: { id: 'essentials', docsLimit: 10, multiUser: false },
       pro: { id: 'pro', docsLimit: null, multiUser: false },
       team: { id: 'team', docsLimit: null, multiUser: true },
     };
-    return PLANS[planId as keyof typeof PLANS];
+    return PLANS[planId];
+  }),
+  getAnnualSavings: jest.fn((planId: string) => {
+    const savings: Record<string, number> = { essentials: 98, pro: 158, team: 198 };
+    return savings[planId] ?? 0;
+  }),
+  getAnnualSavingsPercent: jest.fn(() => 17),
+  formatPlanPrice: jest.fn((planId: string, mode: string) => {
+    const prices: Record<string, Record<string, string>> = {
+      essentials: { monthly: '£49/mo', annual: '£490/yr' },
+      pro: { monthly: '£79/mo', annual: '£790/yr' },
+      team: { monthly: '£99/mo', annual: '£990/yr' },
+    };
+    return prices[planId]?.[mode] ?? '';
   }),
 }));
 
@@ -136,7 +160,7 @@ describe('Billing Integration — Pricing ↔ Checkout ↔ Portal', () => {
       expect(mockStripeCheckout).toHaveBeenCalledWith(
         expect.objectContaining({
           line_items: [{ price: 'price_essentials_test', quantity: 1 }],
-          metadata: { tenantId: 'tenant_xyz', plan: 'essentials' },
+          metadata: expect.objectContaining({ tenantId: 'tenant_xyz', plan: 'essentials' }),
         })
       );
     });
@@ -149,7 +173,7 @@ describe('Billing Integration — Pricing ↔ Checkout ↔ Portal', () => {
       expect(mockStripeCheckout).toHaveBeenCalledWith(
         expect.objectContaining({
           line_items: [{ price: 'price_pro_test', quantity: 1 }],
-          metadata: { tenantId: 'tenant_xyz', plan: 'pro' },
+          metadata: expect.objectContaining({ tenantId: 'tenant_xyz', plan: 'pro' }),
         })
       );
     });
@@ -162,7 +186,7 @@ describe('Billing Integration — Pricing ↔ Checkout ↔ Portal', () => {
       expect(mockStripeCheckout).toHaveBeenCalledWith(
         expect.objectContaining({
           line_items: [{ price: 'price_team_test', quantity: 1 }],
-          metadata: { tenantId: 'tenant_xyz', plan: 'team' },
+          metadata: expect.objectContaining({ tenantId: 'tenant_xyz', plan: 'team' }),
         })
       );
     });

@@ -20,7 +20,7 @@ export default function PricingPage() {
           Simple, transparent pricing
         </h1>
         <p className="mt-2 text-lg text-gray-400">
-          Choose the plan that fits your business. No hidden fees.
+          Choose the plan that fits your business. No hidden fees. Save 2 months with annual.
         </p>
       </div>
       <Pricing />

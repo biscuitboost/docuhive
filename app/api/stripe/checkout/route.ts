@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import stripe from '@/lib/stripe/client';
-import { PLANS, type PlanId } from '@/lib/stripe/pricing';
+import { PLANS, getPriceId, type PlanId, type BillingMode } from '@/lib/stripe/pricing';
 import { requireAuth, AuthError } from '@/lib/auth/tenant';
 
 // ── Validation ────────────────────────────────────────────────────
@@ -14,6 +14,10 @@ const CheckoutSchema = z.object({
     })
     .optional()
     .default('essentials'),
+  billing: z
+    .enum(['monthly', 'annual'])
+    .optional()
+    .default('monthly'),
 });
 
 // ── POST /api/stripe/checkout ──────────────────────────────────────
@@ -35,12 +39,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { plan } = parsed.data;
-    const priceId = PLANS[plan].stripePriceId;
+    const { plan, billing } = parsed.data;
+    const priceId = getPriceId(plan, billing);
 
     if (!priceId) {
       return NextResponse.json(
-        { error: `No Stripe price configured for plan "${plan}". Set STRIPE_PRICE_${plan.toUpperCase()} in env.` },
+        { error: `No Stripe price configured for plan "${plan}" (${billing}). Set STRIPE_PRICE_${plan.toUpperCase()}${billing === 'annual' ? '_ANNUAL' : ''} in env.` },
         { status: 500 },
       );
     }
@@ -51,7 +55,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      metadata: { tenantId, plan },
+      metadata: { tenantId, plan, billing },
       success_url: `${origin}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?canceled=true`,
     });
@@ -85,11 +89,13 @@ export async function GET(request: NextRequest) {
     }
 
     const plan = planParam as PlanId;
-    const priceId = PLANS[plan].stripePriceId;
+    const billingParam = searchParams.get('billing') ?? 'monthly';
+    const billing = billingParam === 'annual' ? 'annual' as BillingMode : 'monthly' as BillingMode;
+    const priceId = getPriceId(plan, billing);
 
     if (!priceId) {
       return NextResponse.json(
-        { error: `No Stripe price configured for plan "${plan}".` },
+        { error: `No Stripe price configured for plan "${plan}" (${billing}).` },
         { status: 500 },
       );
     }
@@ -102,7 +108,7 @@ export async function GET(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      ...(tenantId ? { metadata: { tenantId, plan } } : { metadata: { plan } }),
+      ...(tenantId ? { metadata: { tenantId, plan, billing } } : { metadata: { plan, billing } }),
       success_url: `${origin}/settings/billing?success=true`,
       cancel_url: `${origin}/pricing`,
     });

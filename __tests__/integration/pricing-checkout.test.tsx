@@ -70,7 +70,7 @@ describe('Pricing → Checkout integration', () => {
       const user = userEvent.setup()
 
       // Click "Subscribe Now" button on the Pro plan (second card)
-      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe now/i })
+      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe monthly/i })
       await user.click(subscribeButtons[1])
 
       await waitFor(() => {
@@ -80,7 +80,7 @@ describe('Pricing → Checkout integration', () => {
       expect(mockFetch).toHaveBeenCalledWith('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: 'pro' }),
+        body: JSON.stringify({ plan: 'pro', billing: 'monthly' }),
       })
     })
 
@@ -101,7 +101,7 @@ describe('Pricing → Checkout integration', () => {
       render(<Pricing />)
       const user = userEvent.setup()
 
-      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe now/i })
+      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe monthly/i })
       await user.click(subscribeButtons[0])
 
       await waitFor(() => {
@@ -120,7 +120,7 @@ describe('Pricing → Checkout integration', () => {
 
       expect(screen.queryByText('Invalid plan selected')).not.toBeInTheDocument()
 
-      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe now/i })
+      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe monthly/i })
       await user.click(subscribeButtons[2])
 
       await waitFor(() => {
@@ -140,7 +140,7 @@ describe('Pricing → Checkout integration', () => {
       render(<Pricing />)
       const user = userEvent.setup()
 
-      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe now/i })
+      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe monthly/i })
       await user.click(subscribeButtons[0])
 
       await waitFor(() => {
@@ -154,7 +154,7 @@ describe('Pricing → Checkout integration', () => {
       render(<Pricing />)
       const user = userEvent.setup()
 
-      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe now/i })
+      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe monthly/i })
       await user.click(subscribeButtons[0])
 
       await waitFor(() => {
@@ -169,7 +169,7 @@ describe('Pricing → Checkout integration', () => {
       render(<Pricing />)
       const user = userEvent.setup()
 
-      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe now/i })
+      const subscribeButtons = screen.getAllByRole('button', { name: /subscribe monthly/i })
       await user.click(subscribeButtons[0])
 
       // Button should now show "Redirecting..." and be disabled

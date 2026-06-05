@@ -38,7 +38,7 @@ export default function CorporationTaxCalculatorPage() {
   const annualProfit = numericProfit * PERIOD_MULTIPLIER[period]
   const divisor = PERIOD_MULTIPLIER[period]
 
-  // ── Corporation Tax Calculation (2024/25) ──
+  // ── Corporation Tax Calculation (2026/27) ──
   let rateLabel = ""
   let tax = 0
   let marginalRelief = 0
@@ -90,7 +90,7 @@ export default function CorporationTaxCalculatorPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Corporation Tax Calculator</h1>
         <p className="mt-1.5 text-muted-foreground">
-          Estimate your corporation tax liability for the 2024/25 tax year — small profits rate (19%), main rate (25%), or marginal relief
+          Estimate your corporation tax liability for the 2026/27 tax year — small profits rate (19%), main rate (25%), or marginal relief
         </p>
       </div>
 
@@ -207,7 +207,7 @@ export default function CorporationTaxCalculatorPage() {
             <div className="flex gap-2">
               <Info size={14} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
               <div className="text-[11px] text-blue-800 dark:text-blue-300 leading-relaxed">
-                <p className="font-semibold mb-1">2024/25 Corporation Tax Rates</p>
+                <p className="font-semibold mb-1">2026/27 Corporation Tax Rates</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>Profits ≤ £50k: <strong>{(CT.smallProfitsRate * 100).toFixed(0)}%</strong> (Small Profits Rate)</li>
                   <li>£50k – £250k: <strong>{(CT.mainRate * 100).toFixed(0)}%</strong> less Marginal Relief</li>
@@ -219,7 +219,7 @@ export default function CorporationTaxCalculatorPage() {
 
           {/* Info note */}
           <p className="mt-6 text-[11px] text-muted-foreground/60 leading-relaxed">
-            Calculations are for the 2024/25 tax year and are for guidance only. They assume standard corporation tax rules
+            Calculations are for the 2026/27 tax year and are for guidance only. They assume standard corporation tax rules
             and do not account for capital allowances, R&amp;D relief, losses carried forward, or other adjustments.
             Always consult HMRC or a qualified accountant for official calculations.
           </p>

@@ -288,7 +288,7 @@ export default function RedundancyCalculatorPage() {
         {/* ── Conversion CTA ── */}
         {totalRedundancyPay > 0 && (
           <ToolConversionCTA
-            href="/documents/new/settlement_agreement"
+            href={`/documents/new/settlement_agreement?compensation_payment=${totalRedundancyPay.toFixed(2)}&employment_length=${serviceYearsNum}`}
             action="Create a Settlement Agreement"
             subtitle="to formalise the redundancy terms — get a legally-compliant PDF document"
             icon="contract"

@@ -562,7 +562,7 @@ export default function InvoicePage() {
         {/* Conversion CTA — turn this invoice into a payslip */}
         {invoice.lineItems.length > 0 && (
           <ToolConversionCTA
-            href="/documents/new/payslip"
+            href={`/documents/new/payslip?gross_pay=${total.toFixed(2)}`}
             action="Generate a Payslip"
             subtitle="with the invoiced amount — get a professional PDF payslip for payroll records"
             icon="payslip"

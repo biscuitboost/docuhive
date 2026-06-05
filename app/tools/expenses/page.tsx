@@ -382,7 +382,7 @@ export default function ExpenseTrackerPage() {
         {/* Conversion CTA — turn tracked expenses into an employment contract */}
         {expenses.length > 0 && (
           <ToolConversionCTA
-            href="/documents/new/employment_contract"
+            href={`/documents/new/employment_contract?salary=${grandTotal.toFixed(2)}&salary_period=year`}
             action="Generate an Employment Contract"
             subtitle="tracking expenses for staff? Create a professional employment contract to formalise the arrangement"
             icon="contract"

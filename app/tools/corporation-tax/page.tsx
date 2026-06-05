@@ -227,7 +227,7 @@ export default function CorporationTaxCalculatorPage() {
           {/* Conversion CTA — turn this into a real document */}
           {annualProfit > 0 && (
             <ToolConversionCTA
-              href="/documents/new/director_service_agreement"
+              href={`/documents/new/director_service_agreement?salary=${annualProfit.toFixed(2)}&salary_period=year`}
               action="Create a Director Service Agreement"
               subtitle="with your company's profit details — formalise your director arrangements"
               icon="contract"

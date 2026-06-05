@@ -539,7 +539,7 @@ export default function CashFlowPage() {
         {/* Conversion CTA */}
         {incomeItems.length > 0 && (
           <ToolConversionCTA
-            href="/documents/new/payslip"
+            href={`/documents/new/payslip?gross_pay=${totalMonthlyIncome.toFixed(2)}`}
             action="Generate a Payslip"
             subtitle="with your projected payroll costs — turn your cash flow into an actual employee payslip"
             icon="payslip"

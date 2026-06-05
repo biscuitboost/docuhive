@@ -34,6 +34,7 @@ interface InvoiceData {
   lineItems: LineItem[]
   // Options
   includeVat: boolean
+  vatRate: number
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
@@ -64,14 +65,22 @@ function subtotal(items: LineItem[]): number {
   return items.reduce((sum, i) => sum + lineTotal(i), 0)
 }
 
-function vatAmount(items: LineItem[], includeVat: boolean): number {
+function vatAmount(items: LineItem[], includeVat: boolean, vatRate: number): number {
   if (!includeVat) return 0
-  return subtotal(items) * 0.2
+  return subtotal(items) * (vatRate / 100)
 }
 
-function grandTotal(items: LineItem[], includeVat: boolean): number {
-  return subtotal(items) + vatAmount(items, includeVat)
+function grandTotal(items: LineItem[], includeVat: boolean, vatRate: number): number {
+  return subtotal(items) + vatAmount(items, includeVat, vatRate)
 }
+
+// ── VAT Rates ──────────────────────────────────────────────────────────
+
+const VAT_RATES = [
+  { value: 20, label: "20%" },
+  { value: 5, label: "5%" },
+  { value: 0, label: "0%" },
+]
 
 // ── Default State Factory ─────────────────────────────────────────────
 
@@ -88,6 +97,7 @@ function createDefaultInvoice(): InvoiceData {
     dueDate: defaultDueDate(),
     lineItems: [],
     includeVat: true,
+    vatRate: 20,
   }
 }
 
@@ -146,9 +156,9 @@ export default function InvoicePage() {
     lines.push("")
     lines.push(`Subtotal,,,${formatCurrency(subtotal(invoice.lineItems))}`)
     if (invoice.includeVat) {
-      lines.push(`VAT (20%),,,${formatCurrency(vatAmount(invoice.lineItems, true))}`)
+      lines.push(`VAT (${invoice.vatRate}%),,,${formatCurrency(vatAmount(invoice.lineItems, true, invoice.vatRate))}`)
     }
-    lines.push(`Total,,,${formatCurrency(grandTotal(invoice.lineItems, invoice.includeVat))}`)
+    lines.push(`Total,,,${formatCurrency(grandTotal(invoice.lineItems, invoice.includeVat, invoice.vatRate))}`)
 
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
@@ -160,8 +170,8 @@ export default function InvoicePage() {
   }
 
   const sub = subtotal(invoice.lineItems)
-  const vat = vatAmount(invoice.lineItems, invoice.includeVat)
-  const total = grandTotal(invoice.lineItems, invoice.includeVat)
+  const vat = vatAmount(invoice.lineItems, invoice.includeVat, invoice.vatRate)
+  const total = grandTotal(invoice.lineItems, invoice.includeVat, invoice.vatRate)
 
   return (
     <DashboardShell>
@@ -421,9 +431,28 @@ export default function InvoicePage() {
               <Calculator size={16} className="text-primary" />
               Invoice Totals
             </h2>
-            {/* VAT toggle */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <span className="text-xs text-muted-foreground">Include VAT (20%)</span>
+            <div className="flex items-center gap-3">
+              {/* VAT rate selector */}
+              {invoice.includeVat && (
+                <div className="flex gap-1 rounded-lg border border-border p-0.5">
+                  {VAT_RATES.map((r) => (
+                    <button
+                      key={r.value}
+                      onClick={() => updateField("vatRate", r.value)}
+                      className={`rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+                        invoice.vatRate === r.value
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {/* VAT toggle */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-xs text-muted-foreground">Include VAT</span>
               <div
                 className={`relative w-10 h-5 rounded-full transition-colors ${
                   invoice.includeVat ? "bg-primary" : "bg-muted"
@@ -437,6 +466,7 @@ export default function InvoicePage() {
                 />
               </div>
             </label>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -446,7 +476,7 @@ export default function InvoicePage() {
             </div>
             {invoice.includeVat && (
               <div className="flex justify-between items-center py-1.5">
-                <span className="text-sm text-muted-foreground">VAT (20%)</span>
+                <span className="text-sm text-muted-foreground">VAT ({invoice.vatRate}%)</span>
                 <span className="text-sm font-medium tabular-nums">{formatCurrency(vat)}</span>
               </div>
             )}
@@ -541,7 +571,7 @@ export default function InvoicePage() {
               </div>
               {invoice.includeVat && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">VAT (20%)</span>
+                  <span className="text-muted-foreground">VAT ({invoice.vatRate}%)</span>
                   <span className="font-medium tabular-nums">{formatCurrency(vat)}</span>
                 </div>
               )}

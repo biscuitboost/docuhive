@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
-import { UK_TAX_RATES } from "@/lib/utils/constants"
+import { UK_TAX_RATES, JURISDICTIONS } from "@/lib/utils/constants"
 import Link from "next/link"
-import { ArrowLeftRight, HelpCircle } from "lucide-react"
+import { ArrowLeftRight, HelpCircle, MapPin } from "lucide-react"
 import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 type Period = "annual" | "monthly" | "weekly"
+type Jurisdiction = "england_wales" | "scotland"
 
 const PERIOD_LABELS: Record<Period, string> = {
   annual: "per year",
@@ -29,16 +30,9 @@ interface BreakdownRow {
   tooltip?: string
 }
 
-export default function PAYECalculatorPage() {
-  const [salary, setSalary] = useState<string>("")
-  const [period, setPeriod] = useState<Period>("annual")
-  const [showBreakdown, setShowBreakdown] = useState(false)
-
-  const numericSalary = parseFloat(salary) || 0
-  const annualSalary = numericSalary * PERIOD_MULTIPLIER[period]
-
-  // ── Income Tax Calculation (2024/25) ──
-  const personalAllowance = Math.max(0, UK_TAX_RATES.personalAllowance -
+function calcEnglandWalesTax(annualSalary: number) {
+  const R = UK_TAX_RATES
+  const personalAllowance = Math.max(0, R.personalAllowance -
     Math.max(0, (annualSalary - 100000) / 2))
 
   let tax = 0
@@ -48,22 +42,86 @@ export default function PAYECalculatorPage() {
   let remaining = annualSalary - personalAllowance
 
   if (remaining > 0) {
-    const basicBand = Math.min(remaining, UK_TAX_RATES.basicRate.threshold - UK_TAX_RATES.personalAllowance)
-    basicTax = basicBand * UK_TAX_RATES.basicRate.rate
+    const basicBand = Math.min(remaining, R.basicRate.threshold - R.personalAllowance)
+    basicTax = basicBand * R.basicRate.rate
     remaining -= basicBand
   }
   if (remaining > 0) {
-    const higherBand = Math.min(remaining, UK_TAX_RATES.higherRate.threshold - UK_TAX_RATES.basicRate.threshold)
-    higherTax = higherBand * UK_TAX_RATES.higherRate.rate
+    const higherBand = Math.min(remaining, R.higherRate.threshold - R.basicRate.threshold)
+    higherTax = higherBand * R.higherRate.rate
     remaining -= higherBand
   }
   if (remaining > 0) {
-    additionalTax = remaining * UK_TAX_RATES.additionalRate.rate
+    additionalTax = remaining * R.additionalRate.rate
   }
 
   tax = basicTax + higherTax + additionalTax
+  return { tax, basicTax, higherTax, additionalTax, personalAllowance }
+}
 
-  // ── National Insurance (Class 1, employee) ──
+function calcScotlandTax(annualSalary: number) {
+  const R = UK_TAX_RATES
+  const S = R.scotland
+  const personalAllowance = Math.max(0, R.personalAllowance -
+    Math.max(0, (annualSalary - 100000) / 2))
+
+  const taxable = Math.max(0, annualSalary - personalAllowance)
+
+  // Scotland bands are on taxable income (after PA)
+  // Starter: up to 3,967 | Basic: 3,968-16,956 | Intermediate: 16,957-31,092
+  // Higher: 31,093-62,430 | Advanced: 62,431-125,140 | Top: over 125,140
+  const bands = [
+    { label: "Starter (19%)", upper: S.starterRate.threshold, rate: S.starterRate.rate },
+    { label: "Basic (20%)", upper: S.basicRate.threshold, rate: S.basicRate.rate },
+    { label: "Intermediate (21%)", upper: S.intermediateRate.threshold, rate: S.intermediateRate.rate },
+    { label: "Higher (42%)", upper: S.higherRate.threshold, rate: S.higherRate.rate },
+    { label: "Advanced (45%)", upper: S.advancedRate.threshold, rate: S.advancedRate.rate },
+    { label: "Top (48%)", upper: Infinity, rate: S.topRate.rate },
+  ]
+
+  let remaining = taxable
+  let starterTax = 0, basicTax = 0, intermediateTax = 0
+  let higherTax = 0, advancedTax = 0, topTax = 0
+  let prevUpper = 0
+
+  for (const band of bands) {
+    if (remaining <= 0) break
+    const bandWidth = band.upper === Infinity ? remaining : band.upper - prevUpper
+    const taxableInBand = Math.min(remaining, bandWidth)
+    const bandTax = taxableInBand * band.rate
+
+    if (band.label.startsWith("Starter")) starterTax = bandTax
+    else if (band.label.startsWith("Basic")) basicTax = bandTax
+    else if (band.label.startsWith("Intermediate")) intermediateTax = bandTax
+    else if (band.label.startsWith("Higher")) higherTax = bandTax
+    else if (band.label.startsWith("Advanced")) advancedTax = bandTax
+    else if (band.label.startsWith("Top")) topTax = bandTax
+
+    remaining -= taxableInBand
+    prevUpper = band.upper
+  }
+
+  const tax = starterTax + basicTax + intermediateTax + higherTax + advancedTax + topTax
+  return { tax, starterTax, basicTax, intermediateTax, higherTax, advancedTax, topTax, personalAllowance }
+}
+
+export default function PAYECalculatorPage() {
+  const [salary, setSalary] = useState<string>("")
+  const [period, setPeriod] = useState<Period>("annual")
+  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [jurisdiction, setJurisdiction] = useState<Jurisdiction>("england_wales")
+
+  const numericSalary = parseFloat(salary) || 0
+  const annualSalary = numericSalary * PERIOD_MULTIPLIER[period]
+
+  const isScotland = jurisdiction === "scotland"
+  const taxCalc = isScotland ? calcScotlandTax(annualSalary) : calcEnglandWalesTax(annualSalary)
+  const { tax, personalAllowance } = taxCalc
+  // Separate typed references for the breakdown sections
+  const scotlandCalc = calcScotlandTax(annualSalary)
+  const englandCalc = calcEnglandWalesTax(annualSalary)
+
+  // ── National Insurance (Class 1, employee) — same UK-wide ──
   const niThreshold = UK_TAX_RATES.ni.primaryThreshold.annual
   const niUpperLimit = UK_TAX_RATES.ni.upperEarningsLimit.annual
 
@@ -89,11 +147,8 @@ export default function PAYECalculatorPage() {
   const periodSalary = Math.round((annualSalary / divisor) * 100) / 100
 
   // Employer NI
-  const employerNi = annualSalary > niThreshold
-    ? Math.min(
-        (annualSalary - niThreshold) * 0.138,
-        (annualSalary - niThreshold) * 0.138
-      )
+  const employerNi = annualSalary > UK_TAX_RATES.ni.secondaryThreshold.annual
+    ? (annualSalary - UK_TAX_RATES.ni.secondaryThreshold.annual) * UK_TAX_RATES.ni.employerRate
     : 0
   const employerNiRounded = Math.round((employerNi / divisor) * 100) / 100
 
@@ -110,6 +165,8 @@ export default function PAYECalculatorPage() {
     { label: "Take-Home Pay", value: periodNet, highlight: true },
   ]
 
+  const jurisdictionLabel = JURISDICTIONS.find(j => j.value === jurisdiction)?.label ?? "England and Wales"
+
   return (
     <DashboardShell>
       {/* Breadcrumb */}
@@ -125,12 +182,37 @@ export default function PAYECalculatorPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">PAYE Calculator</h1>
         <p className="mt-1.5 text-muted-foreground">
-          Calculate income tax, National Insurance, and take-home pay for employees and directors (2024/25 tax year)
+          Calculate income tax, National Insurance, and take-home pay for employees and directors (2026/27 tax year)
         </p>
       </div>
 
       <div className="mx-auto max-w-xl">
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          {/* Jurisdiction toggle */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-card-foreground mb-2">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={14} />
+                Jurisdiction
+              </span>
+            </label>
+            <div className="flex gap-2">
+              {JURISDICTIONS.map((j) => (
+                <button
+                  key={j.value}
+                  onClick={() => setJurisdiction(j.value as Jurisdiction)}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                    jurisdiction === j.value
+                      ? "border-primary bg-primary/10 text-primary shadow-sm"
+                      : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  {j.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Period selector */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-card-foreground mb-2">Pay Period</label>
@@ -208,11 +290,27 @@ export default function PAYECalculatorPage() {
 
               {showBreakdown && (
                 <div className="mt-3 space-y-2 rounded-lg border border-border bg-muted/30 p-4">
-                  <h4 className="text-xs font-semibold text-card-foreground mb-2">Income Tax Breakdown ({PERIOD_LABELS[period]})</h4>
-                  <MiniRow label="Personal Allowance" value={Math.max(0, Math.round((personalAllowance / divisor) * 100) / 100)} />
-                  <MiniRow label="Basic Rate (20%)" value={Math.round((basicTax / divisor) * 100) / 100} />
-                  <MiniRow label="Higher Rate (40%)" value={Math.round((higherTax / divisor) * 100) / 100} />
-                  <MiniRow label="Additional Rate (45%)" value={Math.round((additionalTax / divisor) * 100) / 100} />
+                  <h4 className="text-xs font-semibold text-card-foreground mb-2">
+                    {isScotland ? "Scotland Income Tax Breakdown" : "Income Tax Breakdown"} ({PERIOD_LABELS[period]})
+                  </h4>
+                  {isScotland ? (
+                    <>
+                      <MiniRow label="Personal Allowance (0%)" value={Math.max(0, Math.round((personalAllowance / divisor) * 100) / 100)} />
+                      <MiniRow label="Starter Rate (19%)" value={Math.round((scotlandCalc.starterTax / divisor) * 100) / 100} />
+                      <MiniRow label="Basic Rate (20%)" value={Math.round((scotlandCalc.basicTax / divisor) * 100) / 100} />
+                      <MiniRow label="Intermediate Rate (21%)" value={Math.round((scotlandCalc.intermediateTax / divisor) * 100) / 100} />
+                      <MiniRow label="Higher Rate (42%)" value={Math.round((scotlandCalc.higherTax / divisor) * 100) / 100} />
+                      <MiniRow label="Advanced Rate (45%)" value={Math.round((scotlandCalc.advancedTax / divisor) * 100) / 100} />
+                      <MiniRow label="Top Rate (48%)" value={Math.round((scotlandCalc.topTax / divisor) * 100) / 100} />
+                    </>
+                  ) : (
+                    <>
+                      <MiniRow label="Personal Allowance (0%)" value={Math.max(0, Math.round((personalAllowance / divisor) * 100) / 100)} />
+                      <MiniRow label="Basic Rate (20%)" value={Math.round((englandCalc.basicTax / divisor) * 100) / 100} />
+                      <MiniRow label="Higher Rate (40%)" value={Math.round((englandCalc.higherTax / divisor) * 100) / 100} />
+                      <MiniRow label="Additional Rate (45%)" value={Math.round((englandCalc.additionalTax / divisor) * 100) / 100} />
+                    </>
+                  )}
                 </div>
               )}
             </>
@@ -220,8 +318,9 @@ export default function PAYECalculatorPage() {
 
           {/* Info note */}
           <p className="mt-6 text-[11px] text-muted-foreground/60 leading-relaxed">
-            Calculations are for the 2024/25 tax year and are for guidance only. They assume standard tax code (1257L)
+            Calculations are for the 2026/27 tax year and are for guidance only. They assume standard tax code (1257L)
             and do not account for pension contributions, student loan repayments, or other deductions.
+            {isScotland && " Scotland uses different income tax bands (starter 19%, basic 20%, intermediate 21%, higher 42%, advanced 45%, top 48%)."}
             Always consult HMRC or a qualified accountant for official calculations.
           </p>
 

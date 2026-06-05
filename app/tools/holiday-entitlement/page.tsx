@@ -3,8 +3,9 @@
 import { useState } from "react"
 import DashboardShell from "@/components/layout/DashboardShell"
 import Link from "next/link"
-import { CalendarDays, Info, HelpCircle } from "lucide-react"
+import { CalendarDays, Info, HelpCircle, MapPin } from "lucide-react"
 import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
+import { JURISDICTIONS } from "@/lib/utils/constants"
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -13,6 +14,7 @@ const FULL_TIME_DAYS = 28
 const ACCRUAL_RATE = 0.1207 // 12.07% for irregular hours accrual
 
 const ENGLAND_BANK_HOLIDAYS = 8
+const SCOTLAND_BANK_HOLIDAYS = 9
 
 type EmploymentType = "full-time" | "part-time" | "irregular"
 
@@ -51,10 +53,13 @@ export default function HolidayEntitlementPage() {
   const [accrualPeriod, setAccrualPeriod] = useState<"weekly" | "monthly" | "annual">("monthly")
   const [includeBankHolidays, setIncludeBankHolidays] = useState(true)
   const [showBreakdown, setShowBreakdown] = useState(false)
+  const [jurisdiction, setJurisdiction] = useState<"england_wales" | "scotland">("england_wales")
 
   // ── Parsed inputs ──
   const numericDaysPerWeek = parseFloat(daysPerWeek) || 0
   const numericHoursWorked = parseFloat(hoursWorked) || 0
+  const isScotland = jurisdiction === "scotland"
+  const bankHolidayCount = isScotland ? SCOTLAND_BANK_HOLIDAYS : ENGLAND_BANK_HOLIDAYS
 
   // ── Calculations ──
 
@@ -69,7 +74,7 @@ export default function HolidayEntitlementPage() {
     case "full-time": {
       workingDaysPerWeek = 5
       statutoryEntitlementDays = FULL_TIME_DAYS // 28 days
-      bankHolidayImpactDays = includeBankHolidays ? ENGLAND_BANK_HOLIDAYS : 0
+      bankHolidayImpactDays = includeBankHolidays ? bankHolidayCount : 0
       break
     }
     case "part-time": {
@@ -77,7 +82,7 @@ export default function HolidayEntitlementPage() {
       statutoryEntitlementDays = workingDaysPerWeek * STATUTORY_WEEKS
       // Bank holidays pro-rata
       bankHolidayImpactDays = includeBankHolidays
-        ? (workingDaysPerWeek / 5) * ENGLAND_BANK_HOLIDAYS
+        ? (workingDaysPerWeek / 5) * bankHolidayCount
         : 0
       break
     }
@@ -113,14 +118,14 @@ export default function HolidayEntitlementPage() {
     if (includeBankHolidays) {
       breakdown.push({
         label: "Bank Holidays (included)",
-        value: ENGLAND_BANK_HOLIDAYS,
+        value: bankHolidayCount,
         unit: "days",
         accent: true,
         tooltip: "Employers can include bank holidays as part of the 28-day statutory minimum",
       })
       breakdown.push({
         label: "Remaining Leave (excl. bank hols)",
-        value: statutoryEntitlementDays - ENGLAND_BANK_HOLIDAYS,
+        value: statutoryEntitlementDays - bankHolidayCount,
         unit: "days",
         highlight: true,
       })
@@ -151,7 +156,7 @@ export default function HolidayEntitlementPage() {
         value: proRataBanks,
         unit: "days",
         accent: true,
-        tooltip: `${(workingDaysPerWeek / 5) * 100}% of ${ENGLAND_BANK_HOLIDAYS} bank holidays`,
+        tooltip: `${(workingDaysPerWeek / 5) * 100}% of ${bankHolidayCount} bank holidays`,
       })
       breakdown.push({
         label: "Remaining Leave (excl. bank hols)",
@@ -233,6 +238,31 @@ export default function HolidayEntitlementPage() {
                   }`}
                 >
                   {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Jurisdiction toggle */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-card-foreground mb-2">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={14} />
+                Jurisdiction
+              </span>
+            </label>
+            <div className="flex gap-2">
+              {JURISDICTIONS.map((j) => (
+                <button
+                  key={j.value}
+                  onClick={() => setJurisdiction(j.value as "england_wales" | "scotland")}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                    jurisdiction === j.value
+                      ? "border-primary bg-primary/10 text-primary shadow-sm"
+                      : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  {j.label}
                 </button>
               ))}
             </div>
@@ -428,9 +458,9 @@ export default function HolidayEntitlementPage() {
                       <MiniRow label="5 days × 5.6 statutory weeks" value={28} />
                       {includeBankHolidays && (
                         <>
-                          <MiniRow label="Bank holidays (included in 28 days)" value={ENGLAND_BANK_HOLIDAYS} />
+                          <MiniRow label="Bank holidays (included in 28 days)" value={bankHolidayCount} />
                           <div className="border-t border-border pt-2 mt-2">
-                            <MiniRow label="Leave you can schedule (excl. bank hols)" value={statutoryEntitlementDays - ENGLAND_BANK_HOLIDAYS} />
+                            <MiniRow label="Leave you can schedule (excl. bank hols)" value={statutoryEntitlementDays - bankHolidayCount} />
                           </div>
                         </>
                       )}
@@ -442,8 +472,8 @@ export default function HolidayEntitlementPage() {
                       <MiniRow label={`${workingDaysPerWeek} days × ${STATUTORY_WEEKS} weeks`} value={Math.round(workingDaysPerWeek * STATUTORY_WEEKS * 100) / 100} />
                       {includeBankHolidays && (
                         <MiniRow
-                          label={`Bank holidays pro-rata (${workingDaysPerWeek}/5 × ${ENGLAND_BANK_HOLIDAYS})`}
-                          value={Math.round((workingDaysPerWeek / 5) * ENGLAND_BANK_HOLIDAYS * 100) / 100}
+                          label={`Bank holidays pro-rata (${workingDaysPerWeek}/5 × ${bankHolidayCount})`}
+                          value={Math.round((workingDaysPerWeek / 5) * bankHolidayCount * 100) / 100}
                         />
                       )}
                     </>
@@ -483,7 +513,7 @@ export default function HolidayEntitlementPage() {
             <div className="flex gap-2">
               <Info size={14} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
               <div className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                <p className="font-semibold mb-1">2024/25 Statutory Holiday Rules</p>
+                <p className="font-semibold mb-1">2026/27 Statutory Holiday Rules</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>All workers are entitled to <strong>5.6 weeks</strong> paid holiday per year</li>
                   <li>Full-time (5 days): <strong>28 days</strong></li>
@@ -497,7 +527,7 @@ export default function HolidayEntitlementPage() {
 
           {/* Info note */}
           <p className="mt-6 text-[11px] text-muted-foreground/60 leading-relaxed">
-            Calculations are based on the Working Time Regulations 1998 for the 2024/25 leave year and are for guidance only.
+            Calculations are based on the Working Time Regulations 1998 for the 2026/27 leave year and are for guidance only.
             They do not account for contractual leave above the statutory minimum, carry-over arrangements, or
             sector-specific rules. Always consult ACAS, HMRC, or a qualified HR professional for official advice.
           </p>

@@ -194,7 +194,7 @@ export default function CorporationTaxCalculatorPage() {
                   />
                   <MiniRow
                     label="Relief Fraction"
-                    value={`1/40 (${(CT.marginalReliefFraction * 100).toFixed(1)}%)`}
+                    value={`3/200 (${(CT.marginalReliefFraction * 100).toFixed(1)}%)`}
                     isString
                   />
                 </div>

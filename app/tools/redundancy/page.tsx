@@ -8,50 +8,95 @@ import ToolConversionCTA from "@/components/tools/ToolConversionCTA"
 
 interface YearBand {
   label: string
-  years: number
-  rate: number
+  multiplier: number
+  ageAtYear: number
   amount: number
 }
 
-const CAP = 719 // weekly pay cap (2025/26)
+const CAP = 751 // weekly pay cap (2026/27)
 const MAX_YEARS = 20
 const TAX_FREE_LIMIT = 30000
 
-const AGE_BRACKETS = [
-  { min: 0, max: 21, label: "Under 22", rate: 0.5 },
-  { min: 22, max: 40, label: "22–40", rate: 1 },
-  { min: 41, max: 200, label: "41+", rate: 1.5 },
-]
+/**
+ * Calculate exact age (in years) at a given date, from a birth date.
+ * Returns decimal years — the per-year multiplier loop uses whole-year
+ * age at the start of each service year.
+ */
+function ageAtDate(dob: Date, atDate: Date): number {
+  let age = atDate.getFullYear() - dob.getFullYear()
+  const monthDiff = atDate.getMonth() - dob.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && atDate.getDate() < dob.getDate())) {
+    age--
+  }
+  return age
+}
+
+/**
+ * Determine the statutory multiplier based on the employee's age
+ * at the time the year of service was given.
+ */
+function multiplierForAge(age: number): number {
+  if (age < 22) return 0.5
+  if (age <= 40) return 1.0
+  return 1.5
+}
 
 export default function RedundancyCalculatorPage() {
   const [weeklyPay, setWeeklyPay] = useState("")
-  const [ageBracket, setAgeBracket] = useState<number>(1) // index into AGE_BRACKETS
+  const [dobStr, setDobStr] = useState("")
+  const [redundancyDateStr, setRedundancyDateStr] = useState("")
   const [serviceYears, setServiceYears] = useState("")
 
   const weeklyPayNum = parseFloat(weeklyPay) || 0
   const effectiveWeeklyPay = Math.min(weeklyPayNum, CAP)
   const serviceYearsNum = Math.min(parseInt(serviceYears) || 0, MAX_YEARS)
-  const rate = AGE_BRACKETS[ageBracket]?.rate ?? 1
 
-  // Build year-by-year breakdown
+  // Parse dates
+  const dob = useMemo(() => {
+    if (!dobStr) return null
+    const d = new Date(dobStr)
+    return isNaN(d.getTime()) ? null : d
+  }, [dobStr])
+
+  const redundancyDate = useMemo(() => {
+    if (!redundancyDateStr) return null
+    const d = new Date(redundancyDateStr)
+    return isNaN(d.getTime()) ? null : d
+  }, [redundancyDateStr])
+
+  // Age at redundancy
+  const ageAtRedundancy = useMemo(() => {
+    if (!dob || !redundancyDate) return null
+    return ageAtDate(dob, redundancyDate)
+  }, [dob, redundancyDate])
+
+  // Per-year breakdown with age-based multipliers
   const breakdown: YearBand[] = useMemo(() => {
-    if (!serviceYearsNum || !effectiveWeeklyPay) return []
+    if (!serviceYearsNum || !effectiveWeeklyPay || !dob || !redundancyDate) return []
+
     const bands: YearBand[] = []
     const years = Math.min(serviceYearsNum, MAX_YEARS)
 
-    // First, determine the per-year rate based on age
-    // For simplicity: the user selects current age bracket, which applies
-    // to all years of service (the standard approach for quick calculators)
+    // For each year of service, determine the employee's age at the start
+    // of that year (which determines the correct statutory multiplier).
+    // Year 1 = the most recent complete year before redundancy date,
+    // Year N = N years before redundancy date.
     for (let y = 1; y <= years; y++) {
+      const yearStartDate = new Date(redundancyDate)
+      yearStartDate.setFullYear(yearStartDate.getFullYear() - y)
+      const ageAtYear = ageAtDate(dob, yearStartDate)
+      const mult = multiplierForAge(ageAtYear)
+
       bands.push({
         label: `Year ${y}`,
-        years: 1,
-        rate,
-        amount: effectiveWeeklyPay * rate,
+        multiplier: mult,
+        ageAtYear,
+        amount: effectiveWeeklyPay * mult,
       })
     }
+
     return bands
-  }, [serviceYearsNum, effectiveWeeklyPay, rate])
+  }, [serviceYearsNum, effectiveWeeklyPay, dob, redundancyDate])
 
   const totalRedundancyPay = breakdown.reduce((s, b) => s + b.amount, 0)
   const taxablePortion = Math.max(0, totalRedundancyPay - TAX_FREE_LIMIT)
@@ -60,9 +105,11 @@ export default function RedundancyCalculatorPage() {
   // ── CSV export ──
   const handleExportCSV = () => {
     if (breakdown.length === 0) return
-    const header = "Year of Service,Multiplier,Amount\n"
-    const rows = breakdown.map((b) => `${b.label},${b.rate}x weekly pay,£${b.amount.toFixed(2)}`).join("\n")
-    const totals = `\n,,£${totalRedundancyPay.toFixed(2)}`
+    const header = "Year of Service,Age at Year,Multiplier,Amount\n"
+    const rows = breakdown
+      .map((b) => `${b.label},Age ${b.ageAtYear},${b.multiplier}x weekly pay,£${b.amount.toFixed(2)}`)
+      .join("\n")
+    const totals = `\n,,,£${totalRedundancyPay.toFixed(2)}`
     const blob = new Blob([header + rows + totals], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -147,29 +194,32 @@ export default function RedundancyCalculatorPage() {
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary tabular-nums"
               />
             </div>
-          </div>
 
-          {/* Age bracket */}
-          <label className="block text-xs font-medium text-card-foreground mb-2">
-            Age Bracket — determines the weekly multiplier
-          </label>
-          <div className="flex gap-2">
-            {AGE_BRACKETS.map((bracket, idx) => (
-              <button
-                key={bracket.label}
-                onClick={() => setAgeBracket(idx)}
-                className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
-                  ageBracket === idx
-                    ? "border-primary bg-primary/10 text-primary shadow-sm"
-                    : "border-border text-muted-foreground hover:bg-accent"
-                }`}
-              >
-                {bracket.label}
-                <span className="block text-[11px] font-normal mt-0.5 opacity-70">
-                  {bracket.rate}x weekly pay
-                </span>
-              </button>
-            ))}
+            {/* Date of birth */}
+            <div>
+              <label className="block text-xs font-medium text-card-foreground mb-1.5">
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                value={dobStr}
+                onChange={(e) => setDobStr(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {/* Redundancy date */}
+            <div>
+              <label className="block text-xs font-medium text-card-foreground mb-1.5">
+                Redundancy Date
+              </label>
+              <input
+                type="date"
+                value={redundancyDateStr}
+                onChange={(e) => setRedundancyDateStr(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
           </div>
         </div>
 
@@ -213,6 +263,7 @@ export default function RedundancyCalculatorPage() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Year</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Age at Year</th>
                     <th className="text-left py-2 px-3 font-medium text-muted-foreground">Multiplier</th>
                     <th className="text-right py-2 pl-3 font-medium text-muted-foreground">Amount</th>
                   </tr>
@@ -221,12 +272,14 @@ export default function RedundancyCalculatorPage() {
                   {breakdown.map((b) => (
                     <tr key={b.label} className="border-b border-border/50 last:border-b-0">
                       <td className="py-2 pr-4 text-card-foreground">{b.label}</td>
-                      <td className="py-2 px-3 text-muted-foreground">{b.rate}x week&rsquo;s pay</td>
+                      <td className="py-2 px-3 text-muted-foreground">{b.ageAtYear}</td>
+                      <td className="py-2 px-3 text-muted-foreground">{b.multiplier}x week&rsquo;s pay</td>
                       <td className="py-2 pl-3 text-right tabular-nums font-medium text-card-foreground">{fmt(b.amount)}</td>
                     </tr>
                   ))}
                   <tr className="border-t border-border">
                     <td className="pt-3 pr-4 font-semibold text-card-foreground">Total</td>
+                    <td className="pt-3 px-3"></td>
                     <td className="pt-3 px-3"></td>
                     <td className="pt-3 pl-3 text-right tabular-nums font-bold text-card-foreground">{fmt(totalRedundancyPay)}</td>
                   </tr>
@@ -239,8 +292,8 @@ export default function RedundancyCalculatorPage() {
               <h3 className="text-xs font-semibold text-card-foreground mb-2">Calculation Summary</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
-                  <span className="text-muted-foreground">Age bracket:</span>
-                  <p className="font-medium text-card-foreground">{AGE_BRACKETS[ageBracket].label}</p>
+                  <span className="text-muted-foreground">Age at redundancy:</span>
+                  <p className="font-medium text-card-foreground">{ageAtRedundancy !== null ? `${ageAtRedundancy} years` : "—"}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Weekly pay:</span>
@@ -251,8 +304,8 @@ export default function RedundancyCalculatorPage() {
                   <p className="font-medium text-card-foreground">{serviceYearsNum} year{serviceYearsNum !== 1 ? "s" : ""}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Multiplier:</span>
-                  <p className="font-medium text-card-foreground">{rate}x weekly pay per year</p>
+                  <span className="text-muted-foreground">Birth date:</span>
+                  <p className="font-medium text-card-foreground">{dobStr || "—"}</p>
                 </div>
               </div>
             </div>
@@ -263,11 +316,12 @@ export default function RedundancyCalculatorPage() {
               <div>
                 <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">How Statutory Redundancy Pay Works</p>
                 <ul className="mt-1.5 text-xs text-blue-700 dark:text-blue-400 space-y-1 list-disc list-inside">
-                  <li>Under 22: 0.5 weeks&rsquo; pay per full year of service</li>
+                  <li>Under 22 at the time of each year of service: 0.5 weeks&rsquo; pay per year</li>
                   <li>22&ndash;40: 1 week&rsquo;s pay per full year of service</li>
                   <li>41+: 1.5 weeks&rsquo; pay per full year of service</li>
+                  <li>Each year uses the employee&rsquo;s age <em>at that time</em> for the correct multiplier</li>
                   <li>Maximum 20 years of service counted</li>
-                  <li>Weekly pay capped at {fmt(CAP)} (2025/26 rate)</li>
+                  <li>Weekly pay capped at {fmt(CAP)} (2026/27 rate)</li>
                   <li>First {fmt(TAX_FREE_LIMIT)} is tax-free</li>
                   <li>Only full continuous years of service are counted &mdash; part years don&rsquo;t qualify</li>
                 </ul>
@@ -281,7 +335,7 @@ export default function RedundancyCalculatorPage() {
           <div className="rounded-xl border border-border bg-card p-8 shadow-sm text-center">
             <Calculator size={32} className="mx-auto text-muted-foreground/40 mb-3" />
             <p className="text-sm font-medium text-card-foreground">Enter employee details</p>
-            <p className="text-xs text-muted-foreground mt-1">Add their weekly pay, years of service, and age bracket to calculate statutory redundancy pay.</p>
+            <p className="text-xs text-muted-foreground mt-1">Add their weekly pay, years of service, date of birth, and redundancy date to calculate statutory redundancy pay.</p>
           </div>
         )}
 

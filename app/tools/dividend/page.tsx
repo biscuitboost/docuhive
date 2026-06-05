@@ -117,7 +117,7 @@ export default function DividendCalculatorPage() {
 
   const breakdown: BreakdownRow[] = [
     { label: "Dividend Income", value: periodDividends },
-    { label: "Dividend Allowance", value: Math.round((dividendAllowanceUsed / divisor) * 100) / 100, accent: true, tooltip: "The first £500 of dividend income is tax-free (2024/25)" },
+    { label: "Dividend Allowance", value: Math.round((dividendAllowanceUsed / divisor) * 100) / 100, accent: true, tooltip: "The first £500 of dividend income is tax-free (2026/27)" },
     { label: "Taxable Dividends", value: Math.round((taxableDividends / divisor) * 100) / 100, accent: true },
     { label: "Dividend Tax Due", value: periodDividendTax, highlight: true },
     { label: "Net Dividends", value: periodNetDividends, accent: true },
@@ -142,7 +142,7 @@ export default function DividendCalculatorPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Dividend Calculator</h1>
         <p className="mt-1.5 text-muted-foreground">
-          Calculate dividend tax and net income from dividend payments (2024/25 tax year)
+          Calculate dividend tax and net income from dividend payments (2026/27 tax year)
         </p>
       </div>
 
@@ -285,7 +285,7 @@ export default function DividendCalculatorPage() {
             <div className="flex gap-2">
               <Info size={14} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
               <div className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                <p className="font-semibold mb-1">2024/25 Dividend Tax Rates</p>
+                <p className="font-semibold mb-1">2026/27 Dividend Tax Rates</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>First <strong>£{DIV.allowance.toLocaleString()}</strong>: <strong>0%</strong> (Dividend Allowance)</li>
                   <li>Basic rate band: <strong>{(DIV.basicRate * 100).toFixed(2)}%</strong></li>
@@ -298,7 +298,7 @@ export default function DividendCalculatorPage() {
 
           {/* Info note */}
           <p className="mt-6 text-[11px] text-muted-foreground/60 leading-relaxed">
-            Calculations are for the 2024/25 tax year and are for guidance only. They assume the standard dividend allowance
+            Calculations are for the 2026/27 tax year and are for guidance only. They assume the standard dividend allowance
             and do not account for pension contributions, marriage allowance, or other reliefs.
             Always consult HMRC or a qualified accountant for official calculations.
           </p>

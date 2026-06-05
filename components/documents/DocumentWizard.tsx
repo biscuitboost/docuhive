@@ -577,7 +577,7 @@ export default function DocumentWizard({ initialType, initialFormValues: propsIn
   const [selectedType, setSelectedType] = useState<DocType | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState<{ id: string; url?: string } | null>(null);
+  const [result, setResult] = useState<{ id: string; url?: string; usage?: { plan: string; docsUsed: number; docsLimit: number | null; docsRemaining: number | null } } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [savedTemplates, setSavedTemplates] = useState<{ id: string; name: string; formValues: Record<string, string> }[]>([]);
@@ -1209,6 +1209,42 @@ export default function DocumentWizard({ initialType, initialFormValues: propsIn
             <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">
               Your document has been created successfully.
             </p>
+
+            {/* Post-generation upgrade prompt for Essentials users */}
+            {result.usage && result.usage.plan === "essentials" && result.usage.docsRemaining !== null && result.usage.docsRemaining <= 3 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.3 }}
+                className="mt-6 mx-auto max-w-sm rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20 p-4 text-left"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/50 p-1.5">
+                    <Sparkles size={14} className="text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                      {result.usage.docsRemaining === 0
+                        ? "You've used all your documents this month"
+                        : `Only ${result.usage.docsRemaining} document${result.usage.docsRemaining === 1 ? "" : "s"} left`}
+                    </p>
+                    <p className="mt-1 text-xs text-amber-700/80 dark:text-amber-400/80">
+                      {result.usage.docsRemaining === 0
+                        ? "Upgrade to Pro (£79/mo) for unlimited document generation."
+                        : `You've used ${result.usage.docsUsed}/10 documents this month. Upgrade to Pro for unlimited generation.`}
+                    </p>
+                    <a
+                      href="/pricing"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-amber-500 active:scale-[0.97] transition-all duration-150"
+                    >
+                      <Sparkles size={12} />
+                      Upgrade to Pro — £79/mo
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {result.id && (
                 <>

@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     // Uses an atomic UPDATE with a guard: only increments if the result
     // hasn't exceeded the limit. This prevents race conditions where
     // two concurrent requests both pass the count check.
+    let docsUsedAfter = 0;
     if (planLimit !== null) {
       const updated = await db
         .update(subscriptions)
@@ -73,6 +74,7 @@ export async function POST(request: NextRequest) {
           { status: 403 }
         );
       }
+      docsUsedAfter = Number(updated[0]?.documentsUsed ?? 0);
     } else {
       await db
         .update(subscriptions)
@@ -89,7 +91,24 @@ export async function POST(request: NextRequest) {
       `/documents/${result.documentId}`,
     );
 
-    return NextResponse.json(result, { status: 201 });
+    // Resolve plan info for post-generation upgrade prompt
+    const sub = await db
+      .select({ plan: subscriptions.plan, documentsUsed: subscriptions.documentsUsed })
+      .from(subscriptions)
+      .where(eq(subscriptions.tenantId, tenantId))
+      .limit(1)
+      .then((r) => r[0]);
+
+    const planInfo = sub
+      ? {
+          plan: sub.plan,
+          docsUsed: Number(sub.documentsUsed),
+          docsLimit: planLimit,
+          docsRemaining: planLimit !== null ? Math.max(0, planLimit - Number(sub.documentsUsed)) : null,
+        }
+      : null;
+
+    return NextResponse.json({ ...result, usage: planInfo }, { status: 201 });
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });

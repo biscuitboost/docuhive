@@ -133,7 +133,10 @@ describe('POST /api/documents/generate — Plan-Limit Integration', () => {
     mockDb.update.mockReturnValue(makeUpdateChain());
 
     // Default: 0 docs used this month (no plan limit hit)
-    mockDb.select.mockReturnValue(makeThenableSelect([{ count: 0 }]));
+    // First select: doc count query. Second select: subscription plan info query.
+    mockDb.select
+      .mockReturnValueOnce(makeThenableSelect([{ count: 0 }]))
+      .mockReturnValue(makeThenableSelect([{ plan: 'essentials', documentsUsed: 1 }]));
   });
 
   // ── Happy path ───────────────────────────────────────────────
@@ -281,7 +284,11 @@ describe('POST /api/documents/generate — Plan-Limit Integration', () => {
 
   it('handles database errors gracefully (getPlanLimit catches and allows generation)', async () => {
     // getPlanLimit has its own try/catch — DB errors fall through to null (no limit)
-    mockDb.select.mockImplementation(() => { throw new Error('DB connection lost'); });
+    // First select (getPlanLimit) throws, subsequent selects (subscription info) succeed
+    mockDb.select
+      .mockReset()
+      .mockImplementationOnce(() => { throw new Error('DB connection lost'); })
+      .mockReturnValue(makeThenableSelect([{ plan: 'essentials', documentsUsed: 1 }]));
 
     const req = makeRequest(validBody);
     const res = await POST(req);

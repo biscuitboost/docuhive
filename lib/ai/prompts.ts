@@ -319,7 +319,8 @@ Include:
 7. Confidentiality clause
 8. Non-disparagement
 9. Independent legal advice acknowledgment
-10. Counterparts
+10. Governing law ({{jurisdiction}})
+11. Counterparts
 
 IMPORTANT: Include the mandatory statement that the employee has received independent legal advice.
 

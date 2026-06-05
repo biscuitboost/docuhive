@@ -36,7 +36,7 @@ export const DOC_TYPE_SUGGESTIONS: Record<string, Suggestion[]> = {
   ],
   nda: [
     { label: "Add non-compete clause", instruction: "Add a non-compete clause preventing disclosure of trade secrets for 12 months after termination" },
-    { label: "Add jurisdiction clause", instruction: "Add governing law: England and Wales, exclusive jurisdiction of London courts" },
+    { label: "Add jurisdiction clause", instruction: "Add governing law and exclusive jurisdiction clause appropriate to the document's jurisdiction (England and Wales or Scotland)" },
     { label: "Change term length", instruction: "Change the confidentiality period to 5 years from the effective date" },
   ],
   service_agreement: [

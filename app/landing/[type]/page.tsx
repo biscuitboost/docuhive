@@ -175,7 +175,7 @@ export default async function LandingPage({ params }: Props) {
               Ready to create your {page.label.toLowerCase()}?
             </h2>
             <p className="mt-3 text-base text-gray-400">
-              {page.ctaSubtitle}. No sign-up required to try.
+              {page.ctaSubtitle}
             </p>
             <Link
               href={`/documents/new/${type}`}

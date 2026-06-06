@@ -180,7 +180,7 @@ export default async function ToolLandingPage({ params }: Props) {
               Ready to use the {page.label.toLowerCase()}?
             </h2>
             <p className="mt-3 text-base text-muted-foreground">
-              {page.ctaSubtitle}. Free, no sign-up required.
+              {page.ctaSubtitle}
             </p>
             <Link
               href={`/tools/${type}`}

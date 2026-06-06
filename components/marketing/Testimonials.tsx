@@ -77,14 +77,14 @@ function Stars({ count }: { count: number }) {
 
 export default function Testimonials() {
   return (
-    <section id="testimonials" className="bg-[#0f172a] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
+    <section id="testimonials" className="bg-background px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <AnimatedSection amount={0.2}>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               Trusted by UK businesses like yours
             </h2>
-            <p className="mt-4 text-lg text-gray-400">
+            <p className="mt-4 text-lg text-muted-foreground">
               Join 500+ micro-businesses, recruiters, and practices already saving time and money.
             </p>
           </div>
@@ -95,28 +95,28 @@ export default function Testimonials() {
             <AnimatedChild key={t.name}>
               <div
                 className={cn(
-                  "group relative flex flex-col rounded-xl border border-gray-800 bg-[#1a2234] p-6",
-                  "transition-all duration-300"
+                  "group relative flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm",
+                  "transition-all duration-300 hover:shadow-md"
                 )}
               >
                 {/* Highlight badge */}
                 {t.highlight && (
-                  <div className="mb-4 inline-flex self-start items-center gap-1.5 rounded-full bg-blue-600/10 px-3 py-1 text-xs font-medium text-blue-400 ring-1 ring-blue-500/20">
+                  <div className="mb-4 inline-flex self-start items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/20">
                     <Quote size={12} />
                     {t.highlight}
                   </div>
                 )}
 
                 {/* Quote */}
-                <blockquote className="flex-1 text-sm leading-6 text-gray-300">
+                <blockquote className="flex-1 text-sm leading-6 text-muted-foreground">
                   &ldquo;{t.quote}&rdquo;
                 </blockquote>
 
                 {/* Bottom section */}
-                <div className="mt-6 flex items-center justify-between border-t border-gray-800/60 pt-4">
+                <div className="mt-6 flex items-center justify-between border-t border-border/60 pt-4">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{t.name}</p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-sm font-semibold text-foreground truncate">{t.name}</p>
+                    <p className="text-xs text-muted-foreground/70 truncate">
                       {t.role}, {t.business}
                     </p>
                   </div>
@@ -129,19 +129,19 @@ export default function Testimonials() {
 
         {/* Trust bar */}
         <AnimatedSection amount={0.3} className="mt-16">
-          <div className="rounded-xl border border-gray-800 bg-[#1a2234]/50 px-6 py-8 sm:px-10">
+          <div className="rounded-xl border border-border bg-card/50 px-6 py-8 sm:px-10 shadow-sm">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
               <div className="text-center sm:text-left">
-                <p className="text-sm font-medium text-gray-400">Average rating across all reviews</p>
+                <p className="text-sm font-medium text-muted-foreground">Average rating across all reviews</p>
                 <div className="mt-1 flex items-center gap-2">
                   <Stars count={5} />
-                  <span className="text-sm text-gray-300">
+                  <span className="text-sm text-foreground/80">
                     4.9 / 5.0
                   </span>
                 </div>
               </div>
-              <div className="h-px w-full bg-gray-800 sm:hidden" />
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-500">
+              <div className="h-px w-full bg-border sm:hidden" />
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <span className="inline-block h-3 w-3 rounded-full bg-emerald-500" />
                   500+ businesses

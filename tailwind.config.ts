@@ -48,6 +48,14 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "tool-card": {
+          DEFAULT: "hsl(var(--tool-card))",
+          hover: "hsl(var(--tool-card-hover))",
+        },
+        "tool-icon": {
+          bg: "hsl(var(--tool-icon-bg))",
+          fg: "hsl(var(--tool-icon-fg))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

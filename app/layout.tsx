@@ -8,9 +8,28 @@ import DarkModeProvider from "./dark-mode-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "DocuHive — AI-Powered UK Employment Documents",
+  title: "DocuHive — AI-Powered UK Employment Documents & Business Tools",
   description:
-    "Generate UK employment contracts, staff handbooks, payslips and P45s in seconds. No solicitor. No HR suite. No headache.",
+    "Generate UK employment contracts, staff handbooks, payslips, P45s, and calculate VAT, PAYE, corporation tax, and more. All-in-one business toolkit for UK micro-businesses.",
+  keywords: [
+    "UK employment documents",
+    "contract generator",
+    "payslip generator",
+    "P45",
+    "staff handbook",
+    "VAT calculator",
+    "PAYE calculator",
+    "corporation tax calculator",
+    "UK business tools",
+    "HR documents",
+    "employment contracts UK",
+  ],
+  openGraph: {
+    title: "DocuHive — AI-Powered UK Employment Documents & Business Tools",
+    description:
+      "Generate UK employment contracts, staff handbooks, payslips, P45s, and calculate VAT, PAYE, corporation tax, and more.",
+    type: "website",
+  },
 }
 
 export default function RootLayout({

@@ -24,6 +24,12 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.75rem;
+
+    /* Tool card background (light variant) */
+    --tool-card: 0 0% 97%;
+    --tool-card-hover: 0 0% 100%;
+    --tool-icon-bg: 221.2 83.2% 95%;
+    --tool-icon-fg: 221.2 83.2% 53.3%;
   }
 
   .dark {
@@ -46,10 +52,20 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+
+    /* Tool card background (dark variant) */
+    --tool-card: 217.2 32.6% 12.5%;
+    --tool-card-hover: 217.2 32.6% 18%;
+    --tool-icon-bg: 224.3 76.3% 25%;
+    --tool-icon-fg: 217.2 91.2% 59.8%;
   }
 
   * {
     @apply border-border;
+    /* Smooth theme transitions on all color/bg/border properties */
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
   }
 
   html {
@@ -65,6 +81,11 @@
     @apply bg-blue-200 text-blue-900;
   }
 
+  /* Exclude motion/transform from the universal transition for performance */
+  *:is(.no-theme-transition, .motion-safe *) {
+    transition-property: none;
+  }
+
   /* Custom range input styling */
   input[type="range"] {
     @apply appearance-none cursor-pointer;
@@ -77,7 +98,7 @@
   }
 
   input[type="range"]::-webkit-slider-runnable-track {
-    @apply h-2 rounded-full bg-gray-700;
+    @apply h-2 rounded-full bg-muted;
   }
 
   input[type="range"]::-moz-range-thumb {
@@ -85,6 +106,6 @@
   }
 
   input[type="range"]::-moz-range-track {
-    @apply h-2 rounded-full bg-gray-700;
+    @apply h-2 rounded-full bg-muted;
   }
 }

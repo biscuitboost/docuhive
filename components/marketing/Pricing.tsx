@@ -115,13 +115,13 @@ export default function Pricing() {
   }
 
   return (
-    <section id="pricing" aria-label="Pricing plans" className="bg-[#0f172a] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
+    <section id="pricing" aria-label="Pricing plans" className="bg-background px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Simple, transparent pricing
           </h2>
-          <p className="mt-4 text-lg text-gray-400">
+          <p className="mt-4 text-lg text-muted-foreground">
             No hidden fees. Cancel anytime. Save 2 months with annual billing.
           </p>
         </div>
@@ -133,8 +133,8 @@ export default function Pricing() {
             className={cn(
               "rounded-lg px-4 py-2 text-sm font-medium transition-all",
               billing === "monthly"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-400 hover:text-gray-300"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Monthly
@@ -144,25 +144,25 @@ export default function Pricing() {
             className={cn(
               "rounded-lg px-4 py-2 text-sm font-medium transition-all inline-flex items-center gap-2",
               billing === "annual"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-400 hover:text-gray-300"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Annual
-            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-400">
+            <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-500">
               Save ~{getAnnualSavingsPercent("pro")}%
             </span>
           </button>
         </div>
 
         {error && (
-          <div className="mx-auto mt-6 max-w-md rounded-lg bg-red-500/10 px-4 py-3 text-center text-sm text-red-400 ring-1 ring-red-500/20">
+          <div className="mx-auto mt-6 max-w-md rounded-lg bg-destructive/10 px-4 py-3 text-center text-sm text-destructive ring-1 ring-destructive/20">
             {error}
           </div>
         )}
 
         {showCanceled && (
-          <div className="mx-auto mt-6 max-w-md rounded-lg bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-400 ring-1 ring-amber-500/20">
+          <div className="mx-auto mt-6 max-w-md rounded-lg bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-500 ring-1 ring-amber-500/20">
             Checkout cancelled. No charges were made. Ready to pick a plan?
           </div>
         )}
@@ -176,15 +176,15 @@ export default function Pricing() {
               <div
                 key={plan.name}
                 className={cn(
-                  "relative flex flex-col rounded-2xl border p-6 sm:p-8",
+                  "relative flex flex-col rounded-2xl border p-6 sm:p-8 shadow-sm",
                   plan.popular
-                    ? "border-blue-500 bg-blue-500/5 shadow-xl shadow-blue-500/10"
-                    : "border-gray-800 bg-[#1a2234]"
+                    ? "border-primary/40 bg-primary/[0.03] shadow-lg shadow-primary/5"
+                    : "border-border bg-card"
                 )}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center rounded-full bg-blue-600 px-4 py-1 text-sm font-medium text-white">
+                    <span className="inline-flex items-center rounded-full bg-primary px-4 py-1 text-sm font-medium text-primary-foreground shadow-sm">
                       Most Popular
                     </span>
                   </div>
@@ -192,31 +192,31 @@ export default function Pricing() {
 
                 {billing === "annual" && savings > 0 && (
                   <div className="absolute -top-3 right-4">
-                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-0.5 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/30">
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-0.5 text-xs font-semibold text-emerald-500 ring-1 ring-emerald-500/30">
                       Save £{savings}/yr
                     </span>
                   </div>
                 )}
 
                 <div className="mb-8">
-                  <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
-                  <p className="mt-2 text-sm text-gray-400">{plan.description}</p>
+                  <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
                   <div className="mt-6 flex items-baseline gap-1">
-                    <span className="text-4xl font-bold tracking-tight text-white">
+                    <span className="text-4xl font-bold tracking-tight text-foreground">
                       {getDisplayPrice(plan)}
                     </span>
-                    <span className="text-sm text-gray-400">{getDisplaySuffix()}</span>
+                    <span className="text-sm text-muted-foreground">{getDisplaySuffix()}</span>
                   </div>
                   {billing === "annual" && (
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground/70">
                       £{plan.price}/mo if billed monthly
                     </p>
                   )}
                 </div>
                 <ul className="mb-8 flex-1 space-y-3">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-3 text-sm text-gray-300">
-                      <Check className="h-4 w-4 flex-shrink-0 text-blue-400" />
+                    <li key={feature} className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <Check className="h-4 w-4 flex-shrink-0 text-primary" />
                       {feature}
                     </li>
                   ))}
@@ -227,8 +227,8 @@ export default function Pricing() {
                   className={cn(
                     "rounded-lg px-6 py-3 text-center text-sm font-semibold inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-150 active:scale-[0.97]",
                     plan.popular
-                      ? "bg-blue-600 text-white hover:bg-blue-500 shadow-sm hover:shadow-md"
-                      : "border border-gray-700 text-gray-200 hover:bg-gray-800 hover:border-gray-600"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md"
+                      : "border border-border text-foreground hover:bg-muted"
                   )}
                 >
                   {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}

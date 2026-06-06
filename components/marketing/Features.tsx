@@ -36,14 +36,14 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="bg-[#0f172a] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
+    <section id="features" className="bg-muted/50 px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <AnimatedSection amount={0.2}>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               Everything you need to employ in the UK
             </h2>
-            <p className="mt-4 text-lg text-gray-400">
+            <p className="mt-4 text-lg text-muted-foreground">
               From contract to P45, DocuHive covers your entire employee lifecycle.
             </p>
           </div>
@@ -56,16 +56,16 @@ export default function Features() {
               <AnimatedChild key={feature.title}>
                 <div
                   className={cn(
-                    "group relative rounded-xl border border-gray-800 bg-[#1a2234] p-6",
-                    "hover:border-blue-500/50 hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]",
+                    "group relative rounded-xl border border-border bg-card p-6 shadow-sm",
+                    "hover:border-primary/30 hover:shadow-md hover:shadow-primary/5",
                     "transition-all duration-300 hover:-translate-y-1"
                   )}
                 >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 group-hover:scale-110 transition-all duration-300">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-gray-400">{feature.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{feature.description}</p>
                 </div>
               </AnimatedChild>
             )

@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
+import { cn } from "@/lib/utils/cn"
+import { AnimatedSection, AnimatedStagger, AnimatedChild } from "@/components/animation/AnimatedSection"
 
 const faqs = [
   {
@@ -42,41 +44,48 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section id="faq" className="bg-[#0f172a] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
+    <section id="faq" className="bg-background px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <h2 className="text-3xl font-bold tracking-tight text-white text-center sm:text-4xl">
-          Frequently Asked Questions
-        </h2>
-        <p className="mt-4 text-center text-lg text-gray-400">
-          Everything you need to know about DocuHive
-        </p>
+        <AnimatedSection amount={0.2}>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground text-center sm:text-4xl">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-4 text-center text-lg text-muted-foreground">
+            Everything you need to know about DocuHive
+          </p>
+        </AnimatedSection>
 
-        <div className="mt-12 space-y-4">
+        <AnimatedStagger className="mt-12 space-y-4" staggerDelay={0.06}>
           {faqs.map((faq, idx) => (
-            <div
-              key={idx}
-              className="rounded-xl border border-gray-700 bg-[#1a2234] overflow-hidden transition-all"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-medium text-gray-200 hover:text-white transition-colors"
+            <AnimatedChild key={idx}>
+              <div
+                className={cn(
+                  "rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-all",
+                  openIndex === idx && "shadow-md"
+                )}
               >
-                <span>{faq.q}</span>
-                <ChevronDown
-                  size={16}
-                  className={`shrink-0 text-gray-500 transition-transform ${
-                    openIndex === idx ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {openIndex === idx && (
-                <div className="px-6 pb-4 text-sm text-gray-400 leading-relaxed border-t border-gray-700/50 pt-3">
-                  {faq.a}
-                </div>
-              )}
-            </div>
+                <button
+                  onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+                  className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-medium text-foreground hover:text-foreground/90 transition-colors"
+                >
+                  <span>{faq.q}</span>
+                  <ChevronDown
+                    size={16}
+                    className={cn(
+                      "shrink-0 text-muted-foreground transition-transform duration-200",
+                      openIndex === idx && "rotate-180"
+                    )}
+                  />
+                </button>
+                {openIndex === idx && (
+                  <div className="px-6 pb-4 text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            </AnimatedChild>
           ))}
-        </div>
+        </AnimatedStagger>
       </div>
     </section>
   )

@@ -8,12 +8,6 @@ const footerLinks = {
     { label: "FAQ", href: "/#faq" },
     { label: "All Tools", href: "/tools" },
   ],
-  company: [
-    { label: "About", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "/contact" },
-    { label: "Press", href: "/press" },
-  ],
   legal: [
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Service", href: "/terms" },
@@ -26,7 +20,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-gray-800 bg-[#0f172a]">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <h3 className="text-lg font-semibold text-white">
               <span className="text-blue-400">Docu</span>Hive
@@ -37,7 +31,6 @@ export default function Footer() {
           </div>
           {[
             { title: "Product", links: footerLinks.product },
-            { title: "Company", links: footerLinks.company },
             { title: "Legal", links: footerLinks.legal },
           ].map((group) => (
             <div key={group.title}>

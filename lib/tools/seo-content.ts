@@ -37,7 +37,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       {
         question: "Do I need to register for VAT as a small business?",
         answer:
-          "You must register for VAT if your UK taxable turnover exceeds £90,000 in any rolling 12-month period (2025/26 threshold). Below this, registration is voluntary. Even if not registered, our calculator helps you understand VAT impacts on pricing.",
+          "You must register for VAT if your UK taxable turnover exceeds £90,000 in any rolling 12-month period (2026/27 threshold). Below this, registration is voluntary. Even if not registered, our calculator helps you understand VAT impacts on pricing.",
       },
       {
         question: "Can I use this calculator for VAT returns?",
@@ -56,13 +56,13 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
     targetKeyword: "PAYE calculator UK take home pay",
     metaTitle: "Free UK PAYE Calculator | Take-Home Pay Calculator | DocuHive",
     metaDescription:
-      "Calculate your UK take-home pay after tax, National Insurance, and pension deductions. Free PAYE calculator for 2025/26 tax year. No sign-up needed.",
+      "Calculate your UK take-home pay after tax, National Insurance, and pension deductions. Free PAYE calculator for 2026/27 tax year. No sign-up needed.",
     heading: "Free UK PAYE Calculator",
     intro:
-      "Work out your exact take-home pay with our free UK PAYE calculator. Enter your gross salary and we calculate Income Tax, National Insurance contributions, and pension deductions based on the latest 2025/26 tax rates and thresholds. Perfect for employees, employers, and contractors who need to understand their net pay.",
+      "Work out your exact take-home pay with our free UK PAYE calculator. Enter your gross salary and we calculate Income Tax, National Insurance contributions, and pension deductions based on the latest 2026/27 tax rates and thresholds. Perfect for employees, employers, and contractors who need to understand their net pay.",
     benefits: [
       "Calculates Income Tax, National Insurance, and pension contributions automatically",
-      "Uses current 2025/26 tax year rates, bands, and thresholds",
+      "Uses current 2026/27 tax year rates, bands, and thresholds",
       "Shows a clear breakdown of gross pay, deductions, and net take-home pay",
       "Supports both monthly and annual salary views for easy budgeting",
     ],
@@ -71,12 +71,12 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       {
         question: "How is PAYE income tax calculated in the UK?",
         answer:
-          "PAYE tax is calculated on your taxable earnings above your Personal Allowance (£12,570 for 2025/26). Basic rate (20%) applies to earnings from £12,571 to £50,270, higher rate (40%) from £50,271 to £125,140, and additional rate (45%) above £125,140. Our calculator applies these bands automatically.",
+          "PAYE tax is calculated on your taxable earnings above your Personal Allowance (£12,570 for 2026/27). Basic rate (20%) applies to earnings from £12,571 to £50,270, higher rate (40%) from £50,271 to £125,140, and additional rate (45%) above £125,140. Our calculator applies these bands automatically.",
       },
       {
-        question: "What National Insurance rates apply for 2025/26?",
+        question: "What National Insurance rates apply for 2026/27?",
         answer:
-          "For employees, Class 1 NI is 8% on earnings between £12,570 and £50,270 per year, and 2% on earnings above £50,270. Employers also pay Class 1 NI at 13.8% on earnings above £9,100. Our calculator shows both employee and employer NI where applicable.",
+          "For employees, Class 1 NI is 8% on earnings between £12,570 and £50,270 per year, and 2% on earnings above £50,270. Employers also pay Class 1 NI at 15% on earnings above £5,000 (the secondary threshold, raised from 13.8% and £9,100 in April 2025). Our calculator shows both employee and employer NI where applicable.",
       },
       {
         question: "Does the calculator include pension contributions?",
@@ -90,20 +90,20 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       },
     ],
     ctaAction: "Calculate Take-Home Pay",
-    ctaSubtitle: "free PAYE calculator for the 2025/26 tax year",
+    ctaSubtitle: "free PAYE calculator for the 2026/27 tax year",
     ctaIcon: "payslip",
   },
   // ── Corporation Tax Calculator ──
   {
     type: "corporation-tax",
     label: "Corporation Tax Calculator",
-    targetKeyword: "UK corporation tax calculator 2025",
-    metaTitle: "Free UK Corporation Tax Calculator | 2025 Rates | DocuHive",
+    targetKeyword: "UK corporation tax calculator 2026/27",
+    metaTitle: "Free UK Corporation Tax Calculator | 2026/27 Rates | DocuHive",
     metaDescription:
       "Calculate UK corporation tax on your company profits. Free calculator using current 25% and 19% rates with marginal relief. No sign-up required.",
     heading: "Free UK Corporation Tax Calculator",
     intro:
-      "Calculate how much corporation tax your UK limited company owes with our free calculator. Based on the current 2025/26 rates — 19% for profits up to £50,000, 25% for profits over £250,000, and marginal relief for profits between £50,001 and £250,000. Get a clear estimate in seconds.",
+      "Calculate how much corporation tax your UK limited company owes with our free calculator. Based on the current 2026/27 rates — 19% for profits up to £50,000, 25% for profits over £250,000, and marginal relief for profits between £50,001 and £250,000. Get a clear estimate in seconds.",
     benefits: [
       "Applies the correct corporation tax rate based on your profit band",
       "Includes marginal relief calculations for profits between £50k and £250k",
@@ -115,7 +115,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       {
         question: "What are the current UK corporation tax rates?",
         answer:
-          "For the 2025/26 tax year, the main rate is 25% for companies with profits over £250,000. The small profits rate is 19% for profits up to £50,000. Marginal relief applies between £50,001 and £250,000, giving an effective rate between 19% and 25%.",
+          "For the 2026/27 tax year, the main rate is 25% for companies with profits over £250,000. The small profits rate is 19% for profits up to £50,000. Marginal relief applies between £50,001 and £250,000, giving an effective rate between 19% and 25%.",
       },
       {
         question: "How does marginal relief work for corporation tax?",
@@ -134,37 +134,37 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       },
     ],
     ctaAction: "Calculate Corporation Tax",
-    ctaSubtitle: "accurate rates for the 2025/26 tax year",
+    ctaSubtitle: "accurate rates for the 2026/27 tax year",
     ctaIcon: "invoice",
   },
   // ── Dividend Calculator ──
   {
     type: "dividend",
     label: "Dividend Calculator",
-    targetKeyword: "UK dividend tax calculator 2025/26",
-    metaTitle: "Free UK Dividend Tax Calculator | 2025/26 Rates | DocuHive",
+    targetKeyword: "UK dividend tax calculator 2026/27",
+    metaTitle: "Free UK Dividend Tax Calculator | 2026/27 Rates | DocuHive",
     metaDescription:
-      "Calculate dividend tax on UK dividends for 2025/26. Free calculator with £500 allowance, basic/higher/additional rates. No sign-up needed.",
+      "Calculate dividend tax on UK dividends for 2026/27. Free calculator with £500 allowance, basic/higher/additional rates. No sign-up needed.",
     heading: "Free UK Dividend Tax Calculator",
     intro:
-      "Calculate the tax you'll pay on dividends from your UK company or investments. Our free calculator uses the current 2025/26 tax year rates — including the £500 dividend allowance, basic rate (8.75%), higher rate (33.75%), and additional rate (39.35%). Essential for limited company directors who pay themselves through dividends.",
+      "Calculate the tax you'll pay on dividends from your UK company or investments. Our free calculator uses the current 2026/27 tax year rates — including the £500 dividend allowance, basic rate (10.75%), higher rate (35.75%), and additional rate (39.35%). Essential for limited company directors who pay themselves through dividends.",
     benefits: [
       "Applies the correct dividend tax rate based on your total income band",
-      "Includes the £500 dividend tax allowance for 2025/26",
+      "Includes the £500 dividend tax allowance for 2026/27",
       "Accounts for salary and other income for accurate marginal rate calculation",
       "Shows effective tax rate on dividend income after all allowances",
     ],
     whoFor: "UK limited company directors who take dividends as part of their remuneration, investors receiving dividend income, and contractors operating through their own limited company.",
     faqs: [
       {
-        question: "What is the dividend allowance for 2025/26?",
+        question: "What is the dividend allowance for 2026/27?",
         answer:
-          "The dividend allowance for 2025/26 is £500 — meaning the first £500 of dividend income is tax-free. This was reduced from £1,000 in 2024/25 and from £2,000 in previous years. Dividends above £500 are taxed at your marginal rate.",
+          "The dividend allowance for 2026/27 is £500 — meaning the first £500 of dividend income is tax-free. This was reduced from £1,000 in 2024/25 and from £2,000 in previous years. Dividends above £500 are taxed at your marginal rate.",
       },
       {
-        question: "What are the dividend tax rates for 2025/26?",
+        question: "What are the dividend tax rates for 2026/27?",
         answer:
-          "Dividend tax rates depend on your income tax band: basic rate taxpayers pay 8.75%, higher rate taxpayers pay 33.75%, and additional rate taxpayers pay 39.35% on dividends above the £500 allowance. Our calculator applies the correct rate based on your total income.",
+          "Dividend tax rates depend on your income tax band: basic rate taxpayers pay 10.75%, higher rate taxpayers pay 35.75%, and additional rate taxpayers pay 39.35% on dividends above the £500 allowance. Our calculator applies the correct rate based on your total income.",
       },
       {
         question: "Is it more tax-efficient to take salary or dividends?",
@@ -174,7 +174,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       {
         question: "How do dividends interact with my personal allowance?",
         answer:
-          "Dividends are taxed after your personal allowance (£12,570 for 2025/26) and after other income. The £500 dividend allowance is on top of your personal allowance. Dividends within your personal allowance or basic rate band are taxed at 8.75%, while those in the higher rate band are taxed at 33.75%.",
+          "Dividends are taxed after your personal allowance (£12,570 for 2026/27) and after other income. The £500 dividend allowance is on top of your personal allowance. Dividends within your personal allowance or basic rate band are taxed at 10.75%, while those in the higher rate band are taxed at 35.75%.",
       },
     ],
     ctaAction: "Calculate Dividend Tax",
@@ -206,7 +206,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
           "Common allowable expenses include: office costs (rent, utilities, insurance), travel and mileage, staff costs, professional fees (accountant, solicitor), marketing and advertising, equipment and software, training courses, and business entertainment. All expenses must be 'wholly and exclusively' for business purposes.",
       },
       {
-        question: "What is the HMRC mileage rate for 2025/26?",
+        question: "What is the HMRC mileage rate for 2026/27?",
         answer:
           "The HMRC approved mileage rate is 45p per mile for the first 10,000 business miles in a tax year, and 25p per mile thereafter for cars and vans. Motorcycle rate is 24p per mile, and bicycle rate is 20p per mile. Our calculator uses these rates automatically.",
       },
@@ -222,7 +222,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       },
     ],
     ctaAction: "Calculate Your Expenses",
-    ctaSubtitle: "HMRC-approved rates for 2025/26",
+    ctaSubtitle: "HMRC-approved rates for 2026/27",
     ctaIcon: "invoice",
   },
   // ── Statutory Payments Calculator ──
@@ -232,27 +232,27 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
     targetKeyword: "UK statutory pay calculator SMP SSP SPP",
     metaTitle: "Free UK Statutory Payments Calculator | SMP SSP SPP | DocuHive",
     metaDescription:
-      "Calculate UK statutory payments: maternity (SMP), paternity (SPP), sick pay (SSP), and more. Free calculator with current 2025/26 rates. No sign-up needed.",
+      "Calculate UK statutory payments: maternity (SMP), paternity (SPP), sick pay (SSP), and more. Free calculator with current 2026/27 rates. No sign-up needed.",
     heading: "Free UK Statutory Payments Calculator",
     intro:
-      "Work out how much statutory pay your employees are entitled to with our free calculator. Covers Statutory Maternity Pay (SMP), Statutory Paternity Pay (SPP), Statutory Sick Pay (SSP), Shared Parental Pay (ShPP), and Adoption Pay (SAP) — all using current 2025/26 rates and qualifying criteria.",
+      "Work out how much statutory pay your employees are entitled to with our free calculator. Covers Statutory Maternity Pay (SMP), Statutory Paternity Pay (SPP), Statutory Sick Pay (SSP), Shared Parental Pay (ShPP), and Adoption Pay (SAP) — all using current 2026/27 rates and qualifying criteria.",
     benefits: [
       "Covers all UK statutory payments: SMP, SPP, SSP, ShPP, and SAP in one tool",
-      "Uses current 2025/26 weekly rates (£187.18 standard weekly rate)",
+      "Uses current 2026/27 weekly rates (£194.32 standard weekly rate for SMP/SPP/SAP/ShPP; £123.25 SSP weekly rate)",
       "Shows qualifying criteria and eligibility periods for each payment type",
       "Includes employer recovery options (small employer NIC rebate)",
     ],
     whoFor: "UK employers, HR professionals, and small business owners who need to calculate statutory payments for their employees and understand employer recovery mechanisms.",
     faqs: [
       {
-        question: "What is the current rate for statutory payments in 2025/26?",
+        question: "What is the current rate for statutory payments in 2026/27?",
         answer:
-          "The standard weekly rate for SMP, SPP, ShPP, and SAP is £187.18 (or 90% of average weekly earnings if lower). SSP is paid at £118.75 per week. The earnings threshold for SSP eligibility is £125 per week. Our calculator uses these exact figures.",
+          "The standard weekly rate for SMP, SPP, ShPP, and SAP is £194.32 (or 90% of average weekly earnings if lower). SSP is paid at the lower of 80% of AWE or £123.25 per week flat rate (from April 2026, payable from day 1 — no waiting days). The earnings threshold for SSP eligibility is £129 per week (Lower Earnings Limit). Our calculator uses these exact figures.",
       },
       {
         question: "How long does Statutory Maternity Pay last?",
         answer:
-          "SMP is paid for up to 39 weeks. The first 6 weeks are paid at 90% of average weekly earnings, followed by 33 weeks at the standard rate (£187.18) or 90% of earnings (whichever is lower). Employees are also entitled to 52 weeks of maternity leave.",
+          "SMP is paid for up to 39 weeks. The first 6 weeks are paid at 90% of average weekly earnings, followed by 33 weeks at the standard rate (£194.32) or 90% of earnings (whichever is lower). Employees are also entitled to 52 weeks of maternity leave.",
       },
       {
         question: "Can employers reclaim statutory payments?",
@@ -262,18 +262,18 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       {
         question: "When does an employee qualify for Statutory Sick Pay?",
         answer:
-          "Employees qualify for SSP if they earn at least £125 per week (2025/26 threshold), have been sick for at least 4 consecutive days (including non-working days), and follow the company's sickness reporting procedure. SSP is paid from day 4 of sickness for up to 28 weeks.",
+          "Employees qualify for SSP if they earn at least £129 per week (the Lower Earnings Limit, 2026/27 threshold), have been sick for at least 4 consecutive days (including non-working days), and follow the company's sickness reporting procedure. SSP is paid from day 1 of sickness (no waiting days from April 2026) for up to 28 weeks.",
       },
     ],
     ctaAction: "Calculate Statutory Payments",
-    ctaSubtitle: "SMP, SSP, SPP — all current 2025/26 rates",
+    ctaSubtitle: "SMP, SSP, SPP — all current 2026/27 rates",
     ctaIcon: "payslip",
   },
   // ── Holiday Entitlement Calculator ──
   {
     type: "holiday-entitlement",
     label: "Holiday Entitlement Calculator",
-    targetKeyword: "UK holiday entitlement calculator 2025",
+    targetKeyword: "UK holiday entitlement calculator 2026/27",
     metaTitle: "Free UK Holiday Entitlement Calculator | Statutory Leave | DocuHive",
     metaDescription:
       "Calculate statutory holiday entitlement for UK employees. Supports full-time, part-time, irregular hours, and casual workers. Free tool, no sign-up needed.",
@@ -449,16 +449,16 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
   {
     type: "redundancy",
     label: "Redundancy Calculator",
-    targetKeyword: "UK redundancy pay calculator 2025",
+    targetKeyword: "UK redundancy pay calculator 2026/27",
     metaTitle: "Free UK Redundancy Pay Calculator | Statutory Entitlement | DocuHive",
     metaDescription:
-      "Calculate UK statutory redundancy pay based on age, service, and weekly pay. Free calculator using current 2025/26 rates. No sign-up required.",
+      "Calculate UK statutory redundancy pay based on age, service, and weekly pay. Free calculator using current 2026/27 rates. No sign-up required.",
     heading: "Free UK Redundancy Pay Calculator",
     intro:
-      "Calculate statutory redundancy pay for UK employees with our free calculator. Based on the employee's age, length of continuous service, and weekly pay (capped at £700 for 2025/26). Our calculator applies the correct formula — 0.5 week's pay per year of service for ages 18-21, 1 week per year for ages 22-40, and 1.5 weeks per year for ages 41 and over.",
+      "Calculate statutory redundancy pay for UK employees with our free calculator. Based on the employee's age, length of continuous service, and weekly pay (capped at £751 for 2026/27). Our calculator applies the correct formula — 0.5 week's pay per year of service for ages 18-21, 1 week per year for ages 22-40, and 1.5 weeks per year for ages 41 and over.",
     benefits: [
       "Uses the correct statutory formula based on age bands and service years",
-      "Applies the current weekly pay cap (£700 for 2025/26) automatically",
+      "Applies the current weekly pay cap (£751 for 2026/27) automatically",
       "Shows a clear breakdown of entitlement by age band",
       "Calculates both statutory and illustrative total redundancy package",
     ],
@@ -467,7 +467,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       {
         question: "How is statutory redundancy pay calculated in the UK?",
         answer:
-          "Statutory redundancy pay is calculated based on age, continuous service, and weekly pay (capped at £700 for 2025/26). You get: 0.5 week's pay for each full year of service aged 18-21, 1 week's pay for each full year aged 22-40, and 1.5 week's pay for each full year aged 41 and over. Total service is capped at 20 years, and weekly pay is capped at £700.",
+          "Statutory redundancy pay is calculated based on age, continuous service, and weekly pay (capped at £751 for 2026/27). You get: 0.5 week's pay for each full year of service aged 18-21, 1 week's pay for each full year aged 22-40, and 1.5 week's pay for each full year aged 41 and over. Total service is capped at 20 years, and weekly pay is capped at £751.",
       },
       {
         question: "Who is eligible for statutory redundancy pay?",
@@ -477,7 +477,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       {
         question: "What is the maximum statutory redundancy pay?",
         answer:
-          "The maximum statutory redundancy pay in 2025/26 is £21,000 (20 years × 1.5 weeks × £700 cap). The maximum number of years counted is 20, and the maximum weekly pay is £700. This changes annually in line with the retail prices index.",
+          "The maximum statutory redundancy pay in 2026/27 is £22,530 (20 years × 1.5 weeks × £751 cap). The maximum number of years counted is 20, and the maximum weekly pay is £751. This changes annually in line with the retail prices index.",
       },
       {
         question: "Is redundancy pay tax-free?",
@@ -486,7 +486,7 @@ export const TOOL_LANDING_PAGES: LandingSEOData[] = [
       },
     ],
     ctaAction: "Calculate Redundancy Pay",
-    ctaSubtitle: "statutory entitlement for 2025/26, free to use",
+    ctaSubtitle: "statutory entitlement for 2026/27, free to use",
     ctaIcon: "payslip",
   },
 ]
